@@ -140,3 +140,15 @@ is reviewed by a seat that did not build it.
   with a test that a forging candidate fails; (c) the cap measured against run time on the real
   export; (d) a coverage count of `no-baseline` on the real export.
 - **Owner:** Claude. **Decide by:** (a) step 7; (b)-(d) 2026-11-25.
+
+## KD-10 · the publish gates have known blind spots
+- **What:** (a) The personal-data scan matches a fixed list of exact patterns. Spelling
+  variants of a name, places beyond the listed ones, phone numbers, ssh host aliases and chat
+  handles pass it. (b) The quote gate finds a maintainer reference with a quotation or speech
+  verb on the SAME line only. A colon without quotation marks, an attribution after a dash,
+  a blockquote, a quote split over two lines and curly single quotes pass it. Found by the
+  independent review of the first publish (2026-11-12); none of these shapes was in it (checked).
+- **Done looks like:** each shape planted in a red arm and refused, without new false hits
+  on the current export (the allowed hits stay credit and sign-off rows only, checked by hand).
+- **Owner:** Claude. **Decide by:** 2026-11-25. Until then every publish's changed lines are read
+  by hand before it is proposed (done for the second publish, 2026-11-12: three files).

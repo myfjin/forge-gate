@@ -199,7 +199,19 @@ elif "$func" == "fit_polynomial":
     r = $func(xv, xv, $value)
 with open("$snapshot", "rb") as f:
     expected = pickle.load(f)
-print("SAME" if repr(r) == repr(expected) else f"DIFF {repr(r)} vs {repr(expected)}")
+import math
+def flat(v):
+    if isinstance(v, (list, tuple)):
+        return [x for e in v for x in flat(e)]
+    return [v]
+a, b = flat(r), flat(expected)
+# Tolerance, not repr: Python 3.12 made sum() compensated (Neumaier), so gradient-descent results
+# move in the last bit between 3.11 and 3.12 (first public CI run, 2026-11-12). 1e-9 relative is far
+# below any behaviour change this gate guards.
+same = len(a) == len(b) and all(
+    (x == y) if not (isinstance(x, float) or isinstance(y, float))
+    else math.isclose(x, y, rel_tol=1e-9, abs_tol=1e-12) for x, y in zip(a, b))
+print("SAME" if same else f"DIFF {repr(r)} vs {repr(expected)}")
 PY
     )
     local out

@@ -113,14 +113,35 @@ def test_ported_exemptions_are_exact_and_carry_their_header():
         assert (REPO / rel).read_text().startswith("# Ported from "), rel
 
 
+# Red-arm DATA, not a route: the private publisher (tools/publish_public.py, never published) plants
+# a canary to prove its scanner refuses a home path. Exempt: that file's single `CANARY = "` line,
+# so any other home path in it still fails. Absent file (the public tree): nothing is exempt.
+CANARY_FILE, CANARY_PREFIX = "tools/publish_public.py", 'CANARY = "'
+
+
+def _canary_line():
+    f = REPO / CANARY_FILE
+    if not f.exists():
+        return None
+    lines = [l for l in f.read_text().splitlines() if l.startswith(CANARY_PREFIX)]
+    assert len(lines) == 1, f"{CANARY_FILE}: want exactly one canary line, found {len(lines)}"
+    return lines[0]
+
+
+def test_canary_exemption_is_one_line():
+    _canary_line()
+
+
 def test_no_home_paths_outside_the_loader():
-    hits = []
+    hits, canary = [], _canary_line()
     for p in _shipped_files():
         if p.name == "config.py" and p.parent.name == "forge_gate":
             continue
         if str(p.relative_to(REPO)) in PORTED_EXEMPT and p.read_text().startswith("# Ported from "):
             continue
         for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            if str(p.relative_to(REPO)) == CANARY_FILE and line == canary:
+                continue
             if _HOME_PATH.search(line) or _HOME_CALL.search(line):
                 hits.append(f"{p.relative_to(REPO)}:{i}: {line.strip()[:100]}")
     assert not hits, "home paths outside forge_gate/config.py:\n" + "\n".join(hits)
