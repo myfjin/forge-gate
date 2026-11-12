@@ -1,0 +1,23 @@
+Forge Gate
+Copyright 2026 Illia Hladkyi (Reality Optimizer)
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. A copy of the License is in the
+LICENSE file, or at http://www.apache.org/licenses/LICENSE-2.0.
+
+--------------------------------------------------------------------------------
+Code that came from other projects. Every one is by the same author and ships here
+under this repository's Apache-2.0 licence.
+
+src/forge_gate/reference/
+    Byte copies of 10 patterns from the AURA Pattern Library (Apache-2.0).
+    Source commit and per-file sha256: src/forge_gate/reference/ORIGIN.md.
+
+src/forge_gate/scout/shape.py
+    Ported from aura-code-corpus (src/code_corpus/shape.py, checkout c5129d2), an
+    unpublished project. The file's header gives the source md5.
+
+src/forge_gate/scout/engines/executor_port.py
+    Ported from the AURA pattern-scoring validator (executor.py, lines 14-243), an
+    unpublished project. The file's header gives the source sha256 and records the
+    two comment edits made after the port.

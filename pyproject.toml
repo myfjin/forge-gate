@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=59.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forge-gate"
+version = "0.1.0"
+description = "Deterministic regression gate for code-generating agents, with reference implementations from the AURA pattern library."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Illia Hladkyi", email = "ihladkyi@realityoptimizer.app" },
+]
+keywords = [
+    "ai-agent",
+    "verification",
+    "regression-testing",
+    "code-quality",
+    "deterministic-oracle",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "tomli>=2.0; python_version < '3.11'",  # config.toml on 3.10 (forge_gate/config.py)
+]
+
+[project.scripts]
+forge-gate = "forge_gate.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-timeout",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+forge_gate = ["data/*.json", "reference/*.py", "reference/ORIGIN.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 60
+addopts = "-m 'not live and not gates and not js'"
+markers = [
+    "live: needs FORGE_GATE_LIBRARY_DIR (the pattern library); deselected by default, run with -m live",
+    "gates: slow shell gates (1-15 min each); run with -m gates",
+    "js: JS oracle gates; need `npm ci` and node, bun, qjs; run with -m js",
+]

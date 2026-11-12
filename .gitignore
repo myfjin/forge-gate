@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+*.whl
+corpus_results.json
+tmp_invariant_test/
+node_modules/
+staging/
+# Per-host settings (forge_gate/config.py); config.example.toml lists the keys.
+config.toml
+.venv/
+.DS_Store
+# Lens scratch files (forge_gate/config.py scratch_dir).
+tmp/
