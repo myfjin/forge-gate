@@ -1,0 +1,1 @@
+RAISED ValueError: learning_rate must be positive, got -1.0

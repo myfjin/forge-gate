@@ -1,0 +1,28 @@
+# Per-host settings for Forge Gate. Copy to config.toml (not tracked) and edit.
+# Every key can also be set as an environment variable of the same name, which wins.
+# A relative path is taken from the folder that holds config.toml.
+# Reference: src/forge_gate/config.py.
+
+[paths]
+# The AURA pattern library checkout. NO default: the twin-consensus lens, the live
+# test tier (pytest -m live) and the library tools fail naming this key when unset.
+# `forge-gate verify` does not need it (its references ship in forge_gate/reference/).
+# FORGE_GATE_LIBRARY_DIR = "/path/to/aura-pattern-library"
+
+# The aura-code-corpus export root: the folder holding <run_id>/ exports (schema
+# code-corpus-export/v1). NO default. Only `forge-gate scout` reads it; unset, the
+# corpus pool reports BLIND naming this key.
+# FORGE_GATE_CORPUS_EXPORT_DIR = "/path/to/aura-code-corpus/data/export/v1"
+
+# JavaScript engines for the JS oracle (tools/js_oracle_harness.py). Default: PATH.
+# Set one when the engine is installed outside PATH, e.g. a per-user bun.
+# FORGE_GATE_NODE = "/usr/bin/node"
+# FORGE_GATE_BUN  = "/path/to/.bun/bin/bun"
+# FORGE_GATE_QJS  = "/path/to/qjs"
+
+# The isolation box (scout, design §4a.6). Optional. FORGE_GATE_BOX_USER makes bubblewrap
+# itself run as that unprivileged user (via `sudo -n -u`), so an escape lands as that user.
+# It then needs FORGE_GATE_BOX_ROOT: a folder the box user can reach, for the box's copies.
+# Deploy host: user fgbox (no login), root /var/lib/forge-gate-box (au:fgbox, 2770).
+# FORGE_GATE_BOX_USER = "fgbox"
+# FORGE_GATE_BOX_ROOT = "/var/lib/forge-gate-box"

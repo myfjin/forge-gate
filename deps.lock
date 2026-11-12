@@ -1,0 +1,66 @@
+# deps.lock — every route forge_gate/config.py resolves OUTSIDE the project, classed
+# (AURA project standard v0.3 §1, §2, §6; Forge Gate build step 1, 2026-11-11).
+# Checked by tests/test_deps_lock.py: a config key that resolves outside the project with
+# no row here, or a row for a key config.py does not have, is RED. Drift (the library
+# checkout not at `pin`) is graded by the live tier (pytest -m live), never only printed.
+# Classes: dependency = another project's output, pinned by commit or md5;
+#          host-binary = an interpreter or engine on the host, pinned by version where
+#          the result depends on it; runtime-root = per-host scratch, never hashed.
+
+[[route]]
+key = "FORGE_GATE_LIBRARY_DIR"
+class = "dependency"
+owner = "aura-pattern-library"
+pin = "commit c39c1dcc3adb0aa9bd04eb30f1f00045c14c88ce"
+pinned = "2026-11-11, GitHub master of the library (the 10 shipped references in src/forge_gate/reference/ are byte-identical at this commit; see ORIGIN.md)"
+used_by = "twin-consensus lens (language twins), tests -m live, library tools"
+debt = "KD-1, KD-3"
+
+[[route]]
+key = "FORGE_GATE_CORPUS_EXPORT_DIR"
+class = "dependency"
+owner = "aura-code-corpus"
+pin = "schema code-corpus-export/v1"
+pinned = "2026-11-11 (scout reads the newest export whose manifest run_status is OK and re-checks every sha256; a newer schema is BLIND, never read)"
+used_by = "forge-gate scout (corpus intake, design §12.4)"
+debt = ""
+
+[[route]]
+key = "FORGE_GATE_PYTHON"
+class = "host-binary"
+owner = "host"
+pin = "requires-python >= 3.10 (pyproject.toml); default sys.executable"
+pinned = "deploy host /usr/bin/python3 3.10.12, dev machine venv 3.11, 2026-11-11"
+used_by = "every child run: oracles, fixtures, guard, determinism, XMT mutants"
+
+[[route]]
+key = "FORGE_GATE_NODE"
+class = "host-binary"
+owner = "host"
+pin = "any; must be V8"
+pinned = "unpinned, 2026-11-11"
+used_by = "JS oracle (tools/js_oracle_harness.py)"
+
+[[route]]
+key = "FORGE_GATE_BUN"
+class = "host-binary"
+owner = "host"
+pin = "any; must be JavaScriptCore"
+pinned = "unpinned, 2026-11-11"
+used_by = "JS oracle"
+
+[[route]]
+key = "FORGE_GATE_QJS"
+class = "host-binary"
+owner = "host"
+pin = "any; must be QuickJS"
+pinned = "unpinned, 2026-11-11"
+used_by = "JS oracle"
+
+[[route]]
+key = "TYPESCRIPT"
+class = "dependency"
+owner = "npm (package-lock.json)"
+pin = "typescript per package-lock.json; installed by `npm ci` into node_modules/"
+pinned = "2026-11-11"
+used_by = "JS oracle type gate (node_modules/.bin/tsc); missing -> that gate reports unavailable"

@@ -1,0 +1,1 @@
+RAISED ValueError: degree must be non-negative, got -1

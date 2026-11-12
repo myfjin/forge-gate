@@ -1,0 +1,66 @@
+{
+  "version": "0.1.0",
+  "reference_origin": "forge_gate/reference/ORIGIN.md (library commit c39c1dcc3adb0aa9bd04eb30f1f00045c14c88ce)",
+  "patterns": {
+    "kmeans_clustering": {
+      "aura_path": "python/data-science/core_ml/kmeans_clustering.py",
+      "fixture": "kmeans_clustering",
+      "category": "core_ml",
+      "description": "k-Means clustering with seed-locked synthetic data."
+    },
+    "linear_regression_gd": {
+      "aura_path": "python/data-science/core_ml/linear_regression_gd.py",
+      "fixture": "linear_regression_gd",
+      "category": "core_ml",
+      "description": "Linear regression via batch gradient descent."
+    },
+    "knn_classifier": {
+      "aura_path": "python/data-science/core_ml/knn_classifier.py",
+      "fixture": "knn_classifier",
+      "category": "core_ml",
+      "description": "k-nearest neighbors classifier."
+    },
+    "logistic_regression": {
+      "aura_path": "python/data-science/core_ml/logistic_regression.py",
+      "fixture": "logistic_regression",
+      "category": "core_ml",
+      "description": "Binary logistic regression via gradient descent."
+    },
+    "naive_bayes_text": {
+      "aura_path": "python/data-science/core_ml/naive_bayes_text.py",
+      "fixture": "naive_bayes_text",
+      "category": "core_ml",
+      "description": "Multinomial Naive Bayes for text classification."
+    },
+    "polynomial_regression": {
+      "aura_path": "python/data-science/statistical_modeling/polynomial_regression.py",
+      "fixture": "polynomial_regression",
+      "category": "statistical_modeling",
+      "description": "Polynomial regression via Vandermonde least squares."
+    },
+    "decision_tree_id3": {
+      "aura_path": "python/data-science/core_ml/decision_tree_id3.py",
+      "fixture": "decision_tree_id3",
+      "category": "core_ml",
+      "description": "ID3 decision tree for categorical features."
+    },
+    "perceptron": {
+      "aura_path": "python/data-science/core_ml/perceptron.py",
+      "fixture": "perceptron",
+      "category": "core_ml",
+      "description": "Perceptron learning algorithm."
+    },
+    "ridge_regression_normal_eq": {
+      "aura_path": "python/data-science/core_ml/ridge_regression_normal_eq.py",
+      "fixture": "ridge_regression_normal_eq",
+      "category": "core_ml",
+      "description": "Ridge regression via normal equations."
+    },
+    "gradient_descent_momentum": {
+      "aura_path": "python/data-science/optimization_and_distances/gradient_descent_momentum.py",
+      "fixture": "gradient_descent_momentum",
+      "category": "optimization",
+      "description": "Gradient descent with momentum."
+    }
+  }
+}

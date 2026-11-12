@@ -1,0 +1,81 @@
+{
+ "_origin": {
+  "chaos_report.json": {
+   "sha256": "401d39e50e797ace94812304d09257979b28389e88217b80bd9ff29f07deb8ef",
+   "card_index": 0
+  },
+  "metamorphic_report.json": {
+   "sha256": "ba97d3c1e9987ccfb1b4e5665409735db1a3a03bc4317f987b27b65452c443c3",
+   "card_index": 0
+  },
+  "twin_divergence_report.json": {
+   "sha256": "68448f38ad672dda9490e42b557fb84f99bcd8ddacbb3972ad18c8766ec0adfe",
+   "card_index": 0
+  },
+  "invariant_mine_report.json": {
+   "sha256": "2be35cf5fe0255e35116659930257db45b3a0616bee411bedd93c459776096db",
+   "card_index": 0
+  }
+ },
+ "cards": [
+  {
+   "pattern": "python/system-administration/filesystem-integrity/atomic_write_temp_rename.py",
+   "technique": "chaos-fault-injection",
+   "severity": "info",
+   "class": "chaos-survival",
+   "fixture": "crash before rename commit",
+   "expected": "dest==OLD (no partial) & no temp litter",
+   "actual": "survival predicate held",
+   "verdict": "PASS",
+   "verdict_target": "PATTERN",
+   "confidence": "high",
+   "repro_cmd": "python3 chaos_scan.py atomic_write_temp_rename",
+   "oracle_coverage_kind": "chaos"
+  },
+  {
+   "pattern": "python/data-science/core_ml/decision_tree_id3.py",
+   "technique": "metamorphic-relations",
+   "severity": "info",
+   "class": "metamorphic-coverage",
+   "fixture": "metamorphic relations for decision_tree_id3",
+   "expected": "all behavioral laws hold",
+   "actual": "5/5 relations passed",
+   "why": "pattern obeys its scaling/shift/permutation/duplicate laws -> metamorphic positive oracle",
+   "verdict": "PASS",
+   "verdict_target": "PATTERN",
+   "confidence": "high",
+   "repro_cmd": "python3 metamorphic_scan.py decision_tree_id3",
+   "oracle_coverage_kind": "metamorphic"
+  },
+  {
+   "pattern": "ab_interleaving",
+   "technique": "twin-consensus",
+   "severity": "info",
+   "class": "xlang-consensus",
+   "fixture": "compiled twins: cpp·python",
+   "expected": "all language twins reach the same verdict",
+   "actual": "2 twins agree (all PASS)",
+   "verdict": "PASS",
+   "verdict_target": "PATTERN",
+   "confidence": "high",
+   "repro_cmd": "python3 twin_divergence.py ab_interleaving",
+   "oracle_coverage_kind": "xlang"
+  },
+  {
+   "pattern": "python/data-science/core_ml/linear_regression_gd.py",
+   "technique": "daikon-invariant-mining",
+   "severity": "info",
+   "class": "mined-invariant-proposal",
+   "fixture": "100 deterministic seeds over signed oracle",
+   "expected": "ratifiable invariant candidates (scalar ranges + relational ratios/signs)",
+   "actual": "mined 5 candidates (1 relational: ['ratio_w0_w1'])",
+   "why": "relational invariants (ratios/signs) catch what scalar thresholds miss; feeds the invariant-probe grid",
+   "verdict": "PROPOSAL",
+   "verdict_target": "HUMAN-RATIFICATION",
+   "ratified": false,
+   "confidence": "candidate",
+   "repro_cmd": "python3 invariant_mine.py harvest linear_regression_gd",
+   "oracle_coverage_kind": "invariant"
+  }
+ ]
+}

@@ -1,0 +1,702 @@
+[
+  {
+    "file": "tests/corpus/linear_regression_gd_canonical_good.py",
+    "pattern": "linear_regression_gd",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/kmeans_clustering_canonical_good.py",
+    "pattern": "kmeans_clustering",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/logistic_regression_canonical_good.py",
+    "pattern": "logistic_regression",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/decision_tree_id3_canonical_good.py",
+    "pattern": "decision_tree_id3",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/gradient_descent_momentum_canonical_good.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/knn_classifier_canonical_good.py",
+    "pattern": "knn_classifier",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/naive_bayes_text_canonical_good.py",
+    "pattern": "naive_bayes_text",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/perceptron_canonical_good.py",
+    "pattern": "perceptron",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/polynomial_regression_canonical_good.py",
+    "pattern": "polynomial_regression",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/ridge_regression_normal_eq_canonical_good.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "canonical_correct",
+    "expect": "PASS",
+    "note": "copied from examples/"
+  },
+  {
+    "file": "tests/corpus/linreg_normal_eq.py",
+    "pattern": "linear_regression_gd",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "closed-form via normal equations"
+  },
+  {
+    "file": "tests/corpus/linreg_sgd.py",
+    "pattern": "linear_regression_gd",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "stochastic gradient descent"
+  },
+  {
+    "file": "tests/corpus/linreg_early_stop.py",
+    "pattern": "linear_regression_gd",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "batch GD honouring params, gradient-norm early stopping"
+  },
+  {
+    "file": "tests/corpus/kmeans_kmeanspp.py",
+    "pattern": "kmeans_clustering",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "farthest-first initialization"
+  },
+  {
+    "file": "tests/corpus/kmeans_seed7_init.py",
+    "pattern": "kmeans_clustering",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "mean-centroid k-means, random index init seed 7 (single-init)"
+  },
+  {
+    "file": "tests/corpus/logreg_newtonish.py",
+    "pattern": "logistic_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "Newton-like larger step"
+  },
+  {
+    "file": "tests/corpus/logreg_high_lr.py",
+    "pattern": "logistic_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "higher learning rate"
+  },
+  {
+    "file": "tests/corpus/tree_gini.py",
+    "pattern": "decision_tree_id3",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "Gini impurity split"
+  },
+  {
+    "file": "tests/corpus/tree_depth3.py",
+    "pattern": "decision_tree_id3",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "shallower depth=3"
+  },
+  {
+    "file": "tests/corpus/gd_nesterov.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "Nesterov acceleration"
+  },
+  {
+    "file": "tests/corpus/gd_big_lr.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "larger learning rate"
+  },
+  {
+    "file": "tests/corpus/knn_weighted.py",
+    "pattern": "knn_classifier",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "inverse-distance weighted kNN"
+  },
+  {
+    "file": "tests/corpus/knn_k3.py",
+    "pattern": "knn_classifier",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "k=3 instead of k=5"
+  },
+  {
+    "file": "tests/corpus/nb_bernoulli.py",
+    "pattern": "naive_bayes_text",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "Bernoulli presence features"
+  },
+  {
+    "file": "tests/corpus/nb_laplace2.py",
+    "pattern": "naive_bayes_text",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "alpha=2 smoothing"
+  },
+  {
+    "file": "tests/corpus/perceptron_pocket.py",
+    "pattern": "perceptron",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "pocket perceptron"
+  },
+  {
+    "file": "tests/corpus/perceptron_avg.py",
+    "pattern": "perceptron",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "averaged perceptron"
+  },
+  {
+    "file": "tests/corpus/poly_direct.py",
+    "pattern": "polynomial_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "direct linear system"
+  },
+  {
+    "file": "tests/corpus/poly_scaled.py",
+    "pattern": "polynomial_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "scaled Vandermonde"
+  },
+  {
+    "file": "tests/corpus/ridge_ols.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "OLS lambda=0"
+  },
+  {
+    "file": "tests/corpus/ridge_jacobi.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "iterative Jacobi refinement"
+  },
+  {
+    "file": "tests/corpus/linreg_broken_sign.py",
+    "pattern": "linear_regression_gd",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "gradient ascent"
+  },
+  {
+    "file": "tests/corpus/linreg_broken_one_iter.py",
+    "pattern": "linear_regression_gd",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "one iteration only"
+  },
+  {
+    "file": "tests/corpus/linreg_broken_zero_lr.py",
+    "pattern": "linear_regression_gd",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "zero learning rate"
+  },
+  {
+    "file": "tests/corpus/kmeans_broken_farthest.py",
+    "pattern": "kmeans_clustering",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "assign farthest"
+  },
+  {
+    "file": "tests/corpus/kmeans_broken_no_update.py",
+    "pattern": "kmeans_clustering",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "never updates centroids"
+  },
+  {
+    "file": "tests/corpus/kmeans_broken_k2.py",
+    "pattern": "kmeans_clustering",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "uses k=2 instead of k=3"
+  },
+  {
+    "file": "tests/corpus/logreg_broken_sign.py",
+    "pattern": "logistic_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "gradient sign flipped"
+  },
+  {
+    "file": "tests/corpus/logreg_broken_one_iter.py",
+    "pattern": "logistic_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "one iteration only"
+  },
+  {
+    "file": "tests/corpus/logreg_broken_threshold.py",
+    "pattern": "logistic_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "threshold=0.0"
+  },
+  {
+    "file": "tests/corpus/tree_broken_majority.py",
+    "pattern": "decision_tree_id3",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "always majority class"
+  },
+  {
+    "file": "tests/corpus/tree_broken_random_split.py",
+    "pattern": "decision_tree_id3",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "random splits"
+  },
+  {
+    "file": "tests/corpus/gd_broken_no_momentum.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "momentum_gd equals vanilla"
+  },
+  {
+    "file": "tests/corpus/gd_broken_diverge.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "diverging step size"
+  },
+  {
+    "file": "tests/corpus/knn_broken_k1_noisy.py",
+    "pattern": "knn_classifier",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "k=1 overfits noise"
+  },
+  {
+    "file": "tests/corpus/knn_broken_wrong_distance.py",
+    "pattern": "knn_classifier",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "negative distance ranking"
+  },
+  {
+    "file": "tests/corpus/knn_broken_random.py",
+    "pattern": "knn_classifier",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "random predictions"
+  },
+  {
+    "file": "tests/corpus/nb_broken_no_smooth.py",
+    "pattern": "naive_bayes_text",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "no Laplace smoothing"
+  },
+  {
+    "file": "tests/corpus/nb_broken_ignore_words.py",
+    "pattern": "naive_bayes_text",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "ignores words"
+  },
+  {
+    "file": "tests/corpus/perceptron_broken_subtract.py",
+    "pattern": "perceptron",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "subtracts update"
+  },
+  {
+    "file": "tests/corpus/perceptron_broken_lr_tiny.py",
+    "pattern": "perceptron",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "always predicts class 0"
+  },
+  {
+    "file": "tests/corpus/poly_broken_degree1.py",
+    "pattern": "polynomial_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "fits degree 1"
+  },
+  {
+    "file": "tests/corpus/poly_broken_shuffle.py",
+    "pattern": "polynomial_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "shuffles true coeffs"
+  },
+  {
+    "file": "tests/corpus/ridge_broken_neg_rhs.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "negates RHS"
+  },
+  {
+    "file": "tests/corpus/ridge_broken_huge_lambda.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "lambda too large"
+  },
+  {
+    "file": "tests/corpus/linreg_cheat_const.py",
+    "pattern": "linear_regression_gd",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "constant unrelated values"
+  },
+  {
+    "file": "tests/corpus/linreg_known_answer_hardcode.py",
+    "pattern": "linear_regression_gd",
+    "kind": "known_answer",
+    "expect": "FAIL",
+    "note": "known-answer cheat -- CAUGHT by metamorphic; manifest previously assumed it slipped"
+  },
+  {
+    "file": "tests/corpus/kmeans_cheat_random_assign.py",
+    "pattern": "kmeans_clustering",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "random assignments"
+  },
+  {
+    "file": "tests/corpus/logreg_cheat_all_ones.py",
+    "pattern": "logistic_regression",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "predict all ones"
+  },
+  {
+    "file": "tests/corpus/tree_cheat_const.py",
+    "pattern": "decision_tree_id3",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "always class 0"
+  },
+  {
+    "file": "tests/corpus/gd_cheat_zeros.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "returns zero loss zero iters"
+  },
+  {
+    "file": "tests/corpus/knn_cheat_majority.py",
+    "pattern": "knn_classifier",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "training majority"
+  },
+  {
+    "file": "tests/corpus/nb_cheat_always_0.py",
+    "pattern": "naive_bayes_text",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "always predict 0"
+  },
+  {
+    "file": "tests/corpus/perceptron_cheat_all_1.py",
+    "pattern": "perceptron",
+    "kind": "cheat",
+    "expect": "FAIL",
+    "note": "always predict 1"
+  },
+  {
+    "file": "tests/corpus/poly_known_answer_hardcode.py",
+    "pattern": "polynomial_regression",
+    "kind": "known_answer",
+    "expect": "FAIL",
+    "note": "known-answer cheat -- CAUGHT by metamorphic; manifest previously assumed it slipped"
+  },
+  {
+    "file": "tests/corpus/ridge_known_answer_hardcode.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "known_answer",
+    "expect": "UNSTABLE",
+    "note": "known-answer cheat -- CAUGHT by metamorphic; manifest previously assumed it slipped"
+  },
+  {
+    "file": "tests/corpus/linreg_edge_syntax.py",
+    "pattern": "linear_regression_gd",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "syntax error"
+  },
+  {
+    "file": "tests/corpus/linreg_edge_nan.py",
+    "pattern": "linear_regression_gd",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "NaN weights"
+  },
+  {
+    "file": "tests/corpus/kmeans_edge_empty.py",
+    "pattern": "kmeans_clustering",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "empty centroids"
+  },
+  {
+    "file": "tests/corpus/logreg_edge_nan.py",
+    "pattern": "logistic_regression",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "NaN weights"
+  },
+  {
+    "file": "tests/corpus/tree_edge_syntax.py",
+    "pattern": "decision_tree_id3",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "syntax error"
+  },
+  {
+    "file": "tests/corpus/gd_edge_timeout.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "edge",
+    "expect": "PASS",
+    "note": "high precision within timeout"
+  },
+  {
+    "file": "tests/corpus/knn_edge_empty.py",
+    "pattern": "knn_classifier",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "empty training set"
+  },
+  {
+    "file": "tests/corpus/nb_edge_empty.py",
+    "pattern": "naive_bayes_text",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "empty training corpus"
+  },
+  {
+    "file": "tests/corpus/perceptron_edge_random_weights.py",
+    "pattern": "perceptron",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "random large weights"
+  },
+  {
+    "file": "tests/corpus/poly_edge_singular.py",
+    "pattern": "polynomial_regression",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "singular matrix"
+  },
+  {
+    "file": "tests/corpus/ridge_edge_singular.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "NaN weights"
+  },
+  {
+    "file": "tests/corpus/kmeans_custom_seed.py",
+    "pattern": "kmeans_clustering",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "different deterministic seed"
+  },
+  {
+    "file": "tests/corpus/logreg_more_iters.py",
+    "pattern": "logistic_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "more iterations"
+  },
+  {
+    "file": "tests/corpus/tree_depth10.py",
+    "pattern": "decision_tree_id3",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "ignores max_depth and uses depth 10"
+  },
+  {
+    "file": "tests/corpus/gd_tight_tolerance.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "tighter tolerance"
+  },
+  {
+    "file": "tests/corpus/knn_manhattan.py",
+    "pattern": "knn_classifier",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "Manhattan distance"
+  },
+  {
+    "file": "tests/corpus/nb_alpha0.5.py",
+    "pattern": "naive_bayes_text",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "alpha=0.5 smoothing"
+  },
+  {
+    "file": "tests/corpus/perceptron_lr0.5.py",
+    "pattern": "perceptron",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "lr=0.5"
+  },
+  {
+    "file": "tests/corpus/linreg_momentum.py",
+    "pattern": "linear_regression_gd",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "batch GD with momentum"
+  },
+  {
+    "file": "tests/corpus/logreg_momentum.py",
+    "pattern": "logistic_regression",
+    "kind": "alternative_correct",
+    "expect": "PASS",
+    "note": "batch GD with momentum"
+  },
+  {
+    "file": "tests/corpus/linreg_broken_flip_features.py",
+    "pattern": "linear_regression_gd",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "swapped weights"
+  },
+  {
+    "file": "tests/corpus/kmeans_broken_k5.py",
+    "pattern": "kmeans_clustering",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "k=5 instead of k=3"
+  },
+  {
+    "file": "tests/corpus/logreg_broken_zero_lr.py",
+    "pattern": "logistic_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "zero learning rate"
+  },
+  {
+    "file": "tests/corpus/gd_broken_momentum_slow.py",
+    "pattern": "gradient_descent_momentum",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "momentum slower than vanilla"
+  },
+  {
+    "file": "tests/corpus/knn_broken_k_all.py",
+    "pattern": "knn_classifier",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "k equals training size"
+  },
+  {
+    "file": "tests/corpus/nb_broken_flip_labels.py",
+    "pattern": "naive_bayes_text",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "flipped training labels"
+  },
+  {
+    "file": "tests/corpus/perceptron_broken_zero_lr.py",
+    "pattern": "perceptron",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "zero learning rate"
+  },
+  {
+    "file": "tests/corpus/poly_broken_missing_coeff.py",
+    "pattern": "polynomial_regression",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "only two coefficients"
+  },
+  {
+    "file": "tests/corpus/ridge_broken_neg_weights.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "negated true weights"
+  },
+  {
+    "file": "tests/corpus/linreg_broken_high_lr.py",
+    "pattern": "linear_regression_gd",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "diverging learning rate"
+  },
+  {
+    "file": "tests/corpus/tree_broken_reversed_split.py",
+    "pattern": "decision_tree_id3",
+    "kind": "broken",
+    "expect": "FAIL",
+    "note": "always splits on feature 1"
+  },
+  {
+    "file": "tests/corpus/linreg_known_answer_true_weights.py",
+    "pattern": "linear_regression_gd",
+    "kind": "known_answer",
+    "expect": "FAIL",
+    "note": "known-answer cheat -- CAUGHT by metamorphic; manifest previously assumed it slipped"
+  },
+  {
+    "file": "tests/corpus/linreg_edge_none.py",
+    "pattern": "linear_regression_gd",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "returns None"
+  },
+  {
+    "file": "tests/corpus/ridge_edge_none.py",
+    "pattern": "ridge_regression_normal_eq",
+    "kind": "edge",
+    "expect": "FAIL",
+    "note": "returns None"
+  }
+]

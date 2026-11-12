@@ -1,0 +1,6 @@
+# Anchors that intentionally extend past the changed region.
+# Each entry is repr(old) for a Mutant whose 'old' could be trimmed and
+# still be unique in the target. May only SHRINK -- growth is a bug.
+# Ratified 2026-09-05 (BRIEF S3.4 port).
+'    if nan_objections:\n        return "FAIL"'
+'        if not math.isfinite(p):\n            continue'

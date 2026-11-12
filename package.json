@@ -1,0 +1,11 @@
+{
+  "name": "forge-gate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node dev tools for Forge Gate's JS oracle (tools/js_oracle_harness.py runs node_modules/.bin/tsc). Not an npm package.",
+  "author": "Illia Hladkyi <ihladkyi@realityoptimizer.app>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

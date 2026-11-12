@@ -1,0 +1,1 @@
+RAISED ValueError: max_iterations must be non-negative, got -1
