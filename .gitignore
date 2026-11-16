@@ -17,3 +17,6 @@ config.toml
 .DS_Store
 # Lens scratch files (forge_gate/config.py scratch_dir).
 tmp/
+
+# Runtime ledgers and streams (the default ledger directory); never in git.
+/data/

@@ -51,9 +51,11 @@ forge_gate = ["data/*.json", "reference/*.py", "reference/ORIGIN.md"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 timeout = 60
-addopts = "-m 'not live and not gates and not js'"
+addopts = "-m 'not live and not gates and not js and not brain and not network'"
 markers = [
     "live: needs FORGE_GATE_LIBRARY_DIR (the pattern library); deselected by default, run with -m live",
     "gates: slow shell gates (1-15 min each); run with -m gates",
     "js: JS oracle gates; need `npm ci` and node, bun, qjs; run with -m js",
+    "network: contacts a real named host (the fetch mode's reach check); run with -m network",
+    "brain: learn's rows read by a COPY of a deployed AURA Brain build; needs FG_TEST_BRAIN_* (see the test), run with -m brain",
 ]
