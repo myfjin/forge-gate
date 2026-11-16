@@ -26,3 +26,26 @@
 # Deploy host: user fgbox (no login), root /var/lib/forge-gate-box (au:fgbox, 2770).
 # FORGE_GATE_BOX_USER = "fgbox"
 # FORGE_GATE_BOX_ROOT = "/var/lib/forge-gate-box"
+
+# The trust root for `forge-gate learn --github` (step 7, KD-13). The maintainer's ratify key id, pinned
+# here, outside the repo, so a commit that swaps scout/allowed_signers cannot move it. NO default:
+# unset, every GitHub file is BLIND(unsigned). Form: operator=<16 hex>.
+# FORGE_GATE_RATIFY_PIN = "operator=<16-hex key id>"
+
+# `forge-gate learn` (design §4.5, build step 6b-1). NO defaults; unset, learn fails naming the key.
+# The Brain's data folder (its paths.DATA). learn appends ONLY to scout's own files there,
+# scout_registry{,_r,_rust,_sysadmin}.jsonl, which must already exist (the switch-on creates
+# them empty); it only reads the real ladders. It must hold logic_registry.jsonl.
+# NEVER point a test or a rehearsal at the live folder.
+# FORGE_GATE_BRAIN_DATA = "/path/to/aura-brain/data"
+# Scout's runtime state folder: report cards (learn_report.json) and scout_learn.lock.
+# FORGE_GATE_SCOUT_DIR = "/path/to/scout-state"
+# The lock file the registry build holds (`flock`) while it rewrites the registry. learn holds
+# it around its append. It must already exist. Deploy host: the hourly build's lock.
+# FORGE_GATE_REGISTRY_BUILD_LOCK = "/path/to/build.lock"
+
+# The ledgers (design §4a.5, build step 8a). NO default: unset, the ledgers are OFF and nothing is
+# recorded (scout and verify say so). Standard location: <checkout>/data/ledgers (gitignored).
+# The folder, exposure.jsonl, outcome.jsonl and ledger.lock must already exist: the switch-on
+# creates them (owner + ACL), never a writer. One shared ledger per host.
+# FORGE_GATE_LEDGER_DIR = "/path/to/forge-gate/data/ledgers"

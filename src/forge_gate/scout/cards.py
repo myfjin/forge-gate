@@ -8,6 +8,11 @@ two fields and never removes one:
 
 - ``id``: the namespaced scout id (ids.py). The registry build matches it verbatim.
 - ``source``: always ``"scout"``.
+- ``kind``: the oracle kind again, equal to ``oracle_coverage_kind``. The deployed reader
+  (Brain 6be79ec, ``honest_pass.apply_scout_cards``) reads the kind from ``kind`` (or
+  ``oracle_kind``), never from ``oracle_coverage_kind``; a card without it makes the whole
+  registry build fail with "unknown kind None". Found in step 6b-1 (2026-11-13): 3a's
+  cards carried no ``kind``, so not one of them could have been read.
 
 ``pattern`` carries the same id, so a reader that still joins by ``stem(pattern)``
 gets a key that keeps its ``scout:`` prefix and can match no library row.
@@ -29,7 +34,7 @@ VALIDATOR_FIELDS = (
     "verdict", "verdict_target", "confidence", "repro_cmd", "oracle_coverage_kind",
 )
 OPTIONAL_FIELDS = ("why", "ratified")
-SCOUT_FIELDS = ("id", "source")
+SCOUT_FIELDS = ("id", "source", "kind")
 SOURCE = "scout"
 
 # Oracle kinds honest_pass knows (honest_pass.py: xlang, positive, chaos, metamorphic,
@@ -70,6 +75,9 @@ def check_scout_card(card: dict) -> None:
         raise BadCard("pattern must equal id (a stem() reader must never see a bare path)")
     if card["oracle_coverage_kind"] not in KINDS:
         raise BadCard(f"oracle_coverage_kind {card['oracle_coverage_kind']!r} not in {sorted(KINDS)}")
+    if card.get("kind") != card["oracle_coverage_kind"]:  # the field the Brain's reader joins on
+        raise BadCard(f"kind {card.get('kind')!r} must equal oracle_coverage_kind "
+                      f"{card['oracle_coverage_kind']!r}")
     if card["verdict"] not in VERDICTS:
         raise BadCard(f"verdict {card['verdict']!r} not in {sorted(VERDICTS)}")
     extra = set(card) - set(VALIDATOR_FIELDS) - set(OPTIONAL_FIELDS) - set(SCOUT_FIELDS)
@@ -84,6 +92,7 @@ def make_card(scout_id: str, *, kind: str, verdict: str, technique: str, fixture
     card = {
         "id": scout_id,
         "source": SOURCE,
+        "kind": kind,
         "pattern": scout_id,
         "technique": technique,
         "severity": severity,
@@ -103,8 +112,13 @@ def make_card(scout_id: str, *, kind: str, verdict: str, technique: str, fixture
     return card
 
 
-def write_report(path: Path, cards: list[dict]) -> Path:
-    """Write ``{"cards": [...]}`` atomically (temp file + rename, as honest_pass does)."""
+# The registry build reads the report as another user (au writes, bu reads on the deploy host):
+# mkstemp's 0600 would make the hourly build fail with PermissionError (6b-1 review F4).
+REPORT_MODE = 0o644
+
+
+def check_report(cards: list[dict]) -> None:
+    """Every check write_report makes, without writing. Raises BadCard."""
     for c in cards:
         check_scout_card(c)
     kinds_by_id: dict = {}
@@ -113,18 +127,39 @@ def write_report(path: Path, cards: list[dict]) -> Path:
     dup = sorted(i for i, ks in kinds_by_id.items() if len(ks) != len(set(ks)))
     if dup:
         raise BadCard(f"two cards for the same id and kind: {dup}")
+
+
+def stage_report(path: Path, cards: list[dict]) -> Path:
+    """Check the cards and write them to a temp file next to ``path``; return the temp file.
+    The caller swaps it in with ``os.replace`` (or deletes it). Lets a writer that changes two
+    files (learn: registry + report) run every check and every write that can fail before
+    the first file changes (6b-1 review F2)."""
+    check_report(cards)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=path.parent)
     try:
+        os.fchmod(fd, REPORT_MODE)
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             json.dump({"cards": cards}, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
-        os.replace(tmp, path)
+            fh.flush()
+            os.fsync(fh.fileno())
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise
-    return path
+    return Path(tmp)
+
+
+def write_report(path: Path, cards: list[dict]) -> Path:
+    """Write ``{"cards": [...]}`` atomically (temp file + rename, as honest_pass does)."""
+    tmp = stage_report(path, cards)
+    try:
+        os.replace(tmp, path)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+    return Path(path)
 
 
 def load_report(path: Path) -> list[dict]:

@@ -24,6 +24,11 @@ FORGE_GATE_LIBRARY_DIR     other project   NONE: unset fails, naming the key
 FORGE_GATE_NODE/BUN/QJS    host binary     ``shutil.which`` (PATH), else BLIND
 FORGE_GATE_SCRATCH         in-project      ``<home>/tmp`` (created on demand), else the system temp dir
 FORGE_GATE_PYTHON          host binary     ``sys.executable`` (the interpreter running Forge Gate)
+FORGE_GATE_CORPUS_EXPORT_DIR  other project  NONE: unset fails, naming the key
+FORGE_GATE_BRAIN_DATA      other project   NONE: the Brain's data folder (``learn`` appends to scout_registry*.jsonl there)
+FORGE_GATE_SCOUT_DIR       runtime state   NONE: scout's state folder (report cards, learn lock)
+FORGE_GATE_REGISTRY_BUILD_LOCK other project NONE: the lock file the registry build holds
+FORGE_GATE_LEDGER_DIR      runtime state   NONE: the exposure + outcome ledgers (step 8a); unset = ledgers OFF
 =========================  ==============  =========================================
 """
 
@@ -47,6 +52,16 @@ CODE: Path = Path(__file__).resolve().parents[2]  # src/forge_gate/config.py -> 
 
 LIBRARY_KEY = "FORGE_GATE_LIBRARY_DIR"
 CORPUS_KEY = "FORGE_GATE_CORPUS_EXPORT_DIR"
+# `forge-gate learn` (design §4.5, build step 6b-1). None of the three has a default: each is a
+# route into another project's live state (or scout's own), and a guessed path there writes
+# the wrong registry or locks a file nobody else locks.
+BRAIN_DATA_KEY = "FORGE_GATE_BRAIN_DATA"
+SCOUT_DIR_KEY = "FORGE_GATE_SCOUT_DIR"
+BUILD_LOCK_KEY = "FORGE_GATE_REGISTRY_BUILD_LOCK"
+LEARN_KEYS = (BRAIN_DATA_KEY, SCOUT_DIR_KEY, BUILD_LOCK_KEY)
+# The ledgers (design §4a.5, build step 8a, DECISIONS-8a G1). No default: unset means the
+# ledgers are switched OFF and nothing is recorded; setting it is the switch-on.
+LEDGER_KEY = "FORGE_GATE_LEDGER_DIR"
 
 
 class NotConfigured(RuntimeError):
@@ -147,6 +162,74 @@ def corpus_export_dir() -> Path:
     p = _as_path(raw)
     if not p.is_dir():
         raise NotConfigured(f"{CORPUS_KEY}={p} is not a directory ({where()})")
+    return p
+
+
+def brain_data() -> Path:
+    """The Brain's data folder: its ``paths.DATA`` (deploy host:
+    ``/home/me/Projects/aura-brain/data``). ``learn`` appends to scout's own ladder files there
+    (``scout_registry*.jsonl``, 6E's decision A, 2026-11-13) and reads the real ladders for its
+    duplicate check. No default. It must be an existing folder holding ``logic_registry.jsonl``:
+    a typo, or the Brain's checkout root instead of its data folder, would otherwise pass."""
+    raw = configured(BRAIN_DATA_KEY)
+    if raw is None:
+        raise NotConfigured(
+            f"{BRAIN_DATA_KEY} is not set. Set it in the environment or in config.toml [paths] "
+            f"to the Brain's data folder ({where()}). Only `forge-gate learn` needs it.")
+    p = _as_path(raw)
+    if not p.is_dir():
+        raise NotConfigured(f"{BRAIN_DATA_KEY}={p} is not an existing directory ({where()})")
+    if not (p / "logic_registry.jsonl").is_file():
+        raise NotConfigured(f"{BRAIN_DATA_KEY}={p} holds no logic_registry.jsonl: not the Brain's "
+                            f"data folder ({where()})")
+    return p
+
+
+def scout_dir() -> Path:
+    """Scout's runtime state folder (design §4.5): report cards, ``scout_learn.lock``. Never in
+    git. No default, and it must already exist (a typo would otherwise create a folder the
+    registry build never reads)."""
+    raw = configured(SCOUT_DIR_KEY)
+    if raw is None:
+        raise NotConfigured(
+            f"{SCOUT_DIR_KEY} is not set. Set it in the environment or in config.toml [paths] "
+            f"to scout's state folder ({where()}). Only `forge-gate learn` needs it.")
+    p = _as_path(raw)
+    if not p.is_dir():
+        raise NotConfigured(f"{SCOUT_DIR_KEY}={p} is not an existing directory ({where()})")
+    return p
+
+
+def ledger_dir() -> Path:
+    """The ledgers' folder (``exposure.jsonl``, ``outcome.jsonl``, ``ledger.lock``; standard §4
+    ``data/ledgers/``, not in git). No default, and it must already exist: the switch-on creates
+    it and its files with their owner and ACL, never a writer."""
+    raw = configured(LEDGER_KEY)
+    if raw is None:
+        raise NotConfigured(
+            f"{LEDGER_KEY} is not set: the ledgers are off. Set it in the environment or in "
+            f"config.toml [paths] to the ledger folder ({where()}).")
+    p = _as_path(raw)
+    if not p.is_dir():
+        raise NotConfigured(f"{LEDGER_KEY}={p} is not an existing directory ({where()})")
+    return p
+
+
+def registry_build_lock() -> Path:
+    """The lock file the registry build holds while it rewrites the registry (the maintainer L1,
+    2026-11-13). On the deploy host: the file bu's hourly ``flock -n`` names. No default, and it
+    must already exist: a lock file learn created itself would be one the build never takes,
+    so holding it would protect nothing."""
+    raw = configured(BUILD_LOCK_KEY)
+    if raw is None:
+        raise NotConfigured(
+            f"{BUILD_LOCK_KEY} is not set. Set it in the environment or in config.toml [paths] "
+            f"to the lock file the registry build holds ({where()}). Only `forge-gate learn` needs it.")
+    p = _as_path(raw)
+    if not p.is_file():
+        raise NotConfigured(
+            f"{BUILD_LOCK_KEY}={p} does not exist. learn never creates it: it must be the file "
+            f"the registry build locks ({where()})")
     return p
 
 

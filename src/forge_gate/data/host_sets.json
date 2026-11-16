@@ -1,0 +1,7 @@
+{
+  "_doc": "Fetch mode's named host sets (design §4a.6 V43-1). Widening a set is a diff here. Decided 2026-11-14 (DECISIONS-7-github G1): github-git for the step-7 cpython fetch; pypi configured, used by no step-7 fetch.",
+  "sets": {
+    "github-git": ["github.com:443"],
+    "pypi": ["pypi.org:443", "files.pythonhosted.org:443"]
+  }
+}

@@ -104,11 +104,15 @@ def _shipped_files():
 # Ported engine files keep their source byte for byte (design §2.3); their header cites the
 # source path and the frozen body may name paths of its old home. Each is md5-pinned by its own
 # test and runs only inside the isolation box. The list is exact, so it cannot grow unnoticed.
-PORTED_EXEMPT = {"src/forge_gate/scout/engines/executor_port.py"}
+# step 6b-2 adds the chaos port (review item, named in the 6b-2 ledger row): its LIB default is
+# never used; chaos_runner.py points LIB at a staged copy of the pinned library.
+PORTED_EXEMPT = {"src/forge_gate/scout/engines/executor_port.py",
+                 "src/forge_gate/scout/engines/chaos_port.py"}
 
 
 def test_ported_exemptions_are_exact_and_carry_their_header():
-    assert PORTED_EXEMPT == {"src/forge_gate/scout/engines/executor_port.py"}   # pinned: widening it is a review item
+    assert PORTED_EXEMPT == {"src/forge_gate/scout/engines/executor_port.py",
+                             "src/forge_gate/scout/engines/chaos_port.py"}   # pinned: widening it is a review item
     for rel in PORTED_EXEMPT:
         assert (REPO / rel).read_text().startswith("# Ported from "), rel
 

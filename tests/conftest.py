@@ -5,7 +5,8 @@
    KD-2), so point it at this checkout unless the caller already chose one.
 2. Outside `pytest -m live`, the library route is switched off: an exported
    FORGE_GATE_LIBRARY_DIR is removed, and the host's config.toml is replaced by a copy
-   without that key. On the deploy host the key switches the twin lens onto the live
+   without that key. `learn`'s three routes (step 6b-1) are removed the same way in EVERY
+   tier, live included: on the deploy host they name the Brain's live registry. On the deploy host the key switches the twin lens onto the live
    library and changes verdicts (seen 2026-11-11, KNOWN-DEBT KD-1). Every other key
    (JS engines, interpreter, scratch) still applies: the JS tier needs them.
 """
@@ -17,6 +18,11 @@ REPO = Path(__file__).resolve().parents[1]
 os.environ.setdefault("FORGE_GATE_HOME", str(REPO))
 
 LIBRARY_KEY = "FORGE_GATE_LIBRARY_DIR"
+# `learn`'s routes (step 6b-1) point at the Brain's live registry and the build's lock on the
+# deploy host. The suite never inherits them: each learn test sets its own, inside tmp_path.
+LEARN_KEYS = ("FORGE_GATE_BRAIN_DATA", "FORGE_GATE_SCOUT_DIR", "FORGE_GATE_REGISTRY_BUILD_LOCK",
+              # step 8a: the ledgers. A test never writes a host's real ledger; each sets its own.
+              "FORGE_GATE_LEDGER_DIR")
 
 
 def _live_selected(markexpr: str) -> bool:
@@ -24,14 +30,16 @@ def _live_selected(markexpr: str) -> bool:
     return "live" in m and "not live" not in m
 
 
-def _config_without_library() -> None:
+def _config_without(drop) -> None:
     from forge_gate import config
 
     cf = config.config_file()
     raw = config._load() if cf is not None and cf.is_file() else {}
     keep = {k: str(config._as_path(v)) if not str(v).startswith("/") else str(v)
-            for k, v in raw.items() if k != LIBRARY_KEY and isinstance(v, str)}
-    fd, path = tempfile.mkstemp(prefix="forge-gate-test-config-", suffix=".toml")
+            for k, v in raw.items() if k not in drop and isinstance(v, str)}
+    tmpdir = REPO / "tmp"   # gitignored; never the system temp dir (/tmp on the deploy host)
+    tmpdir.mkdir(exist_ok=True)
+    fd, path = tempfile.mkstemp(prefix="forge-gate-test-config-", suffix=".toml", dir=tmpdir)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write("[paths]\n")
         for k, v in sorted(keep.items()):
@@ -52,9 +60,12 @@ def pytest_unconfigure(config):
 
 
 def pytest_configure(config):
-    if not _live_selected(config.option.markexpr or ""):
+    live = _live_selected(config.option.markexpr or "")
+    for k in LEARN_KEYS:  # always, live tier included
+        os.environ.pop(k, None)
+    if not live:
         os.environ.pop(LIBRARY_KEY, None)
-        _config_without_library()
+    _config_without(LEARN_KEYS + (() if live else (LIBRARY_KEY,)))
 
 
 def pytest_report_header(config):

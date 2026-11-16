@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from .. import config, ledger
 from . import behaviour, box, corpus, rule2, shape, shape_lens
 from .outcomes import BLIND, FOUND, blind, clean, found
 
@@ -114,7 +115,117 @@ def run(path: Path, export_root: Path | None = None) -> dict:
     for pool, trust in OTHER_POOLS:
         rep["related"][pool] = {"trust": trust, "outcome": blind("pool not in slice 1")}
     rep["change"] = blind("no baseline: not built in slice 1")
+    checks["exposure"] = _expose(rep)
     return rep
+
+
+# Lens name in the ledger -> where its ranked hits sit in the report.
+EXPOSED = (("shape", "shape_hits"), ("behaviour", "behaviour_hits"))
+# Scout is advisory: it waits at most this long for another ledger writer (8a s2 review F5).
+EXPOSE_WAIT = 2.0
+# The comment a handed-out snippet carries (V41-2): `#` unless the language uses `//`.
+SLASH_LANGS = frozenset({"c", "cpp", "javascript", "typescript", "go", "rust", "java"})
+
+
+def _expose(rep: dict):
+    """Writer ``scout-search`` (design §4a.5, build step 8a s2): every result this report SHOWS
+    gets one exposure row and a result id. Advisory: a ledger that is off or cannot be written
+    never changes the report's exit code; it shows as BLIND here (DECISIONS-8a G6)."""
+    c = rep["related"].get("corpus", {})
+    hits = [(h, {"lens": lens, "rank": rank, "score": h["score"], "pool": h["pool"], "trust": h["trust"],
+                 "item": f"{h['pool']}:{h['item_id']}"})
+            for lens, key in EXPOSED for rank, h in enumerate(c.get(key) or [], 1)]
+    if not ledger.enabled():
+        return blind(f"ledger-off: {config.LEDGER_KEY} unset; nothing recorded")
+    if not hits:
+        return clean("no result shown; nothing to record")
+    try:
+        qid, rows = ledger.record_exposure(query_sha256=rep["sha256"], query_lang=rep["language"],
+                                           hits=[e for _, e in hits], wait=EXPOSE_WAIT)
+    except (ledger.LedgerError, config.NotConfigured, OSError) as e:
+        return blind(f"ledger-unwritable: {e}")
+    for (h, _), row in zip(hits, rows):
+        h["result_id"] = row["result_id"]
+    return found(f"query {qid}: {len(rows)} result(s) recorded")
+
+
+def show(rid: str) -> tuple[int, str]:
+    """`forge-gate scout --show <result-id>`: hand out the code behind a result, with its result id
+    as the first line (V41-2). Reads only; showing or copying never scores (§4a.5)."""
+    if not ledger.RESULT_ID.fullmatch(rid or ""):
+        return 2, f"{rid!r} is not a result id (fgr-<query>-<lens>-<rank>)"
+    if not ledger.enabled():
+        return 2, f"the ledgers are off ({config.LEDGER_KEY} unset): result ids exist only in a ledger"
+    try:
+        row = ledger.view().exposure.get(rid)
+    except (ledger.LedgerError, config.NotConfigured) as e:
+        return 2, f"cannot read the exposure ledger: {e}"
+    if row is None:
+        return 2, f"{rid} is not in this host's exposure ledger"
+    pool, _, item_id = row["item"].partition(":")
+    if pool != corpus.POOL:
+        return 2, f"{rid}: pool {pool!r} is not handed out yet (8a: corpus only)"
+    intake = corpus.read_export()
+    if intake.outcome.kind != FOUND:
+        return 2, f"{rid}: corpus {intake.outcome.label()}"
+    m = next((i for i in intake.items if i["item_id"] == item_id), None)
+    if m is None:
+        return 2, f"{rid}: item {item_id} is not in the newest OK export {intake.run_id}"
+    if not _id_matches(item_id, m["body"]):
+        return 2, (f"{rid}: item {item_id} does not match its body's sha256 in export {intake.run_id}: "
+                   "not handed out (the code might not be what was shown)")
+    mark = "//" if m.get("lang") in SLASH_LANGS else "#"
+    # An older id line inside the body (code handed out before, kept, and exported again) would
+    # credit that older result too: drop it, so the snippet names exactly one result (review F1).
+    lines = [ln for ln in m["body"].splitlines(keepends=True)
+             if not ledger.RESULT_COMMENT.fullmatch(ln.rstrip("\r\n"))]
+    if lines and not lines[-1].endswith("\n"):
+        lines[-1] += "\n"
+    head = f"{mark} forge-gate-result: {rid}\n"
+    at = 1 if lines and lines[0].startswith("#!") else 0      # keep a shebang first (review F6)
+    return 0, "".join(lines[:at] + [head] + lines[at:])
+
+
+def _code_lines(text: str) -> list:
+    """Non-blank lines, stripped of indentation and trailing space, id comment lines dropped."""
+    return [ln.strip() for ln in text.splitlines()
+            if ln.strip() and not ledger.RESULT_COMMENT.fullmatch(ln.rstrip("\r\n"))]
+
+
+def snippet_missing(rid: str, text: str) -> str:
+    """'' when the code behind ``rid`` is in ``text``, else why not (8a s3 review F1).
+
+    An oracle outcome credits the CODE, so the id comment alone is not enough: the handed-out
+    body's lines must appear in the file, contiguous, in order (indentation and blank lines may
+    differ, an edited line may not). Corpus items only; anything else cannot be checked."""
+    try:
+        row = ledger.view().exposure.get(rid)
+    except (ledger.LedgerError, config.NotConfigured) as e:
+        return f"cannot read the exposure ledger: {e}"
+    if row is None:
+        return f"{rid} is not in this host's exposure ledger"
+    pool, _, item_id = row["item"].partition(":")
+    if pool != corpus.POOL:
+        return f"pool {pool!r}: cannot check that its code is in the file"
+    intake = corpus.read_export()
+    if intake.outcome.kind != FOUND:
+        return f"cannot check that the code is in the file: corpus {intake.outcome.label()}"
+    m = next((i for i in intake.items if i["item_id"] == item_id), None)
+    if m is None or not _id_matches(item_id, m["body"]):
+        return f"cannot check that the code is in the file: item {item_id} not readable in {intake.run_id}"
+    want, have = _code_lines(m["body"]), _code_lines(text)
+    if not want:
+        return f"item {item_id} has no code lines"
+    n = len(want)
+    if any(have[i:i + n] == want for i in range(len(have) - n + 1)):
+        return ""
+    return f"the code of {item_id} is not in the file (the id comment alone does not count)"
+
+
+def _id_matches(item_id: str, body: str) -> bool:
+    """A corpus item id is ``c_`` + the first 16 hex of sha256(body) (CODE-CORPUS-DESIGN §3; measured
+    on export 20261115T102505Z: 1431 of 1431)."""
+    return item_id == "c_" + hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
 
 
 def _lbl(o):
@@ -136,10 +247,12 @@ def render(rep: dict) -> str:
     for name, o in c["lenses"].items():
         out.append(f"    {name:<10} {_lbl(o)}")
     for h in c["shape_hits"]:
-        out.append(f"      J={h['score']:.2f}  {h['item_id']}  pool={h['pool']} trust={h['trust']} kind={h['kind']}  reason: shape shingles")
+        out.append(f"      J={h['score']:.2f}  {h['item_id']}  pool={h['pool']} trust={h['trust']} kind={h['kind']}  reason: shape shingles"
+                   + (f"  id={h['result_id']}" if h.get("result_id") else ""))
     for h in c.get("behaviour_hits", []):   # 6E 6a pre-note: the pair is named, so it can be re-run
         out.append(f"      B={h['score']:.2f}  {h['item_id']}  pool={h['pool']} trust={h['trust']} kind={h['kind']}  "
-                   f"reason: same outputs on {h['agree']}/{h['considered']} inputs ({h['query_fn']} vs {h['cand_fn']})")
+                   f"reason: same outputs on {h['agree']}/{h['considered']} inputs ({h['query_fn']} vs {h['cand_fn']})"
+                   + (f"  id={h['result_id']}" if h.get("result_id") else ""))
     for pool in ("library", "registry", "github"):
         r = rep["related"][pool]
         out.append(f"  {pool} ({r['trust']}): {r['outcome'].label()}")

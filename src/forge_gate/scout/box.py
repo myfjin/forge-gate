@@ -7,8 +7,14 @@ has only its own loopback), no home folder and no secrets file visible (only /us
 own process tree, killed with its parent. If FORGE_GATE_BOX_USER is set, bubblewrap itself
 runs as that unprivileged user (sudo -n -u), so an escape lands as that user, not ours.
 
-FETCH mode (network open only to an index's named hosts) is NOT built: it needs root-level
-network rules. ``run(mode="fetch")`` refuses with BLIND(fetch-mode-not-built).
+FETCH mode (built in step 7, slice 1): the same box, still in a fresh network namespace, plus
+one way out: a unix socket bound at /proxy, served OUTSIDE the box by
+:class:`fetchproxy.Proxy`, which opens a connection only to a member of the run's NAMED HOST
+SET (V43-1; ``forge_gate/data/host_sets.json``) and logs every request. A forwarder inside the
+box carries loopback traffic to that socket and runs the command with the proxy variables set.
+No root, no firewall rules. Its red arm adds two attempts to the three below: a CONNECT to
+hosts OUTSIDE the set must be refused (the proxy's own log is the witness), and a CONNECT to a
+host INSIDE the set must succeed (otherwise the refusals prove nothing).
 
 Every run first runs the RED ARM in its mode (V4-5): a planted probe tries to read a planted
 canary secret, write a planted canary target outside its copy, and open the network. All
@@ -35,6 +41,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .. import config
+from . import fetchproxy
 from .outcomes import Outcome, blind, clean, found
 
 BOX_USER_KEY = "FORGE_GATE_BOX_USER"
@@ -44,6 +51,15 @@ BOX_ROOT_KEY = "FORGE_GATE_BOX_ROOT"
 _ETC = ("ld.so.cache", "ld.so.conf", "ld.so.conf.d", "alternatives", "localtime", "nsswitch.conf")
 _SYS = ("/usr", "/bin", "/sbin", "/lib", "/lib64", "/lib32")
 MEMORY_MB = 1024   # address-space cap for the box and everything in it (same mechanism as runner.run_file)
+FETCH_MEMORY_MB = 3072   # git's index-pack maps the pack; 1 GiB is too tight for a cpython-sized fetch [guess]
+# TLS trust roots only, read-only (fetch mode). Never all of /etc/ssl or /etc/pki: they hold
+# private/ folders (review F3).
+FETCH_ETC = ("ssl/certs", "ca-certificates", "pki/tls/certs", "pki/ca-trust")
+KEEP_MAX_BYTES = 1024 * 1024 * 1024   # review F11: what fetch mode may carry out of the box
+# Fetch red arm: hosts that must be refused. Same organisation, another port, an IP literal, a
+# look-alike suffix, an unrelated host. Members of the run's set are removed from this list.
+OUTSIDE_PROBES = ("api.github.com:443", "github.com:22", "1.1.1.1:443",
+                  "github.com.evil.example:443", "example.com:443")
 
 PROBE = r'''
 import json, socket, sys
@@ -73,6 +89,20 @@ for host, port in targets:
     finally:
         s.close()
 res["network"] = ("LEAKED:" + ",".join(hits)) if hits else "blocked"
+if len(sys.argv) > 4:   # fetch mode: CONNECT attempts through the forwarder (the proxy judges them)
+    said = {}
+    for t in json.loads(sys.argv[4]):
+        s = socket.socket()
+        s.settimeout(25)
+        try:
+            s.connect(("127.0.0.1", int(sys.argv[5])))
+            s.sendall(("CONNECT %s HTTP/1.1\r\nHost: %s\r\n\r\n" % (t, t)).encode())
+            said[t] = s.recv(256).split(b"\r\n", 1)[0].decode("latin-1")
+        except Exception as e:
+            said[t] = "error:" + type(e).__name__
+        finally:
+            s.close()
+    res["connect"] = said
 print("PROBE " + json.dumps(res))
 '''
 
@@ -85,6 +115,7 @@ class BoxResult:
     stderr: str = ""
     red_arm: dict = field(default_factory=dict)
     skipped_links: list = field(default_factory=list)  # 6E BU-1: left out of the copies, named
+    fetch_record: dict = field(default_factory=dict)   # fetch mode: set, its file hash, every CONNECT
 
 
 def box_user() -> str | None:
@@ -133,7 +164,8 @@ def start_failure() -> str | None:
     return None if r.returncode == 0 else (r.stderr.strip()[-300:] or f"exit {r.returncode}")
 
 
-def _bwrap_argv(src: Path, work: Path, argv: list[str], timeout: float = 60, ref: Path | None = None) -> list[str]:
+def _bwrap_argv(src: Path, work: Path, argv: list[str], timeout: float = 60, ref: Path | None = None,
+                *, binds=(), ro_binds=(), etc_extra=(), memory_mb: int = MEMORY_MB) -> list[str]:
     a = ["bwrap", "--unshare-all", "--die-with-parent", "--new-session", "--clearenv",
          "--uid", "65534", "--gid", "65534",
          "--setenv", "PATH", "/usr/bin:/bin", "--setenv", "HOME", "/work",
@@ -141,13 +173,17 @@ def _bwrap_argv(src: Path, work: Path, argv: list[str], timeout: float = 60, ref
     for d in _SYS:
         if Path(d).exists():
             a += ["--ro-bind", d, d]
-    for e in _ETC:
+    for e in tuple(_ETC) + tuple(etc_extra):
         if Path("/etc", e).exists():
-            a += ["--ro-bind", f"/etc/{e}", f"/etc/{e}"]
+            a += ["--ro-bind", f"/etc/{e}", f"/etc/{e}"]   # bwrap creates the parent folders empty
     a += ["--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
           "--ro-bind", str(src), "/src"]
     if ref is not None:   # a second, read-only tree (6E 6a pre-note: what we compare against is never writable)
         a += ["--ro-bind", str(ref), "/ref"]
+    for host_path, inside in ro_binds:
+        a += ["--ro-bind", str(host_path), inside]
+    for host_path, inside in binds:
+        a += ["--bind", str(host_path), inside]
     a += ["--bind", str(work), "/work", "--chdir", "/work", "--"]
     a += argv
     user = box_user()
@@ -155,7 +191,7 @@ def _bwrap_argv(src: Path, work: Path, argv: list[str], timeout: float = 60, ref
         return a   # limits are set by _exec's preexec_fn
     # sudo resets resource limits (PAM), so a parent's setrlimit does not reach the box user:
     # set them after sudo, on the command that starts bubblewrap (measured 2026-11-11).
-    cap = MEMORY_MB * 1024 * 1024
+    cap = memory_mb * 1024 * 1024
     return ["sudo", "-n", "-u", user, "--", "prlimit", f"--as={cap}", f"--cpu={int(timeout) + 1}",
             "--"] + a
 
@@ -184,7 +220,10 @@ def _plain_copy(src: Path, dst: Path) -> list[str]:
     return skipped
 
 
-def _exec(src: Path, argv: list[str], timeout: float, *, unboxed: bool = False, ref: Path | None = None):
+def _exec(src: Path, argv: list[str], timeout: float, *, unboxed: bool = False, ref: Path | None = None,
+          binds=(), ro_binds=(), etc_extra=(), memory_mb: int = MEMORY_MB, keep: Path | None = None):
+    """``keep``: after a run that exits 0, the work copy's DATA is copied there (fetch mode's
+    result); it must not exist yet. Symlinks are skipped, as for every copy."""
     user = None if unboxed else box_user()
     root = box_root() if not unboxed else config.scratch_dir() / "box"
     root.mkdir(parents=True, exist_ok=True)
@@ -207,10 +246,11 @@ def _exec(src: Path, argv: list[str], timeout: float, *, unboxed: bool = False, 
                     for f in files:
                         os.chmod(Path(dirpath) / f, fmode)
             os.chmod(run_dir, 0o2750)
-        full = argv if unboxed else _bwrap_argv(src_copy, work, argv, timeout, ref_copy)
+        full = argv if unboxed else _bwrap_argv(src_copy, work, argv, timeout, ref_copy, binds=binds,
+                                                ro_binds=ro_binds, etc_extra=etc_extra, memory_mb=memory_mb)
 
         def _limits():  # inherited by bwrap and everything it starts
-            cap = MEMORY_MB * 1024 * 1024
+            cap = memory_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (cap, cap))
             cpu = int(timeout) + 1
             resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu))
@@ -218,6 +258,19 @@ def _exec(src: Path, argv: list[str], timeout: float, *, unboxed: bool = False, 
         r = subprocess.run(full, capture_output=True, text=True, timeout=timeout,
                            cwd=work if unboxed else run_dir, start_new_session=True,
                            preexec_fn=None if unboxed else _limits)
+        if keep is not None and r.returncode == 0:
+            if user:   # what the box user wrote must be readable by us before we copy it
+                subprocess.run(["sudo", "-n", "-u", user, "chmod", "-R", "g+rwX", str(work)],
+                               capture_output=True, timeout=60)
+            size = sum(p.stat().st_size for p in work.rglob("*") if p.is_file() and not p.is_symlink())
+            if size > KEEP_MAX_BYTES:
+                return r.returncode, r.stdout, r.stderr + f"\nkeep-too-large: {size} bytes", skipped + ["KEEP-REFUSED"]
+            tmp_keep = Path(str(keep) + ".tmp")   # review F11: atomic, no half-filled keep
+            try:
+                skipped += ["kept/" + x for x in _plain_copy(work, tmp_keep)]
+                os.replace(tmp_keep, keep)
+            finally:
+                shutil.rmtree(tmp_keep, ignore_errors=True)
         return r.returncode, r.stdout, r.stderr, skipped
     except subprocess.TimeoutExpired:
         return None, "", f"timeout after {timeout}s", skipped
@@ -228,11 +281,18 @@ def _exec(src: Path, argv: list[str], timeout: float, *, unboxed: bool = False, 
         shutil.rmtree(run_dir, ignore_errors=True)  # throwaway copies, created above
 
 
-def red_arm(mode: str = "run", *, unboxed: bool = False) -> dict:
+def red_arm(mode: str = "run", *, unboxed: bool = False, fetch: dict | None = None) -> dict:
     """Plant a canary secret and a canary write target, run the probe, judge from outside.
     Returns {"secret","write","network": "blocked"|"LEAKED…", "ok": bool}. ``unboxed=True``
     runs the same probe with no box: every attempt must then LEAK, which proves the targets
-    are real (a red arm whose targets cannot be reached passes vacuously)."""
+    are real (a red arm whose targets cannot be reached passes vacuously).
+
+    Fetch mode (``fetch`` = the context :func:`run` builds: proxy, its folders, the set): the
+    probe runs behind the in-box forwarder and also sends CONNECTs. "proxy_outside" is blocked
+    only if the PROXY'S LOG shows every outside target refused and none dialled; "proxy_inside"
+    is reached only if the log shows the inside target dialled with upstream ok."""
+    if mode not in ("run", "fetch") or (mode == "fetch") != (fetch is not None) or (fetch and unboxed):
+        raise ValueError(f"red_arm: bad mode/context: {mode!r}, fetch={fetch is not None}, unboxed={unboxed}")
     canary_dir = config.scratch_dir() / "box-canary"
     canary_dir.mkdir(parents=True, exist_ok=True)
     token = "FG-CANARY-" + secrets.token_hex(16)
@@ -245,12 +305,34 @@ def red_arm(mode: str = "run", *, unboxed: bool = False) -> dict:
     lsock.bind(("127.0.0.1", 0))
     lsock.listen(8)
     port = lsock.getsockname()[1]
+    connects: list[str] = []
     try:
+        if port == fetchproxy.FORWARD_PORT:   # inside the box that port is the forwarder's
+            raise RuntimeError("control listener landed on the forwarder's port; retry")
         with tempfile.TemporaryDirectory(dir=canary_dir) as src:
             (Path(src) / "probe.py").write_text(PROBE)
             argv = ["python3", "/src/probe.py" if not unboxed else str(Path(src) / "probe.py"),
                     str(secret), str(target), str(port)]
-            rc, out, err, _ = _exec(Path(src), argv, 30, unboxed=unboxed)
+            kw = {}
+            if fetch is not None:
+                outside = [t for t in OUTSIDE_PROBES if t not in fetch["members"]]
+                inside = sorted(fetch["members"])[0]
+                connects = outside + [inside]
+                argv = (["python3", "/fwd/fwd.py", "/proxy/p.sock", str(fetchproxy.FORWARD_PORT), "--"]
+                        + argv + [json.dumps(connects), str(fetchproxy.FORWARD_PORT)])
+                kw = dict(ro_binds=[(fetch["proxy_dir"], "/proxy"), (fetch["fwd_dir"], "/fwd")],
+                          etc_extra=FETCH_ETC)
+                fetch["proxy"].phase = "red-arm"
+                n0 = len(fetch["proxy"].log)
+                fetch["dials_n0"] = len(fetch["dials"])
+            rc, out, err, _ = _exec(Path(src), argv, 60 if fetch else 30, unboxed=unboxed, **kw)
+        lsock.setblocking(False)
+        try:                       # review F13: our own listener is the outside witness
+            c, _ = lsock.accept()
+            c.close()
+            witnessed = True
+        except (BlockingIOError, OSError):
+            witnessed = False
     finally:
         lsock.close()
     line = next((l for l in out.splitlines() if l.startswith("PROBE ")), None)
@@ -260,39 +342,161 @@ def red_arm(mode: str = "run", *, unboxed: bool = False) -> dict:
         "write": "LEAKED" if target.exists() else "blocked",
         # network has no outside witness; the probe's word is used, and a probe that did not
         # report counts as LEAKED (fail closed).
-        "network": said.get("network", "LEAKED:no-probe-report"),
+        "network": ("LEAKED:witnessed:" + f"127.0.0.1:{port}") if witnessed and not unboxed
+                   else said.get("network", "LEAKED:no-probe-report"),
         "probe": said, "rc": rc, "stderr": err[-500:], "control_target": f"127.0.0.1:{port}",
     }
     if target.exists():
         target.unlink()  # our own planted canary target, recreated per run
-    res["ok"] = all(res[k] == "blocked" for k in ("secret", "write", "network")) and line is not None
+    keys = ["secret", "write", "network"]
+    if fetch is not None:
+        log = fetch["proxy"].log[n0:]
+        res["proxy_log"] = log
+        inside, outside = connects[-1], connects[:-1]
+        bad = []
+        for t in outside:
+            seen = [e for e in log if e.get("target") == t]
+            if not seen:
+                bad.append(f"unattempted:{t}")          # fail closed: an untried refusal proves nothing
+            elif any(e["decision"] == "allowed" for e in seen):
+                bad.append(t)
+        res["proxy_outside"] = "blocked" if not bad else "LEAKED:" + ",".join(bad)
+        dialled_out = [e["target"] for e in log if e["decision"] == "allowed" and e["target"] != inside]
+        # review F5: box.py's OWN count of dials (the proxy's resolver is wrapped below), so a proxy
+        # that dials and logs "denied" is still caught
+        dials = fetch["dials"][fetch.get("dials_n0", 0):]
+        dialled_out += [t for t in dials if t != inside]
+        if dialled_out:   # anything dialled that is not the inside target is a leak, whatever it was
+            res["proxy_outside"] = "LEAKED:dialled:" + ",".join(dialled_out)
+        res["dials"] = list(dials)
+        ins = [e for e in log if e.get("target") == inside]
+        res["proxy_inside"] = ("reached" if any(e["decision"] == "allowed" and e["upstream"] == "ok" for e in ins)
+                               and dials.count(inside) == 1
+                               else "UNREACHED:" + (",".join(str(e.get("upstream")) for e in ins) or "unattempted"))
+        res["inside_target"] = inside
+        keys.append("proxy_outside")
+    res["ok"] = (all(res[k] == "blocked" for k in keys) and line is not None
+                 and (fetch is None or res["proxy_inside"] == "reached"))
     return res
 
 
+def _fetch_context(host_set: str, sets: dict, resolve=None) -> dict:
+    """Start the proxy and write the forwarder, in folders the box user can reach. The proxy's
+    resolver is wrapped so box.py itself counts every dial (review F5)."""
+    root = box_root()
+    root.mkdir(parents=True, exist_ok=True)
+    proxy_dir = Path(tempfile.mkdtemp(prefix="proxy-", dir=root))
+    fwd_dir = Path(tempfile.mkdtemp(prefix="fwd-", dir=root))
+    try:
+        # The box root is setgid to the box user's group, so what is created in these folders
+        # inherits that group. A chmod by a non-member silently CLEARS a folder's setgid bit
+        # (Linux), so every file, the socket included, is created BEFORE its folder's chmod.
+        # Found by the live reach check on the deploy host, 2026-11-14: the socket came out au:au and the
+        # box user got EACCES (failed closed: zero dials).
+        (fwd_dir / "fwd.py").write_text(fetchproxy.FORWARDER)
+        os.chmod(fwd_dir / "fwd.py", 0o640)
+        members = sets[host_set]
+        dials: list[str] = []
+        base = resolve or (lambda t: (t.rpartition(":")[0], int(t.rpartition(":")[2])))
+
+        def counted(target):
+            dials.append(target)
+            return base(target)
+        proxy = fetchproxy.Proxy(proxy_dir / "p.sock", members, resolve=counted).start()
+        try:
+            os.chmod(proxy_dir, 0o750)   # read + traverse for the box user's group; the socket is 0660
+            os.chmod(fwd_dir, 0o750)
+            if box_user():
+                want = root.stat().st_gid
+                for f in (proxy_dir / "p.sock", fwd_dir / "fwd.py"):
+                    if f.stat().st_gid != want:
+                        raise RuntimeError(f"{f.name} is group {f.stat().st_gid}, the box root's group is {want}: "
+                                           f"the box user could not reach it (is {root} setgid?)")
+        except BaseException:
+            proxy.stop()
+            raise
+    except BaseException:   # review F12: nothing left behind when the proxy cannot start
+        shutil.rmtree(proxy_dir, ignore_errors=True)
+        shutil.rmtree(fwd_dir, ignore_errors=True)
+        raise
+    return {"proxy": proxy, "proxy_dir": proxy_dir, "fwd_dir": fwd_dir, "members": members, "dials": dials}
+
+
 def run(src: Path, argv: list[str], *, mode: str = "run", timeout: float = 60,
-        ref: Path | None = None) -> BoxResult:
+        ref: Path | None = None, host_set: str | None = None, keep: Path | None = None,
+        _host_sets_file: Path | None = None, _resolve=None, _same_user_ok: bool = False) -> BoxResult:
+    """Run ``argv`` in the box. Fetch mode needs ``host_set`` (a name in host_sets.json); its
+    result's ``fetch_record`` names the set, the file's sha256 and every CONNECT of the run.
+    ``_host_sets_file`` / ``_resolve`` exist for tests only (a fake set, a local fake upstream)."""
+    sets = sha = None
     if mode == "fetch":
-        return BoxResult(blind("fetch-mode-not-built: needs root-level network rules (design §4a.6)"))
-    if mode != "run":
+        if not host_set:
+            return BoxResult(blind("fetch-needs-host-set"))
+        try:
+            sets, sha = fetchproxy.load_host_sets(_host_sets_file or fetchproxy.HOST_SETS_FILE)
+        except (OSError, ValueError) as e:
+            return BoxResult(blind(f"host-sets-unreadable: {e}"))
+        if host_set not in sets:
+            return BoxResult(blind(f"unknown-host-set: {host_set}"))
+    elif mode != "run":
         return BoxResult(blind(f"unknown-mode: {mode}"))
+    elif host_set or keep is not None:
+        return BoxResult(blind("run-mode-takes-no-host-set-or-keep"))
     why = available()
     if why:
         return BoxResult(blind(why))
     for tree in (src, ref) if ref is not None else (src,):
         if not Path(tree).is_dir():   # os.walk would read a missing folder as an empty one
             return BoxResult(blind(f"source-missing: {tree}"))
+    if keep is not None and Path(keep).exists():
+        return BoxResult(blind(f"keep-exists: {keep}"))
     if box_user() and shutil.which("prlimit") is None:
         return BoxResult(blind("box-unavailable: prlimit not installed (needed to cap the box user)"))
-    arm = red_arm(mode)
-    if not arm.get("probe"):
-        cannot = start_failure()
-        if cannot:
-            return BoxResult(blind(f"box-unavailable: bwrap cannot start: {cannot}"), red_arm=arm)
-    if not arm["ok"]:
-        failed = [k for k in ("secret", "write", "network") if arm[k] != "blocked"] or ["no-probe-report"]
-        return BoxResult(blind("box-red-arm: " + ",".join(failed)), red_arm=arm)
-    rc, out, err, skipped = _exec(Path(src), argv, timeout, ref=Path(ref) if ref is not None else None)
+    if mode == "fetch" and not box_user() and not _same_user_ok:
+        # review F4 / §4a.6: fetch mode uses a throwaway user. Tests may waive it, recorded below.
+        return BoxResult(blind(f"fetch-needs-box-user: set {BOX_USER_KEY}"))
+    try:
+        fx = _fetch_context(host_set, sets, _resolve) if mode == "fetch" else None
+    except fetchproxy.SocketPathTooLong as e:
+        return BoxResult(blind(f"box-unavailable: {e}"))
+    try:
+        arm = red_arm(mode) if fx is None else red_arm(mode, fetch=fx)   # run mode: the call as before
+        record = {}
+        if fx is not None:
+            record = {"mode": "fetch", "host_set": host_set, "members": sorted(fx["members"]),
+                      "host_sets_sha256": sha, "box_user": box_user(), "red_arm_connects": arm.get("proxy_log", []),
+                      "overrides": [k for k, v in (("host_sets_file", _host_sets_file), ("resolver", _resolve),
+                                                   ("same_user", _same_user_ok)) if v]}
+        if not arm.get("probe"):
+            cannot = start_failure()
+            if cannot:
+                return BoxResult(blind(f"box-unavailable: bwrap cannot start: {cannot}"), red_arm=arm,
+                                 fetch_record=record)
+        if not arm["ok"]:
+            keys = ("secret", "write", "network", "proxy_outside")
+            failed = [k for k in keys if k in arm and arm[k] != "blocked"]
+            if fx is not None and arm.get("proxy_inside") != "reached":
+                failed.append("proxy_inside")
+            return BoxResult(blind("box-red-arm: " + ",".join(failed or ["no-probe-report"])), red_arm=arm,
+                             fetch_record=record)
+        kw = {}
+        if fx is not None:
+            fx["proxy"].phase = "run"
+            argv = ["python3", "/fwd/fwd.py", "/proxy/p.sock", str(fetchproxy.FORWARD_PORT), "--"] + list(argv)
+            kw = dict(ro_binds=[(fx["proxy_dir"], "/proxy"), (fx["fwd_dir"], "/fwd")],
+                      etc_extra=FETCH_ETC, memory_mb=FETCH_MEMORY_MB, keep=keep)
+        rc, out, err, skipped = _exec(Path(src), argv, timeout, ref=Path(ref) if ref is not None else None, **kw)
+    finally:
+        if fx is not None:
+            log = fx["proxy"].stop()
+            shutil.rmtree(fx["proxy_dir"], ignore_errors=True)   # our own folders, created above
+            shutil.rmtree(fx["fwd_dir"], ignore_errors=True)
+    if fx is not None:
+        record["connects"] = [e for e in log if e["phase"] == "run"]
+        record["dials"] = list(fx["dials"])
+        if "KEEP-REFUSED" in skipped:
+            return BoxResult(blind("keep-too-large"), rc, out, err, arm, skipped, record)
     note = f"; skipped {len(skipped)} symlink(s): {', '.join(skipped[:5])}" if skipped else ""
     if rc is None:
-        return BoxResult(blind("timeout" + note), None, out, err, arm, skipped)
-    return BoxResult(found(f"ran, exit {rc}{note}"), rc, out, err, arm, skipped)
+        return BoxResult(blind("timeout" + note), None, out, err, arm, skipped, record)
+    return BoxResult(found(f"ran, exit {rc}{note}"), rc, out, err, arm, skipped, record)
