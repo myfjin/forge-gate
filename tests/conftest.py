@@ -18,6 +18,9 @@ REPO = Path(__file__).resolve().parents[1]
 os.environ.setdefault("FORGE_GATE_HOME", str(REPO))
 
 LIBRARY_KEY = "FORGE_GATE_LIBRARY_DIR"
+# 8b s2: the local embedder and its cache are live-tier only (a real Ollama answers on the deploy host).
+EMBED_URL_KEY = "FORGE_GATE_EMBED_URL"
+EMBED_CACHE_KEY = "FORGE_GATE_EMBED_CACHE_DIR"
 # `learn`'s routes (step 6b-1) point at the Brain's live registry and the build's lock on the
 # deploy host. The suite never inherits them: each learn test sets its own, inside tmp_path.
 LEARN_KEYS = ("FORGE_GATE_BRAIN_DATA", "FORGE_GATE_SCOUT_DIR", "FORGE_GATE_REGISTRY_BUILD_LOCK",
@@ -63,9 +66,11 @@ def pytest_configure(config):
     live = _live_selected(config.option.markexpr or "")
     for k in LEARN_KEYS:  # always, live tier included
         os.environ.pop(k, None)
+    off = (LIBRARY_KEY, EMBED_URL_KEY, EMBED_CACHE_KEY)   # 8b s2: the real embedder only in -m live
     if not live:
-        os.environ.pop(LIBRARY_KEY, None)
-    _config_without(LEARN_KEYS + (() if live else (LIBRARY_KEY,)))
+        for k in off:
+            os.environ.pop(k, None)
+    _config_without(LEARN_KEYS + (() if live else off))
 
 
 def pytest_report_header(config):

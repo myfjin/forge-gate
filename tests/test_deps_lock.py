@@ -16,7 +16,7 @@ CLASSES = {"dependency", "host-binary", "runtime-root"}
 # Keys config.py resolves outside the project. In-project keys (FORGE_GATE_HOME,
 # FORGE_GATE_SCRATCH under home, FORGE_GATE_CONFIG) are classed by construction.
 OUTSIDE_KEYS = {"FORGE_GATE_LIBRARY_DIR", "FORGE_GATE_CORPUS_EXPORT_DIR", "FORGE_GATE_PYTHON", "FORGE_GATE_NODE",
-                "FORGE_GATE_BUN", "FORGE_GATE_QJS"}
+                "FORGE_GATE_BUN", "FORGE_GATE_QJS", "FORGE_GATE_EMBED_URL"}
 
 
 def _rows():
@@ -53,3 +53,9 @@ def test_library_pin_matches_the_reference_origin():
     commit = pin.split()[-1]
     assert re.fullmatch(r"[0-9a-f]{40}", commit), pin
     assert commit in origin, "deps.lock library pin and reference/ORIGIN.md disagree"
+
+
+def test_embedder_pin_matches_the_code():
+    from forge_gate.scout import embed
+    pin = next(r["pin"] for r in _rows() if r["key"] == "FORGE_GATE_EMBED_URL")
+    assert embed.DIGEST in pin and embed.MODEL in pin, (pin, embed.MODEL, embed.DIGEST)

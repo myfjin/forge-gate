@@ -6,6 +6,7 @@ the three counts side by side, and says BLIND (never zeros) when the ledgers can
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -364,3 +365,32 @@ def test_show_reports_an_orphan(lg, capsys):
     assert rc == 0 and "0 refused row(s), 0 torn line(s), 1 orphan(s)" in out
     assert json.loads(run(capsys, "show", ITEM, "--json")[1])["ledger"]["orphans"] == 1
     assert json.loads(run(capsys, "show", ITEM, "--json")[1])["pending"] == 1
+
+
+# ---------------------------------------------------------------- 8b s0: undecodable path bytes
+# SIDE-QUEUE 2026-11-16 (8a final check): ledger._sha encodes with surrogateescape so a POSIX path
+# whose bytes are not UTF-8 still hashes (to the sha256 of those very bytes) instead of crashing.
+
+def test_sha_of_a_path_with_undecodable_bytes_is_the_sha_of_those_bytes():
+    import hashlib
+    raw = b"/srv/proj-\x86/x.py"
+    assert ledger._sha(os.fsdecode(raw)) == hashlib.sha256(raw).hexdigest()
+
+
+def test_event_in_a_project_folder_whose_name_is_not_utf8(lg, tmp_path, capsys):
+    import hashlib
+    proj = tmp_path / os.fsdecode(b"\x86")
+    try:
+        proj.mkdir()
+    except OSError as e:                           # APFS (macOS) refuses non-UTF-8 names
+        import errno
+        if e.errno != errno.EILSEQ:                # only that refusal skips (8b s0 review F2)
+            raise
+        pytest.skip(f"this file system refuses a non-UTF-8 folder name: {e!r}")
+    (proj / "marker").write_text("here")             # CHECK passes only where a marker is
+    mid = mark(capsys, exposed()[0], "--who", "ann")
+    rc, out, err = run(capsys, "event", mid, "--project", str(proj), "--kind", "tests", "--", PY, *CHECK)
+    assert rc == 0, err
+    ev = rows(lg)[-1]
+    assert (ev["kind"], ev["rc"]) == ("person-event", 0)
+    assert ev["root_sha256"] == hashlib.sha256(os.fsencode(str(proj.resolve()))).hexdigest()

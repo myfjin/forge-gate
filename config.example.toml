@@ -49,3 +49,8 @@
 # The folder, exposure.jsonl, outcome.jsonl and ledger.lock must already exist: the switch-on
 # creates them (owner + ACL), never a writer. One shared ledger per host.
 # FORGE_GATE_LEDGER_DIR = "/path/to/forge-gate/data/ledgers"
+# Build step 8b: the LOCAL embedder (Ollama, nomic-embed-text at the digest in deps.lock) for the
+# language-meaning and intent lenses. Loopback http only. Unset = those lenses are BLIND.
+# FORGE_GATE_EMBED_URL = "http://127.0.0.1:11434"
+# Its vector cache: scout runs only read it; one explicit fill command writes it (8b).
+# FORGE_GATE_EMBED_CACHE_DIR = "/path/to/forge-gate/data/embed-cache"
