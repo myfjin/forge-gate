@@ -438,5 +438,66 @@ is reviewed by a seat that did not build it.
   with a red arm; (e) a measured fire rate on real use; (f) DONE: a reuse site is a project root (N3, the maintainer 2026-11-16); (g) the
   route scan also flags any `getattr` on the ledger module; (h) a per-host salt kept outside the
   ledger; (i) a measured worst-case lock hold, or an event that keeps its result and retries;
-  (j) 8b names its join (`view()` or an `outcomes_for(result_id)`) before it ranks anything;
+  (j) DONE in 8b s5: experience joins through `view()` once per run, then `counts(item, v=)` and
+  `exposures(item, v=)` (KD-15);
   (k) a host id chosen with the merge, and G6's sentence corrected to "one buffer".
+
+## KD-15 · the 8b lenses (language meaning, intent, experience): what they cannot do yet
+
+- **What:** step 8b built lens 4 (`scout/meaning_lens.py`), lens 5 (`scout/intent_lens.py`), the explore
+  slot (`scout/slots.py`) and lens 6 (`scout/experience.py`), on a local embedder client
+  (`scout/embed.py`, `FORGE_GATE_EMBED_URL`, `FORGE_GATE_EMBED_CACHE_DIR`). DECISIONS-8b H1-H13
+  (the maintainer 2026-11-16). Open:
+  (a) **meaning is OFF on the real model.** Its Rule-2 set (H3) runs on every invocation; on the deploy
+  host's `nomic-embed-text` (digest 0a109f42) BOTH scorers fail the keyword-trap case (raw 0.692, words
+  0.689, above the weakest same-job pair 0.62; DECISIONS-8b F12-F16), so the lens prints
+  BLIND(rule2-failed) and `--embed-fill` refuses. Next: a code embedding model (a download: the maintainer's go),
+  measured against the same set, the trap kept.
+  (b) **intent has no live input.** No pool scout searches carries purpose text: the corpus export has no
+  request (F8), the library and GitHub are not scout pools (F7). With `--intent` and a green Rule-2 set it
+  prints BLIND(no-input) for the corpus. Next: the corpus project exports a scrubbed `request` field, or
+  the library pool is wired into scout (H6 c).
+  (c) **thresholds are calibrated ON their Rule-2 sets** (meaning tau 0.61 from the probe; intent's 0.75 is an
+  uncalibrated prior, see m), so those sets are not held-out tests of the thresholds. The fixtures and requests
+  were written by the builder: the crew review should attack them (my fixtures = my blind spots).
+  (d) **experience reorders only exact (score, trust) ties** (H9: no band width is measured for any lens).
+  In practice it is display-only until a band is measured per lens (design §4a.4 Rule 3 NEED). The
+  ledger's refusal text still says "band must be null until 8b" (stale wording; 8b crew review, 6E H9).
+  (e) **experience's Rule-2 set is synthetic** (an in-memory view built by the code it tests). It proves the
+  ordering rule and that three named selection-rewarding variants are caught; it cannot prove that a
+  variant nobody named is caught. Its red arm is exactly those three. E5 (an unreadable ledger) is not
+  in the set, since an in-memory view cannot produce it: `_experience` and
+  `test_an_unreadable_ledger_is_blind_never_zero` cover it. The runtime gate needs SOME case to fail
+  each variant; only the suite pins which one (8b crew review, 6E H11).
+  (f) **the explore slot is pseudo-random and reproducible** (seed = lens + query text): the same query
+  always gets the same explore hit, so a repeated query explores nothing new. A per-run seed would need
+  the query id before ranking (it is minted at exposure).
+  (g) **the embedder trust boundary is the loopback port.** Anything that can listen on 127.0.0.1:11434 as
+  another local user and answer with the pinned digest is trusted. Digest is re-checked per batch during
+  a fill (s1 review F1), but a scout run checks it once per run.
+  (h) `ledger._canon`'s undecodable-bytes `decode` (macOS only) has no test: APFS refuses such names
+  (8b s0 review F1).
+  (i) The embedder runs on the deploy host only; the dev machine prints BLIND(not-configured).
+  (j) **"beats the keyword baseline" is implied, not separate evidence** (8b s2 review F1): in the meaning
+  and intent sets, the tau cases already force the lens's separation above 0 and the baseline's is
+  negative on these fixtures. Only the trap-lure half of that case can fail on its own.
+  (k) **an explore row's rank is its shown position** (8b s4 review F2): 10 for shape and meaning when 9
+  top hits exist; for behaviour, whose top holds only agreeing pairs, it is len(top)+1 (1 on a null
+  query). The `slot` field, not the rank, says "explore".
+  (l) **the one-off fill embeds every corpus language** (8b s3 review F6): about 1431 items, not the 594
+  Python items H4 assumed; members under 3 words for the scorer are skipped and reported.
+  (m) **both embedding lenses ship OFF on the pinned model.** Live on the deploy host (2026-11-16): meaning
+  fails the keyword trap with both scorers (raw also mis-ranks the backup trio); intent ranks every
+  partner first but no tau separates (min same-purpose 0.579 < max must-not 0.599, the keyword trap).
+  Each prints BLIND(rule2-failed) on every run. Switching either on needs a model that passes, or a
+  changed set with the maintainer's word; never a tau fitted to the set (that is the set testing itself).
+  (n) **no switch-on may rest on builder-written fixtures** (8b crew review, 6E (i)): meaning's errcount
+  pair passes largely on copied comment words; intent's positive floor (0.579) is the builder's most
+  differently worded request, with the keyword trap (0.599) above it. Switching on needs held-out
+  cases written by someone other than the builder.
+  (o) **a cache row is checked for its key length (64 characters, not as hex) and its vector, not re-derived from its text** (8b crew
+  review, 5S NOTE 1): a row holds no text, so a well-formed row planted by someone who can write the
+  owner-only cache dir is trusted under its key.
+- **Debt:** (a) a model that passes the meaning set, or the set changed with the maintainer's word; (b) a pool
+  with purpose text; (c) held-out cases from the crew; (d) a measured band per lens; (e) crew-written
+  variants; (f) a per-run seed; (g) a socket owned by the embedder's user, checked by uid.

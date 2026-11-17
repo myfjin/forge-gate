@@ -166,7 +166,7 @@ def test_scout_finds_a_near_copy_and_the_control_comes_back(export_root, tmp_pat
     assert all(h["pool"] == "corpus" and h["trust"] == "raw" for h in c["shape_hits"])
     assert {h["item_id"] for h in c["shape_hits"]} <= {"c_0000000000000001", "c_0000000000000002", "c_0000000000000003"}  # python only
     assert rep["checks"]["control"]["outcome"] == "FOUND"
-    n_blind = sum(1 for o in c["lenses"].values() if o["outcome"] == "BLIND")
+    n_blind = sum(1 for o in c["groups"].values() if o["outcome"] == "BLIND")   # 8b H5: groups
     assert (c["n"], c["agree"], c["blind"]) == (3, 1, n_blind)   # n fixed before the query (rule 1)
     assert c["lenses"]["intent"]["outcome"] == "BLIND"            # not built; behaviour runs only on Linux
 

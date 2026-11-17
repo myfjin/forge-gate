@@ -242,6 +242,12 @@ def main(argv: list[str] | None = None) -> int:
     scout_parser.add_argument("--show", metavar="RESULT_ID",
                               help="print the code behind a result id, its id as the first line (step 8a)")
     scout_parser.add_argument("--json", action="store_true", help="emit the report as JSON")
+    scout_parser.add_argument("--intent", metavar="TEXT",
+                              help="what the code is FOR, in your words: the intent lens compares it with each "
+                                   "pool member's purpose text (step 8b)")
+    scout_parser.add_argument("--embed-fill", action="store_true",
+                              help="fill the meaning lens's vector cache from the corpus export (the cache's "
+                                   "only writer; refuses while the lens's Rule-2 set is red; step 8b)")
     scout_parser.set_defaults(func=cmd_scout)
 
     learn_parser = sub.add_parser(
@@ -404,6 +410,13 @@ def cmd_chaos_calibrate(args) -> int:
 def cmd_scout(args) -> int:
     from .scout import report
 
+    if args.embed_fill:
+        if args.file is not None or args.show is not None:
+            print("forge-gate scout: --embed-fill takes no file and no --show", file=sys.stderr)
+            return 2
+        rc, text = report.embed_fill()
+        print(f"forge-gate scout --embed-fill: {text}", file=sys.stderr if rc else sys.stdout)
+        return rc
     if args.show is not None:
         if args.file is not None:
             print("forge-gate scout: give a file OR --show, not both", file=sys.stderr)
@@ -421,7 +434,7 @@ def cmd_scout(args) -> int:
     if not p.is_file():
         print(f"forge-gate scout: {p}: not a file", file=sys.stderr)
         return 2
-    rep = report.run(p)
+    rep = report.run(p, intent=args.intent)
     print(report.to_json(rep) if args.json else report.render(rep))
     return 0  # advisory: a report is a success, whatever it found
 

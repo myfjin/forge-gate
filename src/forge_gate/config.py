@@ -62,6 +62,11 @@ LEARN_KEYS = (BRAIN_DATA_KEY, SCOUT_DIR_KEY, BUILD_LOCK_KEY)
 # The ledgers (design §4a.5, build step 8a, DECISIONS-8a G1). No default: unset means the
 # ledgers are switched OFF and nothing is recorded; setting it is the switch-on.
 LEDGER_KEY = "FORGE_GATE_LEDGER_DIR"
+# Build step 8b (DECISIONS-8b H1, H4): the local embedder for the meaning and intent lenses, and its
+# vector cache. Both unset = those lenses are BLIND(not-configured).
+EMBED_URL_KEY = "FORGE_GATE_EMBED_URL"
+EMBED_CACHE_KEY = "FORGE_GATE_EMBED_CACHE_DIR"
+LOOPBACK = ("127.0.0.1", "::1")          # literal addresses only: a name goes through /etc/hosts (s1 review F3)
 
 
 class NotConfigured(RuntimeError):
@@ -212,6 +217,42 @@ def ledger_dir() -> Path:
     p = _as_path(raw)
     if not p.is_dir():
         raise NotConfigured(f"{LEDGER_KEY}={p} is not an existing directory ({where()})")
+    return p
+
+
+def embed_url() -> str:
+    """The local embedder's base URL: plain http on a loopback address with a port, nothing else
+    (DECISIONS-8b H1: private corpus text never leaves the host). No default."""
+    raw = configured(EMBED_URL_KEY)
+    if raw is None:
+        raise NotConfigured(f"{EMBED_URL_KEY} is not set: the meaning and intent lenses are off "
+                            f"({where()})")
+    return loopback_url(raw)
+
+
+def loopback_url(raw: str) -> str:
+    """``raw`` if it is http://<literal loopback address>:<port> and nothing more, else NotConfigured."""
+    from urllib.parse import urlsplit
+    try:
+        u = urlsplit(raw)
+        port = u.port
+    except ValueError as e:
+        raise NotConfigured(f"{EMBED_URL_KEY}={raw!r} is not a URL: {e}") from None
+    if (u.scheme != "http" or u.hostname not in LOOPBACK or port is None or u.username or u.password
+            or u.path not in ("", "/") or u.query or u.fragment):
+        raise NotConfigured(f"{EMBED_URL_KEY}={raw!r} must be http://<loopback>:<port> "
+                            f"(one of {', '.join(LOOPBACK)}), nothing more")
+    return raw.rstrip("/")
+
+
+def embed_cache_dir() -> Path:
+    """The embedder's vector cache folder (runtime state, not in git). No default; it must exist."""
+    raw = configured(EMBED_CACHE_KEY)
+    if raw is None:
+        raise NotConfigured(f"{EMBED_CACHE_KEY} is not set: no vector cache ({where()})")
+    p = _as_path(raw)
+    if not p.is_dir():
+        raise NotConfigured(f"{EMBED_CACHE_KEY}={p} is not an existing directory ({where()})")
     return p
 
 

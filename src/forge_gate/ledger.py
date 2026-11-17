@@ -412,6 +412,20 @@ class Counts:
     blind: str = ""                 # non-empty: the ledger could not be read; counts mean nothing
 
 
+def uncounted_outcomes(v: "View") -> int:
+    """Outcome rows that were written but are not counted: refused rows and torn lines of the outcome
+    ledger, plus orphans (8b s6, re-check N1/N2; torn lines: 8b crew review, 6E T1). A reader shows BLIND instead of a 0 it cannot vouch for; exposure
+    refusals do not touch the counts and are not included. Read-only."""
+    return (sum(1 for f, _, _ in v.refused if f == OUTCOME_NAME) + len(v.orphans)
+            + len(torn_outcome_lines(v)))   # 8b crew review, 6E T1
+
+
+def torn_outcome_lines(v: "View") -> list:
+    """Line numbers of the outcome ledger's torn lines: an append in flight, or one a killed writer
+    left (then every later append is refused until the file is repaired). Read-only."""
+    return [n for f, n in v.torn if f == OUTCOME_NAME]
+
+
 def counts(item: str, d=None, *, v: View | None = None) -> Counts:
     if v is None:
         try:
@@ -454,7 +468,7 @@ def record_exposure(*, query_sha256: str, query_lang: str, hits: list, d=None,
     rows = [_row(K_EXPOSURE, None, query_id=qid, query_sha256=query_sha256, query_lang=query_lang,
                  result_id=make_result_id(qid, h["lens"], h["rank"]), pool=h["pool"], trust=h["trust"],
                  item=h["item"], lens=h["lens"], rank=h["rank"], score=h["score"], band=None,
-                 slot="top")
+                 slot=h.get("slot", "top"))
             for h in hits]
     if rows:
         d = _dir(d)

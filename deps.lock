@@ -26,6 +26,15 @@ used_by = "forge-gate scout (corpus intake, design §12.4)"
 debt = ""
 
 [[route]]
+key = "FORGE_GATE_EMBED_URL"
+class = "host-binary"
+owner = "host"
+pin = "ollama model nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f, local (no remote_host)"
+pinned = "deploy host Ollama 0.31.2, read from /api/tags 2026-11-16 (DECISIONS-8b F9); dev machine: none installed (lenses BLIND)"
+used_by = "forge-gate scout: language-meaning and intent lenses (design §4a.3, build step 8b); scout.embed.DIGEST must equal this pin"
+debt = "KD-15"
+
+[[route]]
 key = "FORGE_GATE_PYTHON"
 class = "host-binary"
 owner = "host"

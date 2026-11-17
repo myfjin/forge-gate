@@ -22,13 +22,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .. import config
-from . import box, contract, envfit, shape_lens, signature
+from . import box, contract, envfit, shape_lens, signature, slots
 from .outcomes import Outcome, blind, clean, found
 
 NAME = "behaviour"
 TAU = 0.9            # a hit agrees on at least 90% of the inputs where someone answered
 MIN_CONSIDERED = 4   # fewer answered inputs than this: no score for the pair
-TOP_K = 5
 MAX_PAIRS = 80       # per query; more are reported, never silently dropped
 SEED = 20261111
 PORT = Path(__file__).parent / "engines" / "executor_port.py"
@@ -135,6 +134,7 @@ class BHit:
     cand_fn: str
     agree: int
     considered: int
+    slot: str = "top"           # 8b s4: slot 10 = explore, drawn from pairs already scored
 
 
 @dataclass
@@ -258,7 +258,10 @@ def rank(query: str, members: list, *, pool: str, trust: str) -> BehaviourResult
     gates["no-answer"] = no_answer
     if kinds:
         gates["error-kinds"] = "; ".join(f"{k} {v}" for k, v in sorted(kinds.items(), key=lambda x: -x[1])[:4])
-    hits = sorted((h for h in best.values() if h.score >= TAU), key=lambda h: (-h.score, h.item_id))[:TOP_K]
+    ranked = sorted(best.values(), key=lambda h: (-h.score, h.item_id))
+    top = [h for h in ranked if h.score >= TAU][:slots.TOP]          # only agreeing pairs are hits
+    explore = slots.pick([h for h in ranked if h not in top], lens=NAME, query=query)   # any scored pair
+    hits = top + ([explore] if explore is not None else [])
     scores = {iid: h.score for iid, h in best.items()}
     text = f"{len(pairs)} pair(s) run, {_gate_text(gates)}"
     unlooked = errors + no_answer
@@ -266,7 +269,8 @@ def rank(query: str, members: list, *, pool: str, trust: str) -> BehaviourResult
         return BehaviourResult(blind(f"no pair could be compared ({text})"), [], scores, gates, len(members))
     if unlooked > 0.1 * len(pairs):   # P1: more than 10% of the run could not look -> the run is flagged
         text = f"FLAGGED: {unlooked} of {len(pairs)} pairs BLIND (over 10%); " + text
-    out = found(f"{len(hits)} hit(s) at agreement >= {TAU}; {text}") if hits else clean(f"none at agreement >= {TAU}; {text}")
+    # judged on the TOP hits only: the explore pair is a counterfactual, never a find (8b s4)
+    out = found(f"{len(top)} hit(s) at agreement >= {TAU}; {text}") if top else clean(f"none at agreement >= {TAU}; {text}")
     return BehaviourResult(out, hits, scores, gates, len(members))
 
 
@@ -321,7 +325,8 @@ def rule2(rank_fn=None) -> list[str]:
     """Each case says WHY it exists. Returns the failures; empty means the lens may be switched on."""
     rank_fn = rank_fn or rank
     fails = []
-    def ids(r): return {h.item_id.split(":", 1)[1] for h in r.hits}
+    # 8b s4 review F1: the explore pair is a counterfactual, never a returned hit
+    def ids(r): return {h.item_id.split(":", 1)[1] for h in r.hits if getattr(h, "slot", "top") == "top"}
     def score(r, k): return r.scores.get(f"rule2:{k}", 0.0)
     r_ctl = rank_fn(SQ_LOOP, _pool(), pool="rule2", trust="fixture")
     if r_ctl.outcome.kind != "FOUND" or score(r_ctl, "sq_loop") != 1.0:
@@ -355,6 +360,6 @@ def rule2(rank_fn=None) -> list[str]:
         fails.append(f"keyword baseline not beaten: behaviour separation {sep_b:.2f} vs keyword {sep_k:.2f}")
     # null: a query with no related member returns nothing
     r0 = rank_fn(Q_NULL, _pool(), pool="rule2", trust="fixture")
-    if r0.hits:
+    if ids(r0):
         fails.append(f"null: returned {sorted(ids(r0))}")
     return fails
