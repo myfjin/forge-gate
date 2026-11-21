@@ -501,3 +501,35 @@ is reviewed by a seat that did not build it.
 - **Debt:** (a) a model that passes the meaning set, or the set changed with the maintainer's word; (b) a pool
   with purpose text; (c) held-out cases from the crew; (d) a measured band per lens; (e) crew-written
   variants; (f) a per-run seed; (g) a socket owned by the embedder's user, checked by uid.
+
+## KD-16 · the shared tools (gate, mutant runner, path canonicaliser): what they do not do
+
+- **What:** the shared-tools loop (2026-11-18/19) built `tools/fg_gate.py`, `tools/fg_mutrun.py`,
+  their shared library `tools/fg_common.py`, and `src/forge_gate/paths.py` (`docs/shared-tools.md`).
+  What they do not do:
+  (a) **mutants are text-exact only.** A mutant replaces one exact occurrence of a string in one
+  file. There is no AST mutation, no operator catalogue, and no mutant that spans two files or two
+  places. The spec's author chooses every mutant, so a run measures the tests only against the
+  mutants someone thought of.
+  (b) **counts come from junit only.** Both tools read passed/failed/errors/skipped from the run's
+  own fresh junit file, never from pytest's summary line. A case that pytest never writes to the
+  junit is not counted; a run with no fresh junit is an ERROR, not a verdict.
+  (c) **the load guard is the 1-minute load average.** It waits on `os.getloadavg()[0]` before
+  pytest starts and does not watch the load during the run. Memory pressure, I/O, and a burst that
+  starts after the check are not seen. The record holds the load before and after.
+  (d) **the `F_GETPATH` decode branch of `paths.canonical` cannot be exercised on either host.**
+  The macOS file system refuses non-UTF-8 names (EILSEQ), and Linux has no `F_GETPATH`. So
+  `test_undecodable_name_round_trips` is a regression test of the Linux fallback only, and the
+  branch that decodes an undecodable `F_GETPATH` result has no red arm (the same shape as KD-15 h).
+  (e) no DEFER rows. The last review findings (a signal inside the gate's Popen could orphan
+  its pytest group; an inherited SIG_IGN was overridden; a dead fallback in the interrupt
+  message; an unbounded `tool_head` git call; the 120 s git timeout never measured; three
+  untested paths) were left open by the convergence rule and then fixed in a last fix slice of
+  the same loop: the four defects each with a test that fails without the fix, the three
+  untested paths now tested (each test proven by a mutant it kills), and the 120 s bound by a
+  measurement (`docs/shared-tools.md`, "git timeout").
+- **Done looks like:** (a) a structural mutant kind, only if a measured miss needs it; (b) a
+  cross-check of the junit counts against pytest's own summary, if a run is ever seen where they
+  differ; (c) a load sample during the run, in the record; (d) a host whose file system accepts
+  non-UTF-8 names and has `F_GETPATH`, or the branch removed.
+- **Owner:** Claude. **Decide by:** 2026-12-15 (the next design doc that uses the tools).

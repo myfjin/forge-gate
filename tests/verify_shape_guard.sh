@@ -26,6 +26,10 @@ PYTHON="/usr/bin/python3"
 CORPUS="$ROOT/tests/corpus"
 REGRESSION="$ROOT/tests/regression"
 SNAPSHOT="$REGRESSION/perceptron_shape_defect_snapshot.py"
+# Probe output goes to a temp dir outside the tree, removed on exit, so a run
+# never rewrites tracked files under tests/regression.
+tmp=$(mktemp -d) || exit 2
+trap 'rm -rf -- "${tmp:?}"' EXIT
 
 FAILED=0
 INCONCLUSIVE=0
@@ -49,11 +53,13 @@ gate() {
 run_python() {
     local label="$1"
     local script="$2"
-    local out="$REGRESSION/${label}.out"
-    local err="$REGRESSION/${label}.err"
+    local out="$tmp/${label}.out"
+    local err="$tmp/${label}.err"
     $SETSID timeout --kill-after=5s 15s \
         "$PYTHON" -c "$script" > "$out" 2> "$err"
     rc=$?
+    # A red guard still shows its reason (the probe output is not kept).
+    if [ "$rc" -ne 0 ]; then cat "$err" >&2; fi
     echo "$rc"
 }
 
