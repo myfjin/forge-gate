@@ -1,23 +1,49 @@
 # Forge Gate
 
-Deterministic regression gate for code-generating agents. Its reference implementations
-come from the signed AURA pattern library and ship inside the package.
+Forge Gate checks code written by AI by **running it** next to a known-correct version on the
+same inputs, and reports whether it behaves correctly. The known-correct versions come from the
+signed AURA pattern library and ship inside the package. No language model takes part in any
+verdict.
+
+**New here? Start with [`docs/getting-started.md`](docs/getting-started.md):** from a clean clone
+to a real PASS and a real FAIL in a few minutes.
+
+## Why it exists
+
+An AI agent can write code, write the tests for it, and report that the tests are green. All three
+come from the same author, so a green run proves less than it seems. A test that cannot fail
+passes, and a suite that never looks at the broken line passes too.
+
+Forge Gate asks two questions that do not depend on trusting the author:
+
+1. **Does this code behave like a correct implementation?** It runs your file and a reference
+   implementation on the same seed-locked input, and judges the result through several
+   independent lenses (below).
+2. **Would the tests notice if the code were wrong?** The shared tools in `tools/` plant small
+   deliberate bugs ("mutants"), re-run the tests, and report which bugs the suite missed.
 
 ## Status
 
-Alpha (0.1.0). Not on PyPI yet: install from a checkout.
+Alpha (0.1.0). Not on PyPI yet: install from a checkout. The verify gate covers 10 Python
+patterns. Several commands (`scout`, `learn`, `ledger`, `chaos-calibrate`) are advisory or
+plumbing today. **`KNOWN-DEBT.md` lists every known gap**: what it
+is, where, what "fixed" will look like, and who owns it.
 
 ## Install
 
 ```bash
 git clone https://github.com/myfjin/forge-gate.git && cd forge-gate
 python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout
+export FORGE_GATE_HOME="$PWD"                   # needed until KD-2 is fixed (see below)
 PYTHONPATH=src .venv/bin/python -m pytest -q   # default tier: fixtures only, no network, no library
 npm ci                                          # only for the JS oracle (TypeScript type gate)
 ```
 
+Several lenses still read files from the checkout rather than from the installed package
+(`KNOWN-DEBT.md`, KD-2). Without `FORGE_GATE_HOME` pointing at the clone, a correct file comes out
+`UNSTABLE` instead of `PASS`.
+
 Python 3.10 or newer. Without `npm ci` the JS oracle's type gate reports `unavailable`.
-Several lenses still need the checkout rather than an installed package (`KNOWN-DEBT.md`, KD-2).
 
 ## Configuration
 
@@ -45,6 +71,21 @@ forge-gate list
 forge-gate verify myfile.py --pattern linear_regression_gd
 ```
 
+A verdict is `PASS`, `FAIL`, `UNSTABLE` or `UNSUPPORTED`, with one line per lens. `UNSUPPORTED`
+means a lens could not measure here and says why; it is never a pass in disguise. `UNSTABLE`
+means a lens errored or the references disagreed, so no verdict could be trusted.
+
+## The lenses
+
+| lens | the question it asks |
+|---|---|
+| property-primary | do the results have the properties a correct implementation must have? |
+| metamorphic | if the input changes in a known way, does the output change the way it must? |
+| invariant | do the rules that must always hold, hold? |
+| twin-consensus | do implementations of the same pattern in other languages agree? |
+| determinism | do repeated runs with a fixed seed give the same answer? |
+| guard | given NaN (not-a-number) as input, does the code pass it on honestly, or quietly return a plausible number? Infinity is tried too, but only recorded. Needs no reference at all (`docs/GUARD_LENS.md`) |
+
 ## Examples
 
 The `examples/` directory contains self-contained reference implementations for
@@ -57,24 +98,23 @@ forge-gate verify examples/linear_regression_gd_good.py --pattern linear_regress
 forge-gate verify examples/linear_regression_gd_bad.py  --pattern linear_regression_gd
 ```
 
-Three patterns are covered:
+Every one of the 10 catalog patterns has a pair: `<pattern>_good.py` and `<pattern>_bad.py`.
+The `_good` files implement the algorithm correctly and print `PASS` via the gate. The `_bad`
+files each contain one deliberate bug and print `FAIL`.
 
-- `linear_regression_gd_good.py` / `linear_regression_gd_bad.py`
-- `kmeans_clustering_good.py` / `kmeans_clustering_bad.py`
-- `logistic_regression_good.py` / `logistic_regression_bad.py`
+Known oddity: `kmeans_clustering_good.py` shows `determinism FAIL` inside a `PASS`. k-means can
+settle on different valid answers from run to run, so that lens is advisory for this one pattern;
+the line does not say so yet (`KNOWN-DEBT.md`, KD-6).
 
-The `_good` files implement the algorithm correctly and print `PASS` via the gate.
-The `_bad` files each contain exactly one real bug (wrong gradient sign, nearest-
-farthest centroid swap) and print `FAIL`.
-
-## What it does
+## What `verify` does
 
 1. Resolves the pattern name in the shipped catalog (`forge_gate/data/gate_catalog.json`).
 2. Loads the shipped reference implementation (`forge_gate/reference/`, byte copies of
    AURA library patterns; commit and sha256 in `reference/ORIGIN.md`).
-3. Runs the user's file in a subprocess: fixed seed, 60s timeout, no network.
+3. Runs the user's file in a separate process: fixed seed, 60 s timeout; network cut off where
+   the system supports it (Linux `unshare`), not on macOS.
 4. Runs the AURA oracle on the same fixture.
-5. Compares exit codes and numeric outputs within tolerance.
+5. Compares exit codes and numeric outputs within tolerance, and runs the lenses.
 6. Returns PASS / FAIL / UNSTABLE / UNSUPPORTED.
 
 No LLM judgment is used in the verdict path. The gate is execution-backed.
@@ -94,6 +134,19 @@ Python-only v1 ships with 10 curated seed-locked oracles:
 - `ridge_regression_normal_eq`
 - `gradient_descent_momentum`
 
+## Shared tools: does your test suite test anything?
+
+Two tools in `tools/` work on any Python project kept in git and tested with pytest, not only
+Forge Gate (`docs/shared-tools.md`):
+
+- **`tools/fg_gate.py`** runs the tests and calls a run green only when it can prove what ran:
+  counts from the run's own fresh result file, the tree unchanged by the tests, and any tests you
+  name actually run. Stopping it with Ctrl-C stops the tests too.
+- **`tools/fg_mutrun.py`** plants the small bugs you describe, one at a time, runs the tests,
+  restores the code, and reports which bugs the tests caught and which survived.
+
+Forge Gate's own recent changes were gated this way: each step was reviewed by a separate AI
+agent session, not the one that built it, before it was merged.
 
 ## How this repository is made
 
