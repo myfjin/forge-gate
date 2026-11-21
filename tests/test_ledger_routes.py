@@ -21,7 +21,9 @@ WRITERS = ("record_exposure", "record_oracle", "record_mark", "record_event",
            "_expose", "_oracle_outcome", "_oracle_notes")
 # The ledger's internals (review F2): a direct _append(_row(...)) skips every writer rule and
 # writes a row that LOOKS like a valid writer's. No use outside ledger.py is allowed at all.
-PRIVATE = ("_append", "_row", "_locked", "_run", "EXPOSURE_NAME", "OUTCOME_NAME", "LOCK_NAME")
+PRIVATE = ("_append", "_row", "_locked", "_run", "EXPOSURE_NAME", "OUTCOME_NAME", "LOCK_NAME",
+           # the path canonicaliser (shared-tools S1): others use forge_gate.paths, not these copies
+           "_real", "_canon", "_under")
 FILE_NAMES = ("exposure.jsonl", "outcome.jsonl", "ledger.lock")
 # writer -> {(file relative to src/forge_gate, top-level function)}. Grows slice by slice (s2-s4).
 ALLOWED: dict = {
@@ -135,6 +137,7 @@ def test_the_scan_sees_every_form_of_use(tmp_path):
             getattr(L, "record_exposure")()
             L._append(p, [L._row("oracle", None)])
             forge_gate.ledger._locked(d, 1)
+            L._real(p), L._canon(p), L._under(p, d)
             open(d / "outcome.jsonl", "ab")
         def other():
             _append = 1                        # a local name, not the ledger's: not a use
@@ -151,6 +154,9 @@ def test_the_scan_sees_every_form_of_use(tmp_path):
         ("scout/report.py", "run", "_append"),
         ("scout/report.py", "run", "_row"),
         ("scout/report.py", "run", "_locked"),
+        ("scout/report.py", "run", "_real"),
+        ("scout/report.py", "run", "_canon"),
+        ("scout/report.py", "run", "_under"),
         ("scout/report.py", "run", "<file name>"),
     ])
 
