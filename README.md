@@ -148,6 +148,67 @@ Forge Gate (`docs/shared-tools.md`):
 Forge Gate's own recent changes were gated this way: each step was reviewed by a separate AI
 agent session, not the one that built it, before it was merged.
 
+## Where the code to check comes from
+
+Forge Gate doesn't care who wrote a file. It runs it and measures what comes out. In practice,
+code reaches it from four kinds of source, and each one is trusted differently.
+
+- **Your own file, or what your AI assistant just wrote.** This is the main case: a script from
+  Claude Code, Copilot, Cursor or any other agent, or one you wrote yourself. If it implements one
+  of the 10 catalog patterns, `forge-gate verify yourfile.py --pattern <name>` runs it against the
+  shipped reference and gives a verdict. Code that matches no catalog pattern gets no verdict; the
+  shared tools above can still tell you whether its own tests would notice a bug.
+- **The examples in `examples/`.** A known-good and a known-bad file for every pattern. Use them
+  to see what a real `PASS` and a real `FAIL` look like before trusting a verdict on your own code.
+- **The signed reference implementations** in `src/forge_gate/reference/`. These are byte copies
+  from the AURA pattern library, a signed collection of self-testing code patterns. They are the
+  oracles: Forge Gate compares your code with them and does not judge them.
+- **Pools that `scout` and `learn` read** (advisory today, see Status). A pool is a body of
+  existing code that scout searches to answer "what is this code related to?". There are two so
+  far. One is a **GitHub pool**: public repositories on a list signed with two keys, each pinned
+  to one commit and read from a private cache (KD-13). Today only python/cpython at v3.14.10 is
+  on it. The other is the **crew corpus**, described next. Scout reads pool code as
+  text and never runs it while searching.
+
+### Crew code collector: how we gather the code our own agents write
+
+AURA is built by a small crew of AI agents working with one person. Over months they have written
+thousands of scripts: backups, monitors, test harnesses, data tools. Most were written once,
+worked, and were forgotten, and the next agent wrote the same thing again. The **code collector**
+gathers that code so that it can be found, measured, and in the end proven or thrown away.
+
+How it works:
+
+1. **It harvests after the fact.** Agents don't change how they work. The collector reads the
+   session records they already leave behind, and takes out every piece of code they produced:
+   files written or edited, scripts passed inline to a shell, and longer shell commands.
+2. **Exclude, scrub, then store, always in that order.** Work done for outside clients is dropped
+   first. Secrets, keys, host names, addresses, user names and e-mail addresses are then removed in
+   memory, and a second pass checks the scrubbing. Only then is anything written to disk. The store
+   refuses any write a secret detector still matches. A separate scanner, sharing no code with the
+   scrubber, sweeps the result.
+3. **Every run proves it can fail.** Each run starts by planting fake secrets, fake client files
+   and a corrupt record. If they don't land exactly as expected, the run is marked invalid.
+4. **Each item keeps its evidence.** Who wrote it, when, and in which session. Did it **run**, and
+   with what exit code? Was it ever **proven red**, meaning run with a deliberately planted bug and
+   seen to fail? Is it still **scheduled**, still on disk, or gone? Every answer keeps the evidence
+   string it came from. "Not seen running" is recorded as *unknown*, never as *no*, and words alone
+   never upgrade an item to proven.
+5. **Near-copies are grouped.** Items with the same shape fall into one cluster. A cluster that
+   turns up in two or more projects is a sign the code is worth keeping. A cluster whose members
+   drifted apart is kept as a before/after pair. When an agent is about to write a new script, a
+   hook can show it the closest existing shapes first: *this already exists, here*.
+6. **Collected is not verified.** The corpus is raw input with the lowest trust. Scout reads it
+   only from an export whose manifest and checksums all match; anything else counts as blind, never
+   as clean. `forge-gate learn` can test a corpus item, but today only the chaos engine can give it
+   a `PASS` (KD-11, KD-12). Code reaches the signed pattern library only through that battery and a
+   reviewed harvest, never straight from the corpus.
+
+The corpus itself is **private**. It is built from private working conversations, so it is not
+published, and neither is the collector. What this repository ships is the reading side: scout's
+intake checks, and the ledgers that record whether reused code later held up (`KNOWN-DEBT.md`,
+KD-7, KD-11, KD-14).
+
 ## How this repository is made
 
 Most of this tree is published from a private working repository by a script that
