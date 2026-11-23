@@ -275,6 +275,17 @@ def main(argv: list[str] | None = None) -> int:
     box_parser.add_argument("--json", action="store_true")
     box_parser.set_defaults(func=cmd_box_selftest)
 
+    facts_parser = sub.add_parser(
+        "github-facts",
+        help="measure whether a ratified repo's own tests notice planted bugs, per function, in the box "
+             "(writes only $FORGE_GATE_SCOUT_DIR/github_facts.jsonl; a fact row, never a PASS)")
+    facts_parser.add_argument("spec", metavar="ORG/REPO@SHA", help="a ratified repo at its signed pin")
+    facts_parser.add_argument("--functions", nargs="+", metavar="NAME",
+                              help="only these functions: NAME, PATH::NAME or MODULE:NAME (default: every "
+                                   "admitted top-level function)")
+    facts_parser.add_argument("--json", action="store_true", help="print the rows as JSON lines")
+    facts_parser.set_defaults(func=cmd_github_facts)
+
     led = sub.add_parser(
         "ledger", help="the outcome ledgers (step 8a): mark kept code, run its build/tests, show counts")
     lsub = led.add_subparsers(dest="ledger_cmd", required=True)
@@ -336,6 +347,29 @@ def cmd_box_selftest(args) -> int:
         print(f"PASS: every boxed attempt blocked, every unboxed attempt leaked ({depth})" if ok else
               "FAIL: " + ("a boxed attempt got through" if not boxed["ok"] else "the unboxed control did not leak: targets not real"))
     return 0 if ok else 1
+
+
+def cmd_github_facts(args) -> int:
+    """Exit 0 when at least one function was MEASURED, 3 when every row is BLIND, 2 when there
+    is no place for the rows ($FORGE_GATE_SCOUT_DIR)."""
+    from . import config
+    from .scout import upstream_facts
+
+    try:
+        res = upstream_facts.run(args.spec, args.functions)
+    except config.NotConfigured as e:
+        print(f"github-facts: {e}", file=sys.stderr)
+        return 2
+    for row in res.rows:
+        if args.json:
+            print(json.dumps(row, sort_keys=True))
+        else:
+            what = row.get("function") or "(run)"
+            counts = f" m={row['m']} k={row['k']} s={row['s']} u={row['u']}" if "m" in row else ""
+            print(f"{row['outcome']:<40} {row.get('file') or ''}::{what}{counts}")
+    print(f"github-facts: run {res.run_id}: {res.measured} MEASURED of {len(res.rows)} rows -> {res.facts_file}",
+          file=sys.stderr)
+    return 0 if res.measured else 3
 
 
 def cmd_learn(args) -> int:

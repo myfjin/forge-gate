@@ -12,14 +12,14 @@ import json
 from pathlib import Path
 
 from .. import config, ledger
-from . import behaviour, box, corpus, embed, experience, intent_lens, meaning_lens, rule2, shape, shape_lens
+from . import behaviour, box, corpus, embed, experience, ghsearch, intent_lens, meaning_lens, rule2, shape, shape_lens
 from .outcomes import BLIND, FOUND, blind, clean, found
 
 # §4a.4 rule 1: n is fixed BEFORE the query as the similarity lenses that apply to the
 # pool. For the corpus pool: shape + language meaning (they read the same bytes and count
 # once together), behaviour, intent. Only shape is built in slice 1.
 CORPUS_LENSES = ("shape (+ language meaning, counted once)", "behaviour", "intent")
-OTHER_POOLS = (("library", "signed"), ("registry", "tier"), ("github", "raw"))
+OTHER_POOLS = (("library", "signed"), ("registry", "tier"))   # github: ghsearch (GitHub-lane S2)
 LANG_BY_SUFFIX = {".py": "python"}
 
 
@@ -31,7 +31,8 @@ def _control_member(members):
     return None
 
 
-def run(path: Path, export_root: Path | None = None, intent: str | None = None) -> dict:
+def run(path: Path, export_root: Path | None = None, intent: str | None = None,
+        gh_opts: dict | None = None) -> dict:
     data = Path(path).read_bytes()
     lang = LANG_BY_SUFFIX.get(Path(path).suffix)
     rep = {"file": str(path), "language": lang or "unknown",
@@ -127,6 +128,14 @@ def run(path: Path, export_root: Path | None = None, intent: str | None = None) 
         "skipped": [blind(f"newer export {r} not used: {w}") for r, w in intake.skipped]}
     for pool, trust in OTHER_POOLS:
         rep["related"][pool] = {"trust": trust, "outcome": blind("pool not in slice 1")}
+    # GitHub pool (GitHub-lane S2): the same shape lens over ratified, pin-checked text; its own
+    # planted control. Not exposed in the ledger (S2 DOC-GAP: exposure stays corpus-only).
+    gh = (ghsearch.GhResult(blind("rule2-failed: lens not switched on")) if fails
+          else ghsearch.search(query, lang=lang, **(gh_opts or {})))
+    checks["control-github"] = gh.control
+    rep["related"]["github"] = {"trust": ghsearch.TRUST, "outcome": gh.outcome,
+                                "shape_hits": [vars(h) for h in gh.hits], "looked_at": gh.looked_at,
+                                "repos": gh.repos, "seconds": gh.seconds}
     rep["change"] = blind("no baseline: not built in slice 1")
     checks["rule2-experience"], checks["experience"] = _experience(rep)
     checks["exposure"] = _expose(rep)
@@ -394,9 +403,15 @@ def render(rep: dict) -> str:
         out.append(f"      B={h['score']:.2f}  {h['item_id']}  pool={h['pool']} trust={h['trust']} kind={h['kind']}  "
                    f"reason: same outputs on {h['agree']}/{h['considered']} inputs ({h['query_fn']} vs {h['cand_fn']})"
                    + _tail(h))
-    for pool in ("library", "registry", "github"):
+    for pool in ("library", "registry"):
         r = rep["related"][pool]
         out.append(f"  {pool} ({r['trust']}): {r['outcome'].label()}")
+    g = rep["related"]["github"]
+    out.append(f"  github ({g['trust']}): {_lbl(g['outcome'])}  [{g.get('looked_at', 0)} functions, "
+               f"{g.get('seconds', 0.0):.1f} s]")
+    for h in _noted(g.get("shape_hits")):
+        out.append(f"      J={h['score']:.2f}  {h['item_id']}  pool={h['pool']} trust={h['trust']} kind={h['kind']}  "
+                   "reason: shape shingles" + _tail(h))
     out.append(f"CHANGE   {rep['change'].label()}")
     out += ["", "NO VERDICT. This report tells you what the code DOES."]
     return "\n".join(out)

@@ -22,6 +22,13 @@ three must fail, judged from OUTSIDE (the secret's bytes absent from the output,
 target unchanged), not from the probe's own word. If any succeeds, the run aborts as
 BLIND(box-red-arm: ...). There is no exempt path.
 
+THE FETCH RECORD (KD-13 a, GitHub-lane loop S1). A fetch-mode caller passes ``record_dir``, an
+existing folder it owns. ``run`` then writes the record (set, members, every CONNECT the proxy
+logged, box.py's own dial list) to ``record_dir/fetch-<utc>-<pid>-<hex>.json`` ITSELF: once as
+``state: started`` before any socket opens, and again, atomically (temp file, fsync, rename), before
+it returns AND when it raises. A caller that crashes after the run no longer loses it (step 7's
+record died with its caller's script). A record that cannot be written makes the result BLIND.
+
 Copies carry file DATA only (no modes, no ACLs; symlinks skipped and named in the result). So
 nothing in the box is executable by path: callers run ``[interpreter, "/src/file"]``, never
 ``./file`` (6E BU-2, 2026-11-11).
@@ -116,6 +123,7 @@ class BoxResult:
     red_arm: dict = field(default_factory=dict)
     skipped_links: list = field(default_factory=list)  # 6E BU-1: left out of the copies, named
     fetch_record: dict = field(default_factory=dict)   # fetch mode: set, its file hash, every CONNECT
+    fetch_record_file: str | None = None               # KD-13 (a): where run() wrote it (record_dir given)
 
 
 def box_user() -> str | None:
@@ -422,12 +430,80 @@ def _fetch_context(host_set: str, sets: dict, resolve=None) -> dict:
     return {"proxy": proxy, "proxy_dir": proxy_dir, "fwd_dir": fwd_dir, "members": members, "dials": dials}
 
 
+def _write_record(path: Path, record: dict) -> None:
+    """Atomic and durable: temp file in the same folder, fsync, rename, fsync the folder."""
+    data = (json.dumps(record, sort_keys=True, default=str) + "\n").encode("utf-8")
+    tmp = path.with_name(path.name + ".part")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640)
+    try:
+        view = memoryview(data)
+        while view:
+            view = view[os.write(fd, view):]
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    os.replace(tmp, path)
+    dfd = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(dfd)
+    finally:
+        os.close(dfd)
+
+
+def _utc() -> str:
+    import time
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
 def run(src: Path, argv: list[str], *, mode: str = "run", timeout: float = 60,
         ref: Path | None = None, host_set: str | None = None, keep: Path | None = None,
+        record_dir: Path | None = None,
         _host_sets_file: Path | None = None, _resolve=None, _same_user_ok: bool = False) -> BoxResult:
     """Run ``argv`` in the box. Fetch mode needs ``host_set`` (a name in host_sets.json); its
     result's ``fetch_record`` names the set, the file's sha256 and every CONNECT of the run.
+    With ``record_dir`` (fetch mode only; an existing folder) the record is also written there by
+    this function, before it returns and when it raises (KD-13 a); ``fetch_record_file`` names it.
     ``_host_sets_file`` / ``_resolve`` exist for tests only (a fake set, a local fake upstream)."""
+    record: dict = {}
+    if record_dir is None:
+        return _run(src, argv, mode, timeout, ref, host_set, keep, _host_sets_file, _resolve,
+                    _same_user_ok, record)
+    if mode != "fetch":
+        return BoxResult(blind("record-dir-is-for-fetch-mode"))
+    rdir = Path(record_dir)
+    if not rdir.is_dir():   # checked before anything runs: no fetch without a place for its record
+        return BoxResult(blind(f"fetch-record-dir-missing: {rdir}"))
+    stamp = _utc().replace("-", "").replace(":", "")
+    path = rdir / f"fetch-{stamp}-{os.getpid()}-{secrets.token_hex(3)}.json"
+    record.update(state="started", started_at=_utc(), mode="fetch", host_set=host_set,
+                  argv=[str(a) for a in argv])
+    try:
+        _write_record(path, record)
+    except OSError as e:
+        return BoxResult(blind(f"fetch-record-unwritable: {e}"))
+    try:
+        res = _run(src, argv, mode, timeout, ref, host_set, keep, _host_sets_file, _resolve,
+                   _same_user_ok, record)
+    except BaseException as e:
+        record.update(state="error", error=f"{type(e).__name__}: {e}"[:2000], ended_at=_utc())
+        try:
+            _write_record(path, record)
+        except OSError:
+            pass   # the exception that is already in flight is the louder one; the started record stays
+        raise
+    record.update(state="done", ended_at=_utc(), outcome=res.outcome.label(), returncode=res.returncode)
+    res.fetch_record = record
+    try:
+        _write_record(path, record)
+    except OSError as e:
+        res.outcome = blind(f"fetch-record-unwritable: {e}")
+        return res
+    res.fetch_record_file = str(path)
+    return res
+
+
+def _run(src, argv, mode, timeout, ref, host_set, keep, _host_sets_file, _resolve, _same_user_ok,
+         record: dict) -> BoxResult:
     sets = sha = None
     if mode == "fetch":
         if not host_set:
@@ -460,13 +536,14 @@ def run(src: Path, argv: list[str], *, mode: str = "run", timeout: float = 60,
     except fetchproxy.SocketPathTooLong as e:
         return BoxResult(blind(f"box-unavailable: {e}"))
     try:
+        if fx is not None:   # known before the red arm runs, so a raise there still records them
+            record.update({"mode": "fetch", "host_set": host_set, "members": sorted(fx["members"]),
+                           "host_sets_sha256": sha, "box_user": box_user(),
+                           "overrides": [k for k, v in (("host_sets_file", _host_sets_file), ("resolver", _resolve),
+                                                        ("same_user", _same_user_ok)) if v]})
         arm = red_arm(mode) if fx is None else red_arm(mode, fetch=fx)   # run mode: the call as before
-        record = {}
         if fx is not None:
-            record = {"mode": "fetch", "host_set": host_set, "members": sorted(fx["members"]),
-                      "host_sets_sha256": sha, "box_user": box_user(), "red_arm_connects": arm.get("proxy_log", []),
-                      "overrides": [k for k, v in (("host_sets_file", _host_sets_file), ("resolver", _resolve),
-                                                   ("same_user", _same_user_ok)) if v]}
+            record["red_arm_connects"] = arm.get("proxy_log", [])
         if not arm.get("probe"):
             cannot = start_failure()
             if cannot:
@@ -489,11 +566,13 @@ def run(src: Path, argv: list[str], *, mode: str = "run", timeout: float = 60,
     finally:
         if fx is not None:
             log = fx["proxy"].stop()
+            # KD-13 (a): filled here, on the way out of every path, raises included
+            record["connects"] = [e for e in log if e["phase"] == "run"]
+            record.setdefault("red_arm_connects", [e for e in log if e["phase"] != "run"])
+            record["dials"] = list(fx["dials"])
             shutil.rmtree(fx["proxy_dir"], ignore_errors=True)   # our own folders, created above
             shutil.rmtree(fx["fwd_dir"], ignore_errors=True)
     if fx is not None:
-        record["connects"] = [e for e in log if e["phase"] == "run"]
-        record["dials"] = list(fx["dials"])
         if "KEEP-REFUSED" in skipped:
             return BoxResult(blind("keep-too-large"), rc, out, err, arm, skipped, record)
     note = f"; skipped {len(skipped)} symlink(s): {', '.join(skipped[:5])}" if skipped else ""
