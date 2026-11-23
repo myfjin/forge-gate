@@ -29,6 +29,7 @@ FORGE_GATE_BRAIN_DATA      other project   NONE: the Brain's data folder (``lear
 FORGE_GATE_SCOUT_DIR       runtime state   NONE: scout's state folder (report cards, learn lock)
 FORGE_GATE_REGISTRY_BUILD_LOCK other project NONE: the lock file the registry build holds
 FORGE_GATE_LEDGER_DIR      runtime state   NONE: the exposure + outcome ledgers (step 8a); unset = ledgers OFF
+FORGE_GATE_SCOUT_LIST_DIR  in-project      ``<checkout>/scout`` (signed list + allowed_signers), else unset fails, naming the key
 =========================  ==============  =========================================
 """
 
@@ -66,6 +67,10 @@ LEDGER_KEY = "FORGE_GATE_LEDGER_DIR"
 # vector cache. Both unset = those lenses are BLIND(not-configured).
 EMBED_URL_KEY = "FORGE_GATE_EMBED_URL"
 EMBED_CACHE_KEY = "FORGE_GATE_EMBED_CACHE_DIR"
+# KD-13 (f), GitHub-lane loop S1: the folder holding the signed list ``trusted_repos.jsonl`` and
+# ``allowed_signers``. Default: ``scout/`` of the source checkout this file sits in. An installed
+# Forge Gate has no checkout, so it must be told; it never guesses (same shape as KD-2).
+SCOUT_LIST_DIR_KEY = "FORGE_GATE_SCOUT_LIST_DIR"
 LOOPBACK = ("127.0.0.1", "::1")          # literal addresses only: a name goes through /etc/hosts (s1 review F3)
 
 
@@ -217,6 +222,27 @@ def ledger_dir() -> Path:
     p = _as_path(raw)
     if not p.is_dir():
         raise NotConfigured(f"{LEDGER_KEY}={p} is not an existing directory ({where()})")
+    return p
+
+
+def scout_list_dir() -> Path:
+    """The folder holding ``trusted_repos.jsonl`` and ``allowed_signers`` (KD-13 f).
+
+    ``$FORGE_GATE_SCOUT_LIST_DIR`` / config.toml first; else ``<checkout>/scout`` when this file
+    sits in a source checkout; else NotConfigured naming the key. It must be an existing folder:
+    a typo would otherwise read as "no repo is ratified", which looks like a quiet BLIND."""
+    raw = configured(SCOUT_LIST_DIR_KEY)
+    if raw is not None:
+        p = _as_path(raw)
+    elif _is_checkout(CODE):
+        p = CODE / "scout"
+    else:
+        raise NotConfigured(
+            f"{SCOUT_LIST_DIR_KEY} is not set and Forge Gate is not running from a source checkout. "
+            f"Set it in the environment or in config.toml [paths] to the folder holding "
+            f"trusted_repos.jsonl and allowed_signers ({where()}).")
+    if not p.is_dir():
+        raise NotConfigured(f"{SCOUT_LIST_DIR_KEY}={p} is not an existing directory ({where()})")
     return p
 
 

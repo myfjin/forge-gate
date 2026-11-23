@@ -31,6 +31,10 @@
 # here, outside the repo, so a commit that swaps scout/allowed_signers cannot move it. NO default:
 # unset, every GitHub file is BLIND(unsigned). Form: operator=<16 hex>.
 # FORGE_GATE_RATIFY_PIN = "operator=<16-hex key id>"
+# The folder holding the signed list (trusted_repos.jsonl) and allowed_signers (KD-13 f).
+# Default: scout/ of the source checkout. An installed Forge Gate has no checkout: set it, or
+# learn --github fails BLIND(unsigned) naming this key.
+# FORGE_GATE_SCOUT_LIST_DIR = "/path/to/forge-gate/scout"
 
 # `forge-gate learn` (design §4.5, build step 6b-1). NO defaults; unset, learn fails naming the key.
 # The Brain's data folder (its paths.DATA). learn appends ONLY to scout's own files there,

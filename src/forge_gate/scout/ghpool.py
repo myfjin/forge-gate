@@ -27,9 +27,24 @@ from pathlib import Path, PurePosixPath
 from . import fetchproxy, ghcache, ratify
 
 POOL = "github"
-REPO_ROOT = Path(__file__).resolve().parents[3]
-LIST_FILE = REPO_ROOT / "scout" / "trusted_repos.jsonl"        # tracked, public-safe (G8)
-SIGNERS_FILE = REPO_ROOT / "scout" / "allowed_signers"
+# KD-13 (f): the signed list and its signer file are found through config.scout_list_dir()
+# (FORGE_GATE_SCOUT_LIST_DIR, default <checkout>/scout), never through this file's position, so an
+# installed Forge Gate can be pointed at them. Both are tracked and public-safe (G8).
+LIST_NAME = "trusted_repos.jsonl"
+SIGNERS_NAME = "allowed_signers"
+# Test-only overrides, None in real use: a test may point admit() at its own files.
+LIST_FILE: Path | None = None
+SIGNERS_FILE: Path | None = None
+
+
+def list_files() -> tuple[Path, Path]:
+    """(trusted_repos.jsonl, allowed_signers). Raises config.NotConfigured naming the key when no
+    folder can be found (KD-13 f)."""
+    if LIST_FILE is not None and SIGNERS_FILE is not None:
+        return LIST_FILE, SIGNERS_FILE
+    from .. import config
+    d = config.scout_list_dir()
+    return (LIST_FILE or d / LIST_NAME), (SIGNERS_FILE or d / SIGNERS_NAME)
 
 # G4 (the maintainer 2026-11-14): a CLOSED set. Copyleft and anything unknown stay out (§12.8 Q5).
 # KD-13 (d) (the maintainer 2026-11-15): PSF-2.0 added; it is a component of the Python-2.0 stack.
@@ -186,7 +201,15 @@ def admit(spec: str, path: str, *, list_file: Path | None = None, signers_file: 
         sets, _ = fetchproxy.load_host_sets(host_sets_file or fetchproxy.HOST_SETS_FILE)
     except (OSError, ValueError) as e:
         raise NotAdmitted(f"unsigned: host sets unreadable: {e}") from None
-    v = ratify.ratified(list_file or LIST_FILE, signers_file or SIGNERS_FILE, org, repo, commit, sets)
+    if list_file is None or signers_file is None:
+        from .. import config
+        try:
+            found_list, found_signers = list_files()
+        except config.NotConfigured as e:   # loud, names the key; nothing is read or written
+            raise NotAdmitted(f"unsigned: no signed list: {e}") from None
+        list_file = list_file or found_list
+        signers_file = signers_file or found_signers
+    v = ratify.ratified(list_file, signers_file, org, repo, commit, sets)
     if not v.ok:
         raise NotAdmitted(f"unsigned: {org}/{repo}@{commit}: {v.reason}")
     # The signer file is in the repo, so whoever can commit could swap the key under "operator". The

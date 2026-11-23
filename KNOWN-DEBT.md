@@ -313,10 +313,21 @@ is reviewed by a seat that did not build it.
 
 - **What:** step 7 built the signed list (`scout/trusted_repos.jsonl` + `scout/allowed_signers`,
   ssh-keygen -Y, 2 distinct keys incl. operator), the trust pin outside the repo
-  (`FORGE_GATE_RATIFY_PIN`), the private pinned cache and `learn --github`. One repo is ratified:
-  python/cpython at v3.14.10 (b703b2c5). Open:
+  (`FORGE_GATE_RATIFY_PIN`), the private pinned cache and `learn --github`. python/cpython at
+  v3.14.10 (b703b2c5) was ratified first; more-itertools/more-itertools at v10.8.0 (8c1a6ef) was
+  ratified on 2026-11-22 by the GitHub-lane loop (`docs/github-lane.md`). Open:
   (a) the fetch record (every CONNECT, the dial list) is returned in memory; only the caller writes
   it. The caller's script crashed after the one fetch, so that run's record is lost.
+  **DONE 2026-11-22 (GitHub-lane loop S1):** `box.run(..., record_dir=DIR)` writes the record
+  itself to `DIR/fetch-*.json`: `started` before any socket opens, then atomically (fsync, rename)
+  `done` before it returns or `error` when it raises; an unwritable record is BLIND. Tests
+  `tests/test_github_lane_s1.py`: a caller killed (`os._exit`) right after the run keeps the record
+  with its CONNECT and dial; a run that raises after a CONNECT keeps it too. Still open: a fetch
+  called WITHOUT `record_dir` keeps the record in memory only (the in-box tests and the reach check
+  do); every real fetch must pass one (`docs/github-lane.md`). **Proof:** the GitHub-lane loop ledger (`loops/github-lane-2026-11/LEDGER.md`, in the private docs), row
+  `2026-11-22T09:24Z` VERIFIED S1 (parent mutants: no record written in run mode, missing folder,
+  final write unwritable, dials emptied: each KILLED rc 1), and row `2026-11-22 17:28Z` (P4: the
+  live ls-remote and the one live fetch each left their record on disk, `state: done`).
   (b) "only the set's hosts were dialled" rests on box.py's own counter and the proxy's own log;
   there is no witness outside the code under test.
   (c) the second signer is not an independent custodian: the 5S seat key lives under `au` on the
@@ -331,13 +342,29 @@ is reviewed by a seat that did not build it.
   go ahead brother"; PSF-2.0 is on the list now (a file is still refused if another branch of its
   AND is not).
   (e) trust signals: closed issues and dependents are unknown (no `api.github.com`); first-commit
-  age and contributors are relayed from 5S's 2026-10-31 report and signed as such.
+  age and contributors are relayed from 5S's 2026-10-31 report and signed as such. For
+  more-itertools (2026-11-22) the signed line carries `last_commit_age_days` 446, read from the
+  fetched commit, and the other four signals as `null` (unknown) (ledger row `2026-11-22 17:28Z`).
+  They stay unknown until there is a source.
   (f) the list and signer files are found through the source tree (`parents[3]`), so an installed
-  Forge Gate cannot find them (same shape as KD-2).
+  Forge Gate cannot find them (same shape as KD-2). **DONE 2026-11-22 (S1):** config key
+  `FORGE_GATE_SCOUT_LIST_DIR`, default `<checkout>/scout`; unset outside a checkout (or not a
+  folder) fails naming the key, and `learn --github` says `BLIND(unsigned: no signed list: ...)`
+  without reading anything. Tests in `tests/test_github_lane_s1.py`. The trust pin is unaffected.
+  **Proof:** ledger row `2026-11-22T09:24Z` VERIFIED S1 (parent mutants "list dir not a dir" and
+  "wrong list name" KILLED rc 1).
   (g) DECISIONS-7 G2(c) shows `signatures: [{key_id, sig}]`; the reviewed verifier uses
-  `{signer, sig}` (the code is right; the doc is stale).
+  `{signer, sig}` (the code is right; the doc is stale). **DONE 2026-11-22 (S1):** a dated note
+  appended under G2(c) of the decision record (outside this repo), naming `{signer, sig}`; the
+  original text is kept. **Proof:** ledger row `2026-11-22T09:13Z` [S1] READY and its handoff
+  (`handoff/S1.md`: the record's md5 before and after the note, and the signed line's real shape
+  `[sig, signer]` read at `ratify.py:161`); accepted in row `2026-11-22T09:24Z` VERIFIED S1.
   (h) on the deploy host a config folder carries a default ACL for a second local user, so a new private key
   there comes out group-readable and ssh-keygen refuses it (fails closed; 5S fixed its own folder).
+  **DONE 2026-11-22 (S1):** ops note in `docs/github-lane.md` (the check, the per-folder fix,
+  and why the home folder's own ACL is left alone), from a `getfacl` read on the deploy host. **Proof:** ledger row `2026-11-22T09:13Z` [S1] READY
+  (`handoff/S1.md`, the `getfacl` facts) and row `2026-11-22T09:24Z` VERIFIED S1; the P4 fetch's
+  record folder is named in row `2026-11-22T09:24Z` DECISION, item 3, with a `getfacl` check before use.
   (i) a ratify key without a passphrase lets any process running as the key's owner sign, so its
   signature does not prove its owner was present. CLOSED for the maintainer's key 2026-11-15: passphrase set
   (empty and wrong passphrases refused; key id still dad6972af38242fc; not in ssh-agent). The
@@ -349,6 +376,9 @@ is reviewed by a seat that did not build it.
   the builder's ssh), or the maintainer's recorded acceptance (accepted 2026-11-15); (d) the maintainer confirms `Python-2.0` for cpython
   and decides on PSF-2.0; (e) the two unknowns stay unknown or get a source; (f) a configured path,
   or the files shipped as package data; (g) the doc corrected; (h) an ops note, or the ACL narrowed; (i) done 2026-11-15.
+  (a), (f), (g), (h) done 2026-11-22 (S1; (a) also held in the live P4 fetch), proofs above;
+  (b) parked for the post-11-28 crew review; (e) stays unknown. What the new fact tool does not
+  do is KD-17.
 - **Owner:** Claude, except (c), (d) and (i): the maintainer. **Decide by:** (c), (d) at the end-of-loop crew
   review; (a), (b), (f), (g), (h) before the publish gate, 2026-11-25 at the latest.
 
@@ -533,3 +563,128 @@ is reviewed by a seat that did not build it.
   differ; (c) a load sample during the run, in the record; (d) a host whose file system accepts
   non-UTF-8 names and has `F_GETPATH`, or the branch removed.
 - **Owner:** Claude. **Decide by:** 2026-12-15 (the next design doc that uses the tools).
+
+## KD-17 · the GitHub fact tool (GitHub-lane loop): what it does not do
+
+Opened 2026-11-22/23 (GitHub-lane loop, slice S5). Every number below was measured on 2026-11-22
+in the loop's live run on the deploy host (more-itertools v10.8.0, run
+`20261122T173940Z-1e154842`) and is traced to a row of the GitHub-lane loop ledger
+(`loops/github-lane-2026-11/LEDGER.md`, in the private docs), named by its UTC stamp.
+How the lane works: `docs/github-lane.md`.
+
+- **What:** `forge-gate github-facts ORG/REPO@SHA` plants small bugs into one function at a time,
+  runs the repo's own tests in the run-mode box, and appends one fact row per function to
+  `$FORGE_GATE_SCOUT_DIR/github_facts.jsonl` (`scout/upstream_facts.py`, `scout/plant.py`,
+  `tools/fg_unittest_json.py`). What it does not do, or does only partly:
+  (a) **learn does not read github facts.** The tool writes `github_facts.jsonl` and nothing reads
+  it; scout's learn and cards never see a fact. That is by design for this loop (DESIGN v3 §3
+  "Out": no change to `learn.py` or `cards.py`). Measured 2026-11-22: no scheduled job or timer
+  runs scout or learn on either host, and neither host's config sets `FORGE_GATE_SCOUT_DIR` or
+  `AURA_SCOUT_REPORT_CARDS`; learning happens only when someone runs `forge-gate learn` by hand.
+  Done looks like, in this order: (1) a design step "learn reads facts": scout uses a function's
+  fact (strongly or weakly tested upstream) when it shows that function as related to agent code,
+  never as a PASS, and the design says where the facts live (live scout dir → Brain); (2) one
+  manual learn run, proven on a COPY of the Brain; (3) only then automation (a schedule, or a hook
+  after each fact run), switched on by the maintainer explicitly, because that is the first time
+  GitHub-derived facts reach the live system. Owner: the maintainer + Claude. Decide by: after the
+  GitHub-lane loop closes. (Ledger row `2026-11-22 18:05Z`: the maintainer asked for this item in S5's known debt.)
+  (b) **F-P4-1: one row says MEASURED without an import proof.** `distinct_permutations` is
+  labelled MEASURED although one of its mutant runs timed out and so carries no import proof
+  (R4: a timed-out run cannot print `module_file`). The loop's own recount (DONE 2: "every run's
+  `module_file`") does not count it: the tool's 68 MEASURED became 67 in the recount. Where:
+  `scout/upstream_facts.py`, the step that sets `outcome`. Done looks like: a row whose runs do not
+  all carry a proof is not MEASURED (or the timed-out mutant is excluded from m, k, s and named),
+  with a test that fails today. (Ledger row `2026-11-22T21:55Z`.)
+  (c) **F-P4-2: a plain `pytest` can poison its own fixture.** DONE 2026-11-23 (close commits):
+  the fixture is read through `_fixture_files()`, which skips `__pycache__/` and dot-files; the
+  test `test_fixture_reader_skips_pycache` plants a `.pyc` and a `.DS_Store` and pins the 4 tracked
+  names. Before the fix: `tests/test_scout_ghsearch.py`
+  reads EVERY file under `tests/fixtures/ghsearch_fixture/` as text. On 2026-11-22 a plain `pytest`
+  run (not the gate) on the deploy host wrote `__pycache__/*.pyc` under the fixture's `Lib/test/`,
+  and that test then failed at collection. The pinned gate is immune (it sets its own
+  `pycache_prefix`); a plain `pytest` on a clean clone is not. The stray files were archived, not
+  deleted. Done looks like: the test reads only the fixture's tracked source files (or skips
+  `__pycache__`), with a test that writes a `.pyc` there and still passes. This was fixed before the public PR. (Ledger row `2026-11-22T21:55Z`.)
+  (d) **96 of 172 functions have no fact.** The 4 h budget (R6, 14 400 s) fitted the first 76
+  functions in source order; the other 96 are `BLIND(budget-cut)`. Of the 172 rows: 68 MEASURED
+  (67 after the recount, see b), 8 `BLIND(no-mutants)`, 96 `BLIND(budget-cut)`. Done looks like: a
+  second run over the cut functions, or a bigger budget: that is the maintainer's call. (Ledger row
+  `2026-11-22T21:55Z`.)
+  (e) **the controls count 859 tests; the stdlib runner counts 669.** The tool's controls report
+  859 tests run. The loop's own check ran stdlib `unittest tests.test_more` in the same box and got
+  669 (OK). The difference is not explained (a guess, not measured: a different scope, for example
+  the tool's discovery from `.` also loads `tests/test_recipes.py` and the doctests). Done looks
+  like: the two counts reconciled by name, or the cause written here. (Ledger row
+  `2026-11-22T21:55Z`.)
+  (f) **R3 is not re-checkable from a row.** A control keeps only `{rc, tests_run,
+  pass_set_sha256}`, so "the failing test passed in both controls" (R3) cannot be re-derived from
+  the stored row; the loop's recount checked it on examples (one CAUGHT mutant of `chunked`,
+  re-run by hand with the same failing tests), not in general. Done looks like: the controls store
+  their passing test ids (or the row stores, per mutant, which failing ids were in the pass set).
+  (Ledger row `2026-11-22T21:55Z`.)
+  (g) **the operators are hand-picked.** Five classes only (comparison flip, `+`↔`-`, integer
+  constant ±1, `return <expr>`→`return None`, `and`↔`or`), at most 12 per function, and only
+  top-level functions (no methods, no async, no nested functions). A function's k/m is a fact
+  about THESE mutants, not about every possible bug. (DESIGN v3 R5; ledger row
+  `2026-11-22T14:34Z` [S3] READY, handoff open items.)
+  (h) **equivalent mutants are not marked.** A mutant that cannot change behaviour counts as
+  SURVIVED, the same as a real miss. The run had 16 SURVIVED; the one the loop re-ran by hand
+  (`last:const:290:38`) is equivalent (rc 0, the tests are right not to notice). So s is an upper
+  bound on real misses. (Ledger row `2026-11-22T21:55Z`.)
+  (i) **unittest only.** The box has no pytest, so only a repo whose tests run under stdlib
+  `unittest` discovery (start dir `.`, pattern `test*.py`, `load_tests`) can produce facts.
+  (DESIGN v3 §6 A2, R2.)
+  (j) **one repo, one pin older than the newest release.** Facts exist for more-itertools only, at
+  v10.8.0 (8c1a6ef). The newest release line (11.x) needs Python ≥ 3.11 and the deploy host has
+  3.10 only, so the pin is not the newest release. (DESIGN v3 §14 item 1; ledger row
+  `2026-11-22 17:28Z`.)
+  (k) **no PASS, by design.** A fact row says how strongly upstream's tests pin a function. It is
+  never a PASS or FAIL card for anyone's code (the maintainer's decision of 2026-11-21: the output is a fact row, never a PASS).
+  (l) **`ratify.py`'s docstring is out of date.** It says "Before any fetch, scout verifies every
+  line". The real order, for both ratified repos, is fetch → line written from the fetched tree →
+  signatures → cache: the fetch comes before the line exists (DESIGN v3 N10, §5 P4 step 3). The
+  code is right; the docstring is not. Done looks like: the docstring corrected (a code-file edit,
+  so not in this docs-only slice).
+  (m) **version-gated code is skipped whole.** A candidate inside an `if` that reads
+  `sys.version_info` (or `hexversion`) is not planted and is counted as `version_gated`. Every node
+  under such an `if` is skipped, the `else` branch and the test itself too, so the branch that
+  does run on the host's Python is never planted. The count is low, never too high. (DESIGN v3 R5,
+  F18; ledger row `2026-11-22T14:34Z`, review F9.)
+  (n) **smaller items queued by the slices** (each: ledger row, then the slice's handoff):
+  - fetch mode without `record_dir` still keeps the record in memory only (the in-box tests and
+    the reach check do this); a fix is `BLIND(fetch-needs-record-dir)` plus a test-only override
+    (S1 F1, row `2026-11-22T09:24Z` DECISION item 2);
+  - a failed error-path write of the fetch record leaves `state: started`, which looks the same as
+    a kill -9 (S1 F2);
+  - fetch records are created `0640` in the caller's folder; in a folder with the deploy host's
+    default ACL (KD-13 h) the second local user can read them (S1 F5);
+  - unparsable files (syntax newer than the host's Python) leave the GitHub pool, counted only,
+    with no threshold that makes the pool BLIND (S2 F3, row `2026-11-22T13:23Z`);
+  - the admission rules exist twice (`ghpool.admit` and `ghsearch._repo_members`) and can drift;
+    tests pin today's behaviour (S2 review note);
+  - every `forge-gate scout` run verifies the signatures and parses the whole GitHub pool, about
+    7 s on the cpython cache, with no opt-out (S2 review note);
+  - the fact tool has no DIRECT import of `learn` or `cards`, but `scout/__init__.py` imports
+    `cards`, so cards is loaded in-process (S3 F5, row `2026-11-22T15:25Z`);
+  - if removing the tool's staging copy under the box root fails, the error is ignored
+    (`rmtree(ignore_errors=True)`) and a copy of the repo stays behind unreported (S3 F6);
+  - a bad "after" control also blinds the next function of the module (conservative; S3 F8);
+  - the test code runs in the same process as the runner that writes the report, so it could forge
+    one; it is trusted because the repo is signed (S3 review question);
+  - a function defined in a package's `__init__.py` gets the module name `pkg.__init__` (S3 parent
+    mutant T9, real, low impact: more-itertools' `__init__.py` defines no functions);
+  - the pinned gate builds its environment from nothing, so `-m box` tests cannot run through it;
+    the box must-run was pytest run directly with the run settings (row `2026-11-22T15:25Z`
+    DECISION). The gate needs an env pass-through allowlist (a tool change).
+  - the publisher's quotes gate flags a line that names the maintainer AND holds a quotation or a
+    speech verb; an allowed phrase is stripped first. A quotation whose only maintainer reference
+    sits inside an allowed phrase (one of the three mutation-operator or pin-value phrases in
+    `plant.py` and `tests/test_github_facts.py`) would pass. Each entry is an exact phrase in one
+    file, so the risk is low. Fix to be designed: judging the rest for quotation marks alone would
+    flag two of the three real lines again (close review N1 and its follow-up, in the private docs).
+- **Done looks like:** each item's own line above; for (g), (i), (j), (k): stays as stated until a
+  design step changes it; for (n): each fixed with a test that fails without the fix, or moved to
+  its own KD item.
+- **Owner:** (a) the maintainer + Claude; (d) the maintainer; the rest Claude. **Decide by:** (a) after the
+  GitHub-lane loop closes; (b), (e), (f), (h),
+  (l), (m), (n) by 2026-12-15 (the next GitHub-lane design doc); (d) at the post-11-28 crew review.
