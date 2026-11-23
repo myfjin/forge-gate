@@ -604,7 +604,8 @@ How the lane works: `docs/github-lane.md`.
   and that test then failed at collection. The pinned gate is immune (it sets its own
   `pycache_prefix`); a plain `pytest` on a clean clone is not. The stray files were archived, not
   deleted. Done looks like: the test reads only the fixture's tracked source files (or skips
-  `__pycache__`), with a test that writes a `.pyc` there and still passes. This was fixed before the public PR. (Ledger row `2026-11-22T21:55Z`.)
+  `__pycache__`), with a test that writes a `.pyc` there and still passes. This was fixed before
+  the public PR. (Ledger row `2026-11-22T21:55Z`.)
   (d) **96 of 172 functions have no fact.** The 4 h budget (R6, 14 400 s) fitted the first 76
   functions in source order; the other 96 are `BLIND(budget-cut)`. Of the 172 rows: 68 MEASURED
   (67 after the recount, see b), 8 `BLIND(no-mutants)`, 96 `BLIND(budget-cut)`. Done looks like: a
@@ -678,10 +679,11 @@ How the lane works: `docs/github-lane.md`.
     DECISION). The gate needs an env pass-through allowlist (a tool change).
   - the publisher's quotes gate flags a line that names the maintainer AND holds a quotation or a
     speech verb; an allowed phrase is stripped first. A quotation whose only maintainer reference
-    sits inside an allowed phrase (one of the three mutation-operator or pin-value phrases in
-    `plant.py` and `tests/test_github_facts.py`) would pass. Each entry is an exact phrase in one
-    file, so the risk is low. Fix to be designed: judging the rest for quotation marks alone would
-    flag two of the three real lines again (close review N1 and its follow-up, in the private docs).
+    sits inside an allowed phrase would pass. This holds for all 13 entries in `QUOTE_ALLOW`
+    (`tools/publish_public.py`), not only the three added when the GitHub lane closed. Each entry
+    is an exact phrase in one file, so the risk is low. Fix to be designed: judging the rest for
+    quotation marks alone would flag two of those three lines again (close review N1 and its
+    follow-ups, in the private docs).
 - **Done looks like:** each item's own line above; for (g), (i), (j), (k): stays as stated until a
   design step changes it; for (n): each fixed with a test that fails without the fix, or moved to
   its own KD item.
