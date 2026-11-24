@@ -9,6 +9,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -108,6 +109,32 @@ def test_each_tool_runs_as_a_script_from_a_foreign_cwd(tmp_path, tool):
     r = json.loads(rec.read_text().splitlines()[-1])
     assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forge_gate" / "paths.py").resolve()
     assert list(elsewhere.iterdir()) == []  # nothing written in the cwd
+
+
+def test_kill_group_reaps_when_popen_left_its_waitpid_lock_held():
+    # An interrupt between Popen.wait's lock acquire and its try leaves the lock held (CI hang,
+    # 2026-11-23). kill_group must still kill and reap, and must not block on that lock.
+    proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"],
+                            start_new_session=True)
+    lock = getattr(proc, "_waitpid_lock", None)
+    if lock is None:
+        proc.kill()
+        proc.wait()
+        pytest.skip("this Popen has no _waitpid_lock")
+    lock.acquire()  # the state the interrupt leaves behind
+    t = threading.Thread(target=C.kill_group, args=(proc, 0.5), daemon=True)
+    try:
+        t.start()
+        t.join(10)
+        assert not t.is_alive(), "kill_group blocked on the held waitpid lock"
+        assert proc.returncode == -signal.SIGKILL
+        assert not _alive(proc.pid), "the child was not reaped"
+    finally:
+        lock.release()
+        t.join(10)
+        if proc.poll() is None:
+            os.killpg(proc.pid, signal.SIGKILL)
+            proc.wait()
 
 
 def test_kill_group_kills_the_whole_process_group(tmp_path):
