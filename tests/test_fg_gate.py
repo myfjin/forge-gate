@@ -565,8 +565,9 @@ def test_s3d_an_interrupt_kills_the_pytest_group_and_records_a_gate_error(tmp_pa
     tree = make_tree(tmp_path, {"test_hang.py": body})
     rec = tmp_path / "rec" / "r.jsonl"
     env = dict(os.environ, **{fg.C.PATH_KEY: str(_bin(tmp_path / "bin"))})
-    p = subprocess.Popen([sys.executable, str(TOOL), "--tree", str(tree), "--python", sys.executable,
-                          "--record", str(rec), "--tag", "intr", "--max-load", "1000", "--wait", "0"],
+    p = subprocess.Popen([sys.executable, "-X", "faulthandler", str(TOOL), "--tree", str(tree),
+                          "--python", sys.executable, "--record", str(rec), "--tag", "intr",
+                          "--max-load", "1000", "--wait", "0"],
                          env=env, cwd=tmp_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                          preexec_fn=lambda: signal.signal(sig, signal.SIG_DFL))  # review S3e F1
     deadline = time.monotonic() + 60
@@ -577,7 +578,15 @@ def test_s3d_an_interrupt_kills_the_pytest_group_and_records_a_gate_error(tmp_pa
     try:
         t0 = time.monotonic()
         p.send_signal(sig)
-        out = p.communicate(timeout=45)[0].strip().splitlines()
+        try:
+            out = p.communicate(timeout=45)[0]
+        except subprocess.TimeoutExpired:
+            # CI 2026-11-23 (3.10): the gate was still running 45 s after SIGINT, and 1800 local
+            # trials did not reproduce it. Ask faulthandler where the gate is, then fail.
+            p.send_signal(signal.SIGABRT)
+            pytest.fail(f"the gate was still running 45 s after {sig.name}; its threads:\n"
+                        + p.communicate(timeout=15)[0])
+        out = out.strip().splitlines()
         assert time.monotonic() - t0 < 20, "the interrupted gate did not end promptly"
         assert p.returncode == 2, out
         assert out[-1].startswith("GATE ERROR rc=none"), out

@@ -232,13 +232,31 @@ def what(e: BaseException) -> str:
 
 # ---- G7: one pytest process group -----------------------------------------------------------
 
-def kill_group(proc) -> None:
-    """SIGKILL the run's whole process group (it was started with start_new_session), then reap."""
+# How long kill_group waits through Popen before it reaps the pid itself (see kill_group).
+KILL_REAP_S = 10.0
+
+
+def kill_group(proc, reap_s: float = KILL_REAP_S) -> None:
+    """SIGKILL the run's whole process group (it was started with start_new_session), then reap.
+
+    Never with a plain ``proc.wait()``. CPython's ``Popen.wait(timeout)`` takes its waitpid lock
+    and only then enters the ``try`` that releases it; an interrupt raised in between (the S3d
+    handlers raise) leaves the lock held, and a plain ``wait()`` then blocks forever. Measured on
+    3.10.12: 127 of 86,360 interrupted waits; the CI hang of 2026-11-23. A wait with a timeout
+    never blocks on the lock; when it runs out, the pid is reaped directly."""
     try:
         os.killpg(proc.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
-    proc.wait()
+    try:
+        proc.wait(timeout=reap_s)
+    except subprocess.TimeoutExpired:
+        try:
+            _, status = os.waitpid(proc.pid, 0)
+        except ChildProcessError:  # already reaped elsewhere; the SIGKILL above was the end
+            proc.returncode = -signal.SIGKILL
+        else:
+            proc.returncode = os.waitstatus_to_exitcode(status)
 
 
 def last_line(log: Path) -> str:
