@@ -220,6 +220,30 @@ published, and neither is the collector. What this repository ships is the readi
 intake checks, and the ledgers that record whether reused code later held up (`KNOWN-DEBT.md`,
 KD-7, KD-11, KD-14).
 
+## Where Forge Gate is going
+
+Forge Gate is alpha. This is the order we plan to work in, and each step lands only with its
+tests and its known-debt entry.
+
+1. **Learn from what scout measures.** Scout already records facts: how well a GitHub project's
+   own tests catch planted bugs (`forge-gate github-facts`), and whether code from the crew corpus
+   was ever seen running. `learn` reads only the crew corpus today. Next it also reads the GitHub
+   facts, first by hand on a copy, and only then on a schedule (`KNOWN-DEBT.md`, KD-17 (a)).
+2. **More reviewed GitHub projects.** About one project every one to two weeks, chosen for a long
+   history and real tests rather than for stars. Each one is pinned to one commit, licence-checked
+   file by file, and signed before scout reads it.
+3. **All six languages.** The pattern library holds Python, R, Rust, Go, C++ and JavaScript. The
+   scores scout reads exist for Python, R and Rust today; Go, C++ and JavaScript need their own
+   extractors first.
+4. **A first release on PyPI**, once an installed copy no longer needs a source checkout (KD-2).
+5. **A free web service.** Paste code and have it checked in an isolated sandbox, with no account.
+   You choose whether we may keep your code to improve the checks, and we never show one person's
+   code to anyone else. Prefer to keep everything private? Run this repository on your own
+   machine. This is a direction, not yet a design: it starts after the steps above, with a legal
+   review first.
+
+Forge Gate is directed by one person and largely written with AI agents. Every commit says so.
+
 ## How this repository is made
 
 Most of this tree is published from a private working repository by a script that
