@@ -35,7 +35,9 @@ ForgeProof asks two questions that do not depend on trusting the author:
 
 ## Status
 
-Alpha (0.1.0). Not on PyPI yet: install from a checkout. The verify gate covers 10 Python
+Alpha (0.2.0). Not on PyPI yet: install from a checkout. On PyPI the package will be called
+`forgeproof-cli` (`forgeproof` is too close to an existing project there); the command and the
+import stay `forgeproof`. The verify gate covers 10 Python
 patterns. Several commands (`scout`, `learn`, `ledger`, `chaos-calibrate`) are advisory or
 plumbing today. **`KNOWN-DEBT.md` lists every known gap**: what it
 is, where, what "fixed" will look like, and who owns it.
