@@ -8,9 +8,6 @@ from typing import Any, List, Tuple
 
 from .relations import RelationResult, evaluate_relations, is_gating, registry
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SRC_ROOT = REPO_ROOT / "src"
-
 
 def load_module(path: str, module_name: str = "user_impl") -> Any:
     p = Path(path)
@@ -90,7 +87,7 @@ def run_metamorphic(user_file: Path, pattern: str) -> Tuple[str, List[RelationRe
 
 def main() -> int:
     if len(sys.argv) < 3:
-        print("usage: python3 -m metamorphic.runner <user_file.py> <pattern>", file=sys.stderr)
+        print("usage: python3 -m forgeproof.lens_tools.metamorphic.runner <user_file.py> <pattern>", file=sys.stderr)
         return 2
     user_file = Path(sys.argv[1])
     pattern = sys.argv[2]

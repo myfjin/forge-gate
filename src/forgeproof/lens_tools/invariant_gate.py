@@ -18,10 +18,9 @@ from __future__ import annotations
 import argparse, importlib.util, json, random, statistics, sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-CONTRACTS = ROOT / "tools" / "invariant_contracts"
-CONTRACTS.mkdir(parents=True, exist_ok=True)
-sys.path.insert(0, str(ROOT / "src"))  # in-project: this checkout's own package
+# The ratified contracts ship next to this file, inside the package (KD-2). Only `mine` writes
+# here, and only from a checkout: run it as `python -m forgeproof.lens_tools.invariant_gate`.
+CONTRACTS = Path(__file__).resolve().parent / "invariant_contracts"
 
 from forgeproof.catalog import reference_path  # noqa: E402
 
@@ -145,6 +144,7 @@ def mine(pattern, n=100):
                   "sign": "positive" if min(v) > 0 else ("negative" if max(v) < 0 else "mixed")}
     doc = {"pattern": pattern, "n_samples": n, "ratified": False,
            "note": "human sets ratified=true after reviewing contracts", "invariants": inv}
+    CONTRACTS.mkdir(parents=True, exist_ok=True)
     (CONTRACTS / f"{pattern}.json").write_text(json.dumps(doc, indent=2))
     return doc
 

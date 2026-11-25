@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from forgeproof import lenses
+from forgeproof import lens_tools
 
 
 # ------------------------------------------------------------------ metamorphic
@@ -23,9 +24,9 @@ def test_metamorphic_unsupported_carries_u1_code(monkeypatch):
     relations_mod = SimpleNamespace(is_gating=lambda name: True, __name__="metamorphic.relations")
     pkg = SimpleNamespace(__name__="metamorphic", __path__=[],
                           runner=runner_mod, relations=relations_mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", pkg)
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", runner_mod)
-    monkeypatch.setitem(sys.modules, "metamorphic.relations", relations_mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", pkg)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", runner_mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.relations", relations_mod)
 
     r = lenses._run_metamorphic(Path("/tmp/w.py"), "foo")
     assert r.status == "UNSUPPORTED"
@@ -35,7 +36,7 @@ def test_metamorphic_unsupported_carries_u1_code(monkeypatch):
 
 # NOTE: a metamorphic PASS control was attempted but ran into Python
 # import-order sensitivity — sys.modules cache for the real
-# tools/metamorphic/ package survives across pytest tests in a way that's
+# lens_tools/metamorphic/ package survives across pytest tests in a way that's
 # not worth the mock-machinery to defeat. The PASS path is instead
 # exercised end-to-end by test_cli_json_end_to_end, which asserts
 # --lenses all on a real corpus file returns PASS with metamorphic
@@ -51,7 +52,8 @@ def test_invariant_unratified_becomes_u2(monkeypatch):
 
     import sys
     fake_mod = SimpleNamespace(verify=fake_verify)
-    monkeypatch.setitem(sys.modules, "invariant_gate", fake_mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.invariant_gate", fake_mod)
+    monkeypatch.setattr(lens_tools, "invariant_gate", fake_mod, raising=False)
 
     r = lenses._run_invariant(Path("/tmp/w.py"), "foo")
     assert r.status == "UNSUPPORTED"
@@ -70,7 +72,8 @@ def test_invariant_no_adapter_becomes_u1(monkeypatch):
 
     import sys
     fake_mod = SimpleNamespace(verify=fake_verify)
-    monkeypatch.setitem(sys.modules, "invariant_gate", fake_mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.invariant_gate", fake_mod)
+    monkeypatch.setattr(lens_tools, "invariant_gate", fake_mod, raising=False)
 
     r = lenses._run_invariant(Path("/tmp/w.py"), "foo")
     assert r.status == "UNSUPPORTED"
@@ -85,7 +88,8 @@ def test_invariant_fail_still_gates(monkeypatch):
 
     import sys
     fake_mod = SimpleNamespace(verify=fake_verify)
-    monkeypatch.setitem(sys.modules, "invariant_gate", fake_mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.invariant_gate", fake_mod)
+    monkeypatch.setattr(lens_tools, "invariant_gate", fake_mod, raising=False)
 
     r = lenses._run_invariant(Path("/tmp/w.py"), "foo")
     assert r.status == "FAIL"

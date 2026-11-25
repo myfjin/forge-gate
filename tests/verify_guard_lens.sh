@@ -13,7 +13,7 @@ set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-GUARD_LENS="$ROOT/tools/guard_lens.py"
+GUARD_LENS="$ROOT/src/forgeproof/lens_tools/guard_lens.py"
 FORGE_GATE="$ROOT/src/forgeproof"
 PYTHON="/usr/bin/python3"
 
@@ -90,7 +90,7 @@ gate() {
 
 # ---------------------------------------------------------------- harness interface
 # Expected invocation:
-#   python3 "$ROOT/tools/guard_lens.py" --fixture <fixture.py>
+#   python3 "$ROOT/src/forgeproof/lens_tools/guard_lens.py" --fixture <fixture.py>
 # Expected stdout:
 #   verdict:PASS|FAIL|INCONCLUSIVE [reason]
 #   detail: <optional machine-readable detail>

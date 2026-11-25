@@ -1,6 +1,6 @@
 """§3.2 Round 4 — twin-consensus adapter emits U1:no_coverage.
 
-All three UNSUPPORTED shapes at tools/twin_consensus.py are tool coverage gaps
+All three UNSUPPORTED shapes at src/forgeproof/lens_tools/twin_consensus.py are tool coverage gaps
 (verified 2026-09-05): CatalogError (line 272), fixture missing under
 src/forgeproof/fixtures/ (line 276), no twins configured (line 336). Single
 code at the adapter; classifier at the tool layer if a shape ever needs U-code
@@ -14,6 +14,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from forgeproof import lenses
+from forgeproof import lens_tools
 
 
 def _tc(status, reason, details=None):
@@ -26,7 +27,8 @@ def test_twin_unsupported_carries_u1_code(monkeypatch):
     import sys
     fake = SimpleNamespace(consensus_verify=lambda uf, p, timeout=60.0:
                            _tc("UNSUPPORTED", "fixture missing: /some/path"))
-    monkeypatch.setitem(sys.modules, "twin_consensus", fake)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", fake)
+    monkeypatch.setattr(lens_tools, "twin_consensus", fake, raising=False)
 
     r = lenses._run_twin(Path("/tmp/w.py"), "foo", timeout=10.0)
     assert r.status == "UNSUPPORTED", f"got {r.status}: {r.reason!r}"
@@ -45,7 +47,8 @@ def test_twin_unsupported_preserves_reason_regardless_of_shape(monkeypatch):
     import sys
     fake = SimpleNamespace(consensus_verify=lambda uf, p, timeout=60.0:
                            _tc("UNSUPPORTED", "no language twins found for this pattern"))
-    monkeypatch.setitem(sys.modules, "twin_consensus", fake)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", fake)
+    monkeypatch.setattr(lens_tools, "twin_consensus", fake, raising=False)
 
     r = lenses._run_twin(Path("/tmp/w.py"), "foo", timeout=10.0)
     assert r.status == "UNSUPPORTED"
@@ -58,7 +61,8 @@ def test_twin_fail_still_gates(monkeypatch):
     import sys
     fake = SimpleNamespace(consensus_verify=lambda uf, p, timeout=60.0:
                            _tc("FAIL", "user implementation fails property check"))
-    monkeypatch.setitem(sys.modules, "twin_consensus", fake)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", fake)
+    monkeypatch.setattr(lens_tools, "twin_consensus", fake, raising=False)
 
     r = lenses._run_twin(Path("/tmp/w.py"), "foo", timeout=10.0)
     assert r.status == "FAIL"
@@ -70,7 +74,8 @@ def test_twin_unstable_still_objects(monkeypatch):
     import sys
     fake = SimpleNamespace(consensus_verify=lambda uf, p, timeout=60.0:
                            _tc("UNSTABLE", "reference twins disagree: py vs cpp"))
-    monkeypatch.setitem(sys.modules, "twin_consensus", fake)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", fake)
+    monkeypatch.setattr(lens_tools, "twin_consensus", fake, raising=False)
 
     r = lenses._run_twin(Path("/tmp/w.py"), "foo", timeout=10.0)
     assert r.status == "UNSTABLE"

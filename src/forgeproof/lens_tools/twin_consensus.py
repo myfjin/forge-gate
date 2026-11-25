@@ -7,7 +7,7 @@ Fix from chunk 1:
     must agree WITH EACH OTHER. If they disagree → UNSTABLE (drift signal).
 
 Usage:
-    PYTHONPATH=src python3 tools/twin_consensus.py \
+    PYTHONPATH=src python3 -m forgeproof.lens_tools.twin_consensus \
         verify tests/corpus/linreg_sgd.py --pattern linear_regression_gd
 """
 from __future__ import annotations
@@ -23,10 +23,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-SRC = REPO_ROOT / "src"
-
-sys.path.insert(0, str(SRC))
+# The forgeproof package this file ships in (KD-2): its fixtures/ sit one level up.
+PKG = Path(__file__).resolve().parents[1]
 
 from forgeproof.catalog import CatalogError, load_aura_catalog, resolve_pattern
 from forgeproof.config import NotConfigured, library_dir
@@ -272,7 +270,7 @@ def consensus_verify(user_file: Path, pattern: str, timeout: float = 60.0) -> Tw
     except CatalogError as exc:
         return TwinConsensus("UNSUPPORTED", pattern, str(user_file), str(exc), "UNSUPPORTED", 0)
 
-    fixture = SRC / "forgeproof" / "fixtures" / f"{meta['fixture']}.py"
+    fixture = PKG / "fixtures" / f"{meta['fixture']}.py"
     if not fixture.exists():
         return TwinConsensus("UNSUPPORTED", pattern, str(user_file), f"fixture missing: {fixture}", "UNSUPPORTED", 0)
 

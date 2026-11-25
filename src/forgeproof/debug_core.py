@@ -10,7 +10,7 @@ Every field the caller cannot recover post-mortem is a REQUIRED constructor
 argument. The one that matters most is ``source_text``: forgeproof's five lens
 adapters run patterns in ``NamedTemporaryFile(delete=False)`` subprocesses and
 unlink the temp file in a ``finally:`` block after the subprocess dies
-(``src/forgeproof/lenses.py:357/378``, ``tools/guard_lens.py:679/817``). By
+(``src/forgeproof/lenses.py:357/378``, ``src/forgeproof/lens_tools/guard_lens.py:679/817``). By
 the time debug wants to introspect the FAIL, the source file is already gone
 and ``inspect.getsource`` / ``traceback.extract_tb`` cannot recover it. The
 ``finally: unlink()`` is a safety boundary, not accidental — so the fix

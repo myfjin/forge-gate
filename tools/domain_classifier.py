@@ -14,7 +14,7 @@ INCONCLUSIVE is the learning queue. The tool stores the observation
 (magnitudes and shapes) so a future, wiser criterion can re-judge it; it does
 not fabricate verdicts.
 
-Subprocess isolation is copied from tools/guard_lens.py (G17): every fixture
+Subprocess isolation is copied from src/forgeproof/lens_tools/guard_lens.py (G17): every fixture
 call runs in a fresh child process with start_new_session=True, a hard wall-
 clock timeout, per-process CPU and memory limits, and os.killpg cleanup.
 """

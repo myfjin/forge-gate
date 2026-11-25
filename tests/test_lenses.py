@@ -190,7 +190,7 @@ def test_json_shape_is_stable(monkeypatch):
 def test_cli_json_end_to_end(tmp_path):
     """One real end-to-end run: correct code, all lenses, JSON out."""
     good = REPO_ROOT / "tests" / "corpus" / "linreg_normal_eq.py"
-    env = {"PYTHONPATH": f"{REPO_ROOT / 'src'}:{REPO_ROOT / 'tools'}", "PATH": "/usr/bin:/bin"}
+    env = {"PYTHONPATH": str(REPO_ROOT / "src"), "PATH": "/usr/bin:/bin"}   # KD-2: no tools/ on the path
     proc = subprocess.run(
         [sys.executable, "-m", "forgeproof.cli", "verify", str(good),
          "--pattern", "linear_regression_gd", "--lenses", "all", "--json"],

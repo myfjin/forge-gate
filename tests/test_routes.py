@@ -62,11 +62,7 @@ def test_verify_resolves_shipped_references_without_the_library(no_library):
 
 
 def test_twin_lens_is_blind_and_names_the_key_when_library_unset(no_library):
-    sys.path.insert(0, str(REPO / "tools"))
-    try:
-        import twin_consensus
-    finally:
-        sys.path.remove(str(REPO / "tools"))
+    from forgeproof.lens_tools import twin_consensus
     tc = twin_consensus.consensus_verify(reference_path("perceptron"), "perceptron", timeout=60)
     assert tc.status == "UNSUPPORTED", tc
     assert config.LIBRARY_KEY in tc.reason
@@ -151,20 +147,107 @@ def test_no_home_paths_outside_the_loader():
     assert not hits, "home paths outside forgeproof/config.py:\n" + "\n".join(hits)
 
 
-def test_lenses_outside_a_checkout_name_forgeproof_home(monkeypatch, tmp_path):
-    """An install without a checkout: tool lenses go ERROR naming FORGE_GATE_HOME and
-    evaluate() still returns a verdict (it must not crash)."""
-    from forgeproof import lenses
+# ── KD-2 (done 2026-11-25): the lens tools ship in the package ─────────────────────────────────
+# Exact statuses for one good file, all lenses, with no checkout, no FORGE_GATE_HOME, no library.
+# "Not ERROR" would not be enough: a wheel without invariant_contracts/ makes invariant UNSUPPORTED.
+KD2_PATTERN = "linear_regression_gd"
+KD2_GOOD = REPO / "examples" / "linear_regression_gd_good.py"
+KD2_WANT = {"property-primary": "PASS", "metamorphic": "PASS", "invariant": "PASS",
+            "twin-consensus": "UNSUPPORTED", "determinism": "PASS", "guard": "PASS"}
+KD2_TOOLS = ("metamorphic/runner.py", "metamorphic/relations.py", "invariant_gate.py",
+             "twin_consensus.py", "guard_lens.py", "invariant_contracts/linear_regression_gd.json",
+             "invariant_contracts/polynomial_regression.json",
+             "invariant_contracts/ridge_regression_normal_eq.json")
 
-    monkeypatch.setattr(lenses, "TOOLS_DIR", tmp_path / "no-tools")
-    # Other tests leave the real tools/ on sys.path and its modules cached; remove both,
-    # or this test passes alone and fails in the suite (seen 2026-11-11).
-    real_tools = str(REPO / "tools")
-    monkeypatch.setattr(sys, "path", [p for p in sys.path if p.rstrip("/") != real_tools])
-    for mod in [m for m in sys.modules if m == "metamorphic" or m.startswith("metamorphic.")]:
-        monkeypatch.delitem(sys.modules, mod)
-    r = lenses._run_metamorphic(reference_path("perceptron"), "perceptron")
-    assert r.status == "ERROR"
-    assert "FORGE_GATE_HOME" in r.reason
-    g = lenses._run_guard(reference_path("perceptron"), 60)
-    assert g.status == "ERROR" and "FORGE_GATE_HOME" in g.reason
+
+def test_every_lens_runs_without_a_checkout(monkeypatch, tmp_path, no_library):
+    """In-process: config finds no checkout and FORGE_GATE_HOME is unset (the conftest sets it,
+    so it is removed here), cwd is elsewhere and no tools/ is on sys.path. Every lens runs, and
+    each tool module loads from forgeproof/lens_tools/ of the package under test."""
+    import forgeproof
+    from forgeproof import lens_tools, lenses
+    from forgeproof.cli import main
+
+    monkeypatch.delenv("FORGE_GATE_HOME", raising=False)
+    monkeypatch.setattr(config, "CODE", tmp_path / "not-a-checkout")
+    assert config.home() is None
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if not p.rstrip("/").endswith("/tools")])
+    for top in ("metamorphic", "invariant_gate", "twin_consensus", "guard_lens"):
+        assert top not in sys.modules or not str(getattr(sys.modules[top], "__file__", "")).endswith(".py"), top
+
+    pkg_tools = Path(forgeproof.__file__).resolve().parent / "lens_tools"
+    assert lens_tools.HERE == pkg_tools and lenses.GUARD_LENS == pkg_tools / "guard_lens.py"
+    for rel in KD2_TOOLS:
+        assert (pkg_tools / rel).is_file(), rel
+
+    import io, json, contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        rc = main(["verify", str(KD2_GOOD), "--pattern", KD2_PATTERN, "--json"])
+    d = json.loads(buf.getvalue())
+    got = {l["lens"]: l["status"] for l in d["lenses"]}
+    assert got == KD2_WANT, got
+    assert (rc, d["status"]) == (0, "PASS"), (rc, d["status"], d.get("reason"))
+    twin = next(l for l in d["lenses"] if l["lens"] == "twin-consensus")
+    assert config.LIBRARY_KEY in json.dumps(twin)          # blind for the library, not for tools
+    assert "FORGE_GATE_HOME" not in buf.getvalue()
+    from forgeproof.lens_tools import invariant_gate, twin_consensus
+    from forgeproof.lens_tools.metamorphic import runner
+    for m in (invariant_gate, twin_consensus, runner):
+        assert Path(m.__file__).resolve().is_relative_to(pkg_tools), m.__file__
+
+
+def test_a_built_wheel_runs_every_lens_with_no_checkout(tmp_path):
+    """The install route itself: build the wheel from a copy of this tree with the declared
+    backend (no network, no pip), unpack it as a site-packages, and run `forgeproof verify` from
+    it in a child with -I, an empty HOME, cwd outside, and no FORGE_GATE_* variable."""
+    import json, os, shutil, subprocess, zipfile
+
+    src = tmp_path / "src-copy"
+    for rel in ("pyproject.toml", "README.md", "LICENSE", "NOTICE"):
+        if (REPO / rel).is_file():
+            (src / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / rel, src / rel)
+    shutil.copytree(REPO / "src", src / "src",
+                    ignore=shutil.ignore_patterns("__pycache__", "*.egg-info", "*.pyc"))
+    wheels = tmp_path / "dist"
+    wheels.mkdir()
+    env = {k: v for k, v in os.environ.items() if not k.startswith("FORGE_GATE_") and k != "PYTHONPATH"}
+    # The BUILD sees the interpreter's normal site (pip would bring its own setuptools; this test
+    # has no network). It must be one that reads [project]: setuptools 59 (Ubuntu 22.04's, seen on
+    # the deploy host under -I, 2026-11-25) builds a wheel with no packages at all and exits 0.
+    build = subprocess.run(
+        [sys.executable, "-c",
+         "import sys, setuptools; from setuptools import build_meta as b; "
+         "v = int(setuptools.__version__.split('.')[0]); "
+         "assert v >= 61, f'setuptools {setuptools.__version__} at {setuptools.__file__} cannot read [project]; need >=61'; "
+         "print(b.build_wheel(sys.argv[1]))", str(wheels)],
+        cwd=str(src), env=dict(env, PYTHONDONTWRITEBYTECODE="1"), capture_output=True, text=True, timeout=300)
+    assert build.returncode == 0, build.stderr[-2000:]
+    # the RUN is isolated: -I, an empty HOME, cwd outside, no FORGE_GATE_*
+    env.update(HOME=str(tmp_path / "home"), PYTHONDONTWRITEBYTECODE="1")
+    (tmp_path / "home").mkdir()
+    whl = wheels / build.stdout.strip().splitlines()[-1]
+    names = set(zipfile.ZipFile(whl).namelist())
+    missing = [r for r in KD2_TOOLS if f"forgeproof/lens_tools/{r}" not in names]
+    assert not missing, f"not in the wheel: {missing}"
+    assert not any(n.startswith("tools/") for n in names), "the dev tools/ must not ship"
+
+    site = tmp_path / "site"
+    zipfile.ZipFile(whl).extractall(site)
+    out = tmp_path / "cwd"
+    out.mkdir()
+    boot = ("import sys; sys.path.insert(0, sys.argv[1]); import forgeproof; "
+            "print('IMPORTED', forgeproof.__file__, file=sys.stderr); "
+            "from forgeproof.cli import main; sys.exit(main(sys.argv[2:]))")
+    run = subprocess.run(
+        [sys.executable, "-I", "-c", boot, str(site), "verify", str(KD2_GOOD), "--pattern", KD2_PATTERN, "--json"],
+        cwd=str(out), env=env, capture_output=True, text=True, timeout=300)
+    imported = [l for l in run.stderr.splitlines() if l.startswith("IMPORTED ")]
+    assert imported and imported[0].split(" ", 1)[1].startswith(str(site)), run.stderr[-1000:]
+    d = json.loads(run.stdout)
+    got = {l["lens"]: l["status"] for l in d["lenses"]}
+    assert got == KD2_WANT, (got, run.stderr[-1000:])
+    assert (run.returncode, d["status"]) == (0, "PASS"), (run.returncode, d["status"], d.get("reason"))
+    assert "FORGE_GATE_HOME" not in run.stdout + run.stderr

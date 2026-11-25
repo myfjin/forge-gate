@@ -1,8 +1,9 @@
 """Test-session routes (project standard §6: the default tier runs on fixtures only).
 
-1. The suite runs from a source checkout, so the lens tools (tools/) are right here.
-   An installed (non-editable) ForgeProof cannot find tools/ by itself (KNOWN-DEBT
-   KD-2), so point it at this checkout unless the caller already chose one.
+1. The suite runs from a source checkout. The lens tools ship in the package (KD-2, done
+   2026-11-25) and never read FORGE_GATE_HOME; it is still set to this checkout, unless the
+   caller chose one, for config.toml and the checkout tools in tools/ (github-facts' runner).
+   The KD-2 route tests in test_routes.py unset it themselves.
 2. Outside `pytest -m live`, the library route is switched off: an exported
    FORGE_GATE_LIBRARY_DIR is removed, and the host's config.toml is replaced by a copy
    without that key. `learn`'s three routes (step 6b-1) are removed the same way in EVERY

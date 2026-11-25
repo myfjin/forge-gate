@@ -21,12 +21,9 @@ yet.
     cd forgeproof
     python3 -m venv .venv
     .venv/bin/pip install . pytest pytest-timeout
-    export FORGE_GATE_HOME="$PWD"
 
-**Do not skip the last line.** Several lenses still read files from the checkout rather than from
-the installed package (`KNOWN-DEBT.md`, KD-2). Without `FORGE_GATE_HOME` those lenses cannot run,
-and a correct file comes out `UNSTABLE` instead of `PASS`. Run the `export` inside the clone, in
-every new shell, until KD-2 is fixed.
+The install runs every lens on its own: the lens tools ship inside the package (`KNOWN-DEBT.md`,
+KD-2, fixed 2026-11-25), so no `FORGE_GATE_HOME` is needed for a verdict.
 
 ## Run the tests
 
