@@ -220,13 +220,13 @@ published, and neither is the collector. What this repository ships is the readi
 intake checks, and the ledgers that record whether reused code later held up (`KNOWN-DEBT.md`,
 KD-7, KD-11, KD-14).
 
-## Where Forge Gate is going
+## Where ForgeProof is going
 
-Forge Gate is alpha. This is the order we plan to work in, and each step lands only with its
+ForgeProof is alpha. This is the order we plan to work in, and each step lands only with its
 tests and its known-debt entry.
 
 1. **Learn from what scout measures.** Scout already records facts: how well a GitHub project's
-   own tests catch planted bugs (`forge-gate github-facts`), and whether code from the crew corpus
+   own tests catch planted bugs (`forgeproof github-facts`), and whether code from the crew corpus
    was ever seen running. `learn` reads only the crew corpus today. Next it also reads the GitHub
    facts, first by hand on a copy, and only then on a schedule (`KNOWN-DEBT.md`, KD-17 (a)).
 2. **More reviewed GitHub projects.** About one project every one to two weeks, chosen for a long
@@ -242,7 +242,7 @@ tests and its known-debt entry.
    machine. This is a direction, not yet a design: it starts after the steps above, with a legal
    review first.
 
-Forge Gate is directed by one person and largely written with AI agents. Every commit says so.
+ForgeProof is directed by one person and largely written with AI agents. Every commit says so.
 
 ## How this repository is made
 
