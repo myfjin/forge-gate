@@ -376,7 +376,7 @@ def _lbl(o):
 
 
 def render(rep: dict) -> str:
-    out = ["FORGE-GATE SCOUT REPORT  —  no verdict, advisory only",
+    out = ["FORGEPROOF SCOUT REPORT  —  no verdict, advisory only",
            "=" * 54, "",
            f"file:    {rep['file']}  ({rep['language']})",
            f"sha256:  {rep['sha256']}", "", "CHECKS"]

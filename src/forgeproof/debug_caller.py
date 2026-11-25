@@ -1,4 +1,4 @@
-"""Forge-gate caller layer for the debug core. Owns U-code routing.
+"""ForgeProof caller layer for the debug core. Owns U-code routing.
 
 BRIEF-DEBUG-FEATURE-2026-09-05.md §4 and §9 step 2.
 

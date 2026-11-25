@@ -243,7 +243,7 @@ def test_scout_executes_no_pool_or_query_code(export_root, tmp_path, capsys, mon
     q_canary = tmp_path / "QUERY-CANARY"
     body = f"import pathlib\npathlib.Path({str(q_canary)!r}).write_text('ran')\n" * 5
     rc, out = _scout(tmp_path, body, json_out=False, capsys=capsys)
-    assert rc == 0 and "FORGE-GATE SCOUT REPORT" in out
+    assert rc == 0 and "FORGEPROOF SCOUT REPORT" in out
     assert not canary.exists() and not q_canary.exists()
 
 
