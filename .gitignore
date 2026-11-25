@@ -11,11 +11,11 @@ corpus_results.json
 tmp_invariant_test/
 node_modules/
 staging/
-# Per-host settings (forge_gate/config.py); config.example.toml lists the keys.
+# Per-host settings (forgeproof/config.py); config.example.toml lists the keys.
 config.toml
 .venv/
 .DS_Store
-# Lens scratch files (forge_gate/config.py scratch_dir).
+# Lens scratch files (forgeproof/config.py scratch_dir).
 tmp/
 
 # Runtime ledgers and streams (the default ledger directory); never in git.

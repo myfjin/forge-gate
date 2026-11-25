@@ -1,6 +1,17 @@
-# Forge Gate
+# ForgeProof
 
-Forge Gate checks code written by AI by **running it** next to a known-correct version on the
+> **Renamed.** Forge Gate is now **ForgeProof** (2026-11-25). The name `forgegate` was already
+> taken on PyPI and npm by another tool for AI agents, so we changed ours before the first release.
+> For one release the old `forge-gate` command and `forge_gate` import still work and print a notice
+> (see [`CHANGELOG.md`](CHANGELOG.md)). Links to the old repository address redirect here.
+>
+> **What the name means.** Read it like *waterproof* or *foolproof*: forged code does not get
+> through. "Forge" keeps the project's history. "Proof" comes from the gunsmiths' proof house,
+> where every barrel is test-fired with an extra-strong charge before it may be sold. ForgeProof
+> does the same with code: it runs it, plants known faults as controls, and stamps a receipt.
+> Other projects also use the name ForgeProof; this one checks AI-written code **by running it**.
+
+ForgeProof checks code written by AI by **running it** next to a known-correct version on the
 same inputs, and reports whether it behaves correctly. The known-correct versions come from the
 signed AURA pattern library and ship inside the package. No language model takes part in any
 verdict.
@@ -14,7 +25,7 @@ An AI agent can write code, write the tests for it, and report that the tests ar
 come from the same author, so a green run proves less than it seems. A test that cannot fail
 passes, and a suite that never looks at the broken line passes too.
 
-Forge Gate asks two questions that do not depend on trusting the author:
+ForgeProof asks two questions that do not depend on trusting the author:
 
 1. **Does this code behave like a correct implementation?** It runs your file and a reference
    implementation on the same seed-locked input, and judges the result through several
@@ -32,7 +43,7 @@ is, where, what "fixed" will look like, and who owns it.
 ## Install
 
 ```bash
-git clone https://github.com/myfjin/forge-gate.git && cd forge-gate
+git clone https://github.com/myfjin/forgeproof.git && cd forgeproof
 python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout
 export FORGE_GATE_HOME="$PWD"                   # needed until KD-2 is fixed (see below)
 PYTHONPATH=src .venv/bin/python -m pytest -q   # default tier: fixtures only, no network, no library
@@ -47,15 +58,15 @@ Python 3.10 or newer. Without `npm ci` the JS oracle's type gate reports `unavai
 
 ## Configuration
 
-Forge Gate reads no other project unless you tell it where. Each setting is an
+ForgeProof reads no other project unless you tell it where. Each setting is an
 environment variable, or a key in `config.toml` `[paths]` (per host, not tracked; copy
 `config.example.toml`). The environment wins.
 
 | key | needed for | default |
 |---|---|---|
 | `FORGE_GATE_LIBRARY_DIR` | the twin-consensus lens, `pytest -m live`, library tools | none: unset, those fail naming the key |
-| `FORGE_GATE_HOME` | the lens tools when Forge Gate is installed outside a checkout | the checkout |
-| `FORGE_GATE_PYTHON` | child runs (oracles, fixtures, lenses) | the interpreter running Forge Gate |
+| `FORGE_GATE_HOME` | the lens tools when ForgeProof is installed outside a checkout | the checkout |
+| `FORGE_GATE_PYTHON` | child runs (oracles, fixtures, lenses) | the interpreter running ForgeProof |
 | `FORGE_GATE_NODE`, `_BUN`, `_QJS` | the JS oracle's three engines | `PATH` |
 | `FORGE_GATE_SCRATCH` | short-lived lens scripts | `<checkout>/tmp` |
 
@@ -65,10 +76,10 @@ environment variable, or a key in `config.toml` `[paths]` (per host, not tracked
 
 ```bash
 # List gate-ready patterns
-forge-gate list
+forgeproof list
 
 # Verify a user implementation against a seed-locked oracle
-forge-gate verify myfile.py --pattern linear_regression_gd
+forgeproof verify myfile.py --pattern linear_regression_gd
 ```
 
 A verdict is `PASS`, `FAIL`, `UNSTABLE` or `UNSUPPORTED`, with one line per lens. `UNSUPPORTED`
@@ -94,8 +105,8 @@ gate-ready patterns. Run them standalone, or pass them to the gate to see a live
 
 ```bash
 python examples/linear_regression_gd_good.py
-forge-gate verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
-forge-gate verify examples/linear_regression_gd_bad.py  --pattern linear_regression_gd
+forgeproof verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
+forgeproof verify examples/linear_regression_gd_bad.py  --pattern linear_regression_gd
 ```
 
 Every one of the 10 catalog patterns has a pair: `<pattern>_good.py` and `<pattern>_bad.py`.
@@ -108,8 +119,8 @@ the line does not say so yet (`KNOWN-DEBT.md`, KD-6).
 
 ## What `verify` does
 
-1. Resolves the pattern name in the shipped catalog (`forge_gate/data/gate_catalog.json`).
-2. Loads the shipped reference implementation (`forge_gate/reference/`, byte copies of
+1. Resolves the pattern name in the shipped catalog (`forgeproof/data/gate_catalog.json`).
+2. Loads the shipped reference implementation (`forgeproof/reference/`, byte copies of
    AURA library patterns; commit and sha256 in `reference/ORIGIN.md`).
 3. Runs the user's file in a separate process: fixed seed, 60 s timeout; network cut off where
    the system supports it (Linux `unshare`), not on macOS.
@@ -137,7 +148,7 @@ Python-only v1 ships with 10 curated seed-locked oracles:
 ## Shared tools: does your test suite test anything?
 
 Two tools in `tools/` work on any Python project kept in git and tested with pytest, not only
-Forge Gate (`docs/shared-tools.md`):
+ForgeProof (`docs/shared-tools.md`):
 
 - **`tools/fg_gate.py`** runs the tests and calls a run green only when it can prove what ran:
   counts from the run's own fresh result file, the tree unchanged by the tests, and any tests you
@@ -145,24 +156,24 @@ Forge Gate (`docs/shared-tools.md`):
 - **`tools/fg_mutrun.py`** plants the small bugs you describe, one at a time, runs the tests,
   restores the code, and reports which bugs the tests caught and which survived.
 
-Forge Gate's own recent changes were gated this way: each step was reviewed by a separate AI
+ForgeProof's own recent changes were gated this way: each step was reviewed by a separate AI
 agent session, not the one that built it, before it was merged.
 
 ## Where the code to check comes from
 
-Forge Gate doesn't care who wrote a file. It runs it and measures what comes out. In practice,
+ForgeProof doesn't care who wrote a file. It runs it and measures what comes out. In practice,
 code reaches it from four kinds of source, and each one is trusted differently.
 
 - **Your own file, or what your AI assistant just wrote.** This is the main case: a script from
   Claude Code, Copilot, Cursor or any other agent, or one you wrote yourself. If it implements one
-  of the 10 catalog patterns, `forge-gate verify yourfile.py --pattern <name>` runs it against the
+  of the 10 catalog patterns, `forgeproof verify yourfile.py --pattern <name>` runs it against the
   shipped reference and gives a verdict. Code that matches no catalog pattern gets no verdict; the
   shared tools above can still tell you whether its own tests would notice a bug.
 - **The examples in `examples/`.** A known-good and a known-bad file for every pattern. Use them
   to see what a real `PASS` and a real `FAIL` look like before trusting a verdict on your own code.
-- **The signed reference implementations** in `src/forge_gate/reference/`. These are byte copies
+- **The signed reference implementations** in `src/forgeproof/reference/`. These are byte copies
   from the AURA pattern library, a signed collection of self-testing code patterns. They are the
-  oracles: Forge Gate compares your code with them and does not judge them.
+  oracles: ForgeProof compares your code with them and does not judge them.
 - **Pools that `scout` and `learn` read** (advisory today, see Status). A pool is a body of
   existing code that scout searches to answer "what is this code related to?". There are two so
   far. One is a **GitHub pool**: public repositories on a list signed with two keys, each pinned
@@ -200,7 +211,7 @@ How it works:
    hook can show it the closest existing shapes first: *this already exists, here*.
 6. **Collected is not verified.** The corpus is raw input with the lowest trust. Scout reads it
    only from an export whose manifest and checksums all match; anything else counts as blind, never
-   as clean. `forge-gate learn` can test a corpus item, but today only the chaos engine can give it
+   as clean. `forgeproof learn` can test a corpus item, but today only the chaos engine can give it
    a `PASS` (KD-11, KD-12). Code reaches the signed pattern library only through that battery and a
    reviewed harvest, never straight from the corpus.
 

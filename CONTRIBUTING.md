@@ -1,11 +1,11 @@
-# Contributing to Forge Gate
+# Contributing to ForgeProof
 
 Thank you for looking. Issues and pull requests are welcome at
-[myfjin/forge-gate](https://github.com/myfjin/forge-gate/issues).
+[myfjin/forgeproof](https://github.com/myfjin/forgeproof/issues).
 
 ## How this repository is made
 
-Forge Gate is developed in a private working repository. Most of this tree, everything
+ForgeProof is developed in a private working repository. Most of this tree, everything
 except the files listed below, is **published** from it by a script, and is never edited
 by hand here. A pull request that changes published code is welcome: the maintainers
 carry the change into the working repository by hand, and the next publish brings it
