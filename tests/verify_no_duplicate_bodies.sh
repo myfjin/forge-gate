@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify_no_duplicate_bodies.sh — Forge Gate duplicate-body detector.
+# verify_no_duplicate_bodies.sh — ForgeProof duplicate-body detector.
 #
 # For each source file passed as an argument the gate:
 #   1. derives the entry function name (for .js: the target of the

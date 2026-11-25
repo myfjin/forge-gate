@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.scout import ghcache, ratify
+from forgeproof.scout import ghcache, ratify
 
 GENV = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_AUTHOR_NAME": "t",
         "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",

@@ -1,4 +1,4 @@
-"""Build steps 6b-1/6b-2: `forge-gate learn` plumbing (design v1.4.5 §3, §4.5, §4.4.1; DECISIONS-6b L1-L4).
+"""Build steps 6b-1/6b-2: `forgeproof learn` plumbing (design v1.4.5 §3, §4.5, §4.4.1; DECISIONS-6b L1-L4).
 
 Fixtures only. Every registry, lock, scout folder and corpus export here lives in tmp_path;
 conftest removes learn's three keys from the environment and the host config.
@@ -26,9 +26,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config
-from forge_gate.scout import cards, corpus, learn
-from forge_gate.scout.ids import parse_id
+from forgeproof import cli, config
+from forgeproof.scout import cards, corpus, learn
+from forgeproof.scout.ids import parse_id
 
 RUN_ID = "20261111T130229Z"
 PY_BODY = (
@@ -435,13 +435,13 @@ def test_a_second_learn_fails_fast_on_the_singleton(env):
     finally:
         holder.kill()
         holder.wait()
-    assert res.code == learn.EXIT_LOCK and "another `forge-gate learn`" in res.outcome
+    assert res.code == learn.EXIT_LOCK and "another `forgeproof learn`" in res.outcome
     assert took < 1.0, took   # LOCK_NB: no wait
     assert env.snapshot() == before
 
 
 RUNNER = ("import sys, json\n"
-          "from forge_gate.scout import learn\n"
+          "from forgeproof.scout import learn\n"
           "eng = [(k, (lambda i, s, d, k=k: learn.EngineResult(k, verdict='FAIL')) if k == 'chaos' else f)\n"
           "       for k, f in learn.ENGINES]\n"
           "r = learn.run(sys.argv[1], '4Q', engines=eng, lock_wait=float(sys.argv[2]))\n"
@@ -469,7 +469,7 @@ def test_two_learn_processes_at_once_the_second_fails_fast_the_first_completes(e
         if a.poll() is None:
             a.kill()
     rb, ra = json.loads(b.stdout), json.loads(a_out)
-    assert rb["code"] == learn.EXIT_LOCK and "another `forge-gate learn`" in rb["outcome"], rb
+    assert rb["code"] == learn.EXIT_LOCK and "another `forgeproof learn`" in rb["outcome"], rb
     assert b_took < 1.0 + 1.0, b_took   # interpreter start-up + LOCK_NB, never the 15 s wait
     assert ra["code"] == learn.EXIT_OK and "2 row(s) appended" in ra["outcome"], (ra, a_err)
     assert len(_rows(env.scout_main)) == 2 and _rows(env.main) == [LIB_ROW]

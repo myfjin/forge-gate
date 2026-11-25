@@ -1,7 +1,7 @@
 """Named writers (design §4a.5 V4-2; DECISIONS-8a G3): each ledger writer may be used only from
 its own place, so scout's search path can never write the outcome ledger.
 
-An AST scan of ``src/forge_gate``: any import, name, attribute or string literal naming a writer
+An AST scan of ``src/forgeproof``: any import, name, attribute or string literal naming a writer
 counts as a use. Named limit (KD-14): a string built at run time (``getattr(ledger, "record_" +
 x)``) is not seen; the row check at read time is the second layer.
 """
@@ -12,8 +12,8 @@ import textwrap
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SRC = REPO / "src" / "forge_gate"
-# Also scanned (review F2): the repo's own tools and scripts, which import forge_gate too.
+SRC = REPO / "src" / "forgeproof"
+# Also scanned (review F2): the repo's own tools and scripts, which import forgeproof too.
 EXTRA = (REPO / "tools", REPO / "scripts")
 WRITERS = ("record_exposure", "record_oracle", "record_mark", "record_event",
            # the hooks that call them are pinned the same way, so a writer's named place cannot be
@@ -22,10 +22,10 @@ WRITERS = ("record_exposure", "record_oracle", "record_mark", "record_event",
 # The ledger's internals (review F2): a direct _append(_row(...)) skips every writer rule and
 # writes a row that LOOKS like a valid writer's. No use outside ledger.py is allowed at all.
 PRIVATE = ("_append", "_row", "_locked", "_run", "EXPOSURE_NAME", "OUTCOME_NAME", "LOCK_NAME",
-           # the path canonicaliser (shared-tools S1): others use forge_gate.paths, not these copies
+           # the path canonicaliser (shared-tools S1): others use forgeproof.paths, not these copies
            "_real", "_canon", "_under")
 FILE_NAMES = ("exposure.jsonl", "outcome.jsonl", "ledger.lock")
-# writer -> {(file relative to src/forge_gate, top-level function)}. Grows slice by slice (s2-s4).
+# writer -> {(file relative to src/forgeproof, top-level function)}. Grows slice by slice (s2-s4).
 ALLOWED: dict = {
     "record_exposure": {("scout/report.py", "_expose")},          # s2
     "record_oracle": {("cli.py", "_oracle_notes")},               # s3 (inside _oracle_outcome)
@@ -126,17 +126,17 @@ def test_the_scan_sees_every_form_of_use(tmp_path):
     (tmp_path / "scout").mkdir()
     (tmp_path / "ledger.py").write_text("def record_oracle(): pass\n")       # the owner: ignored
     (tmp_path / "scout" / "report.py").write_text(textwrap.dedent("""
-        from forge_gate.ledger import record_oracle
-        from forge_gate import ledger as L
+        from forgeproof.ledger import record_oracle
+        from forgeproof import ledger as L
         from ..ledger import record_mark as rm
         from ..ledger import *
-        from forge_gate.ledger import _append
-        import forge_gate.ledger
+        from forgeproof.ledger import _append
+        import forgeproof.ledger
         def run():
             L.record_event()
             getattr(L, "record_exposure")()
             L._append(p, [L._row("oracle", None)])
-            forge_gate.ledger._locked(d, 1)
+            forgeproof.ledger._locked(d, 1)
             L._real(p), L._canon(p), L._under(p, d)
             open(d / "outcome.jsonl", "ab")
         def other():

@@ -39,9 +39,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.scout import cards, corpus, learn
-from forge_gate.scout.engines import chaos
+from forgeproof import config
+from forgeproof.scout import cards, corpus, learn
+from forgeproof.scout.engines import chaos
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_scout_learn import Env, _export as _mk_export  # noqa: E402  (the 6b-1 fixtures)

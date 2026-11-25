@@ -8,7 +8,7 @@ import threading
 
 import pytest
 
-from forge_gate.scout import box, fetchproxy
+from forgeproof.scout import box, fetchproxy
 
 
 @pytest.fixture

@@ -54,20 +54,20 @@ def _git(tree, *args):
 
 
 CALC = "def add(a, b):\n    return a + b  # ADD\n"
-TEST_CALC = ("from forge_gate.calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\n"
+TEST_CALC = ("from forgeproof.calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\n"
              "def test_other():\n    assert True\n")
-K = {"id": "K", "file": "src/forge_gate/calc.py", "old": "return a + b", "new": "return a - b",
+K = {"id": "K", "file": "src/forgeproof/calc.py", "old": "return a + b", "new": "return a - b",
      "tests": ["tests/test_calc.py::test_add"], "what": "kill"}
-S = {"id": "S", "file": "src/forge_gate/calc.py", "old": "# ADD", "new": "# changed",
+S = {"id": "S", "file": "src/forgeproof/calc.py", "old": "# ADD", "new": "# changed",
      "tests": ["tests/test_calc.py::test_add"], "what": "survive"}
 
 
 def make_tree(base: Path, tests=None, files=None) -> Path:
     t = base / "tree"
-    (t / "src" / "forge_gate").mkdir(parents=True)
+    (t / "src" / "forgeproof").mkdir(parents=True)
     (t / "tests").mkdir()
-    (t / "src" / "forge_gate" / "__init__.py").write_text("")
-    (t / "src" / "forge_gate" / "calc.py").write_text(CALC)
+    (t / "src" / "forgeproof" / "__init__.py").write_text("")
+    (t / "src" / "forgeproof" / "calc.py").write_text(CALC)
     (t / "pytest.ini").write_text("[pytest]\ntestpaths = tests\n")
     (t / "README.md").write_text("readme\n")
     for name, body in (tests or {"test_calc.py": TEST_CALC}).items():
@@ -107,7 +107,7 @@ def _junits(rec: Path):
     return sorted(rec.parent.glob("junit-*.xml")) if rec.parent.is_dir() else []
 
 
-CALC_REL = Path("src/forge_gate/calc.py")
+CALC_REL = Path("src/forgeproof/calc.py")
 
 
 # ---- M1/M6/M8/M9/M10: a kill and a survivor, the exact lines, the record -----------------------
@@ -136,7 +136,7 @@ def test_kill_and_survivor_print_the_exact_lines_and_record_every_field(tmp_path
     common = REPO / "tools" / "fg_common.py"
     assert Path(r["common_file"]) == common.resolve()
     assert r["common_md5"] == hashlib.md5(common.read_bytes()).hexdigest()
-    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forge_gate" / "paths.py").resolve()
+    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forgeproof" / "paths.py").resolve()
     assert r["head"] == head and r["porcelain_before"] == "" and r["porcelain_after"] == ""
     assert r["exit"] == 1 and r["control_before"]["rc"] == 0 and r["control_after"]["rc"] == 0
     assert [m["verdict"] for m in r["mutants"]] == ["KILLED", "SURVIVED"]
@@ -242,21 +242,21 @@ def test_g4_a_missing_tool_is_refused_before_any_run(tmp_path, mut):
 
 
 @pytest.mark.parametrize("how", ["no-src", "src-links-out"])
-def test_g5_forge_gate_not_from_the_tree_is_refused(tmp_path, mut, how):
+def test_g5_forgeproof_not_from_the_tree_is_refused(tmp_path, mut, how):
     tree = make_tree(tmp_path)
     (tmp_path / "moved").mkdir()
-    pkg = tree / "src" / "forge_gate"
+    pkg = tree / "src" / "forgeproof"
     if how == "no-src":  # nothing to import: the preflight itself fails
         shutil.move(str(tree / "src"), str(tmp_path / "moved" / "src"))  # throw-away fixture tree
     else:                # the import succeeds, but from a package that resolves outside DIR/src
-        shutil.move(str(pkg), str(tmp_path / "moved" / "forge_gate"))
-        pkg.symlink_to(tmp_path / "moved" / "forge_gate")
+        shutil.move(str(pkg), str(tmp_path / "moved" / "forgeproof"))
+        pkg.symlink_to(tmp_path / "moved" / "forgeproof")
     _git(tree, "add", "-A")
     _git(tree, "commit", "-q", "-m", how)
     code, out, _ = mut(tree, [dict(K, tests=["tests/test_calc.py"])])
     assert code == 2 and "import preflight" in out[-1], out
     if how == "src-links-out":
-        assert "forge_gate imported from" in out[-1], out
+        assert "forgeproof imported from" in out[-1], out
     assert _junits(mut.rec) == []
 
 
@@ -302,7 +302,7 @@ def test_m4_a_file_outside_the_tree_is_an_error_and_untouched(tmp_path, mut, how
         _git(tree, "add", "link.py")
         _git(tree, "commit", "-q", "-m", "link")
     f = {"absolute": str(outside), "dotdot": "../outside.py", "symlink-out": "link.py",
-         "dotdot-inside": "tests/../src/forge_gate/calc.py"}[how]
+         "dotdot-inside": "tests/../src/forgeproof/calc.py"}[how]
     code, out, r = mut(tree, [dict(K, id="X", file=f)])
     assert code == 2, out
     assert out[1].startswith("X ERROR rc=none | kill | file "), out
@@ -333,11 +333,11 @@ def test_m4_a_write_that_did_not_land_is_not_applied(tmp_path, mut, monkeypatch,
 
 def test_m4_a_file_git_does_not_track_is_not_applied(tmp_path, mut):
     tree = make_tree(tmp_path, tests={"test_calc.py": TEST_CALC,
-                                      "test_ign.py": "from forge_gate.ign import f\n\n\ndef test_f():\n"
+                                      "test_ign.py": "from forgeproof.ign import f\n\n\ndef test_f():\n"
                                                      "    assert f() == 1\n"},
-                     files={".gitignore": "src/forge_gate/ign.py\n"})
-    (tree / "src" / "forge_gate" / "ign.py").write_text("def f():\n    return 1\n")  # ignored
-    m = {"id": "I", "file": "src/forge_gate/ign.py", "old": "return 1", "new": "return 2",
+                     files={".gitignore": "src/forgeproof/ign.py\n"})
+    (tree / "src" / "forgeproof" / "ign.py").write_text("def f():\n    return 1\n")  # ignored
+    m = {"id": "I", "file": "src/forgeproof/ign.py", "old": "return 1", "new": "return 2",
          "tests": ["tests/test_ign.py"], "what": "ignored file"}
     code, out, _ = mut(tree, [m])
     assert code == 2, out
@@ -363,7 +363,7 @@ def test_m5_a_timeout_is_an_error_and_the_file_is_restored(tmp_path, mut):
 
 
 def test_m5_a_test_that_writes_the_tree_aborts_and_leaves_it(tmp_path, mut):
-    body = ("from pathlib import Path\nfrom forge_gate.calc import add\n\n\ndef test_add():\n"
+    body = ("from pathlib import Path\nfrom forgeproof.calc import add\n\n\ndef test_add():\n"
             "    r = add(2, 3)\n    if r != 5:\n"
             "        Path(__file__).resolve().parents[1].joinpath('README.md').write_text('dirtied\\n')\n"
             "    assert r == 5\n")
@@ -550,11 +550,11 @@ def test_r2f1_an_interrupt_with_a_failed_restore_is_recorded_and_reported(tmp_pa
     monkeypatch.setattr(mr, "run_pytest", run)
     code, out, r = mut(tree, [K])
     assert code == 2, out
-    assert "the tree is LEFT AS IT IS:" in out[-1] and "src/forge_gate/calc.py" in out[-1], out
+    assert "the tree is LEFT AS IT IS:" in out[-1] and "src/forgeproof/calc.py" in out[-1], out
     assert "clean" not in out[-1], out
     [k] = r["mutants"]
     assert k["id"] == "K" and k["verdict"] == "ABORT" and "restore write failed" in k["reason"], k
-    assert r["porcelain_after"].strip() == "M src/forge_gate/calc.py"
+    assert r["porcelain_after"].strip() == "M src/forgeproof/calc.py"
     assert "return a - b" in (tree / CALC_REL).read_text()  # truly left mutated, as reported
 
 
@@ -587,7 +587,7 @@ def test_r2f4_a_red_control_after_prints_its_reason(tmp_path, mut, monkeypatch):
 
 # ---- S3b: parent verify V1, review F4/F6/F7 --------------------------------------------------
 
-TEST_RC2 = ("import pytest\nfrom forge_gate.calc import add\n\n\ndef test_a():\n    assert add(2, 3) == 5\n\n\n"
+TEST_RC2 = ("import pytest\nfrom forgeproof.calc import add\n\n\ndef test_a():\n    assert add(2, 3) == 5\n\n\n"
             "def test_b():\n    if add(2, 3) != 5:\n        pytest.exit('mutant seen', returncode=2)\n")
 
 

@@ -13,10 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.scout import (BadCard, BadScoutId, check_scout_card, check_validator_shape,
+from forgeproof.scout import (BadCard, BadScoutId, check_scout_card, check_validator_shape,
                               is_scout_id, load_report, make_card, make_id, parse_id,
                               write_report)
-from forge_gate.scout.cards import OPTIONAL_FIELDS, SCOUT_FIELDS, VALIDATOR_FIELDS
+from forgeproof.scout.cards import OPTIONAL_FIELDS, SCOUT_FIELDS, VALIDATOR_FIELDS
 
 FIX = Path(__file__).parent / "fixtures" / "scout" / "validator_cards.json"
 COMMIT = "d7462d320c263f9870e80321e1edbb0d112fe6e6"
@@ -37,7 +37,7 @@ def _validator_cards():
 def _card(sid, kind="chaos", verdict="PASS"):
     return make_card(sid, kind=kind, verdict=verdict, technique="chaos-fault-injection",
                      fixture="crash before commit", expected="no partial write",
-                     actual="survival predicate held", repro_cmd="forge-gate scout --replay x")
+                     actual="survival predicate held", repro_cmd="forgeproof scout --replay x")
 
 
 # Ids that a raw "pool:source@commit:path:function" form would reduce to a bare, colliding stem.

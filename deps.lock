@@ -1,5 +1,5 @@
-# deps.lock — every route forge_gate/config.py resolves OUTSIDE the project, classed
-# (AURA project standard v0.3 §1, §2, §6; Forge Gate build step 1, 2026-11-11).
+# deps.lock — every route forgeproof/config.py resolves OUTSIDE the project, classed
+# (AURA project standard v0.3 §1, §2, §6; ForgeProof build step 1, 2026-11-11).
 # Checked by tests/test_deps_lock.py: a config key that resolves outside the project with
 # no row here, or a row for a key config.py does not have, is RED. Drift (the library
 # checkout not at `pin`) is graded by the live tier (pytest -m live), never only printed.
@@ -12,7 +12,7 @@ key = "FORGE_GATE_LIBRARY_DIR"
 class = "dependency"
 owner = "aura-pattern-library"
 pin = "commit c39c1dcc3adb0aa9bd04eb30f1f00045c14c88ce"
-pinned = "2026-11-11, GitHub master of the library (the 10 shipped references in src/forge_gate/reference/ are byte-identical at this commit; see ORIGIN.md)"
+pinned = "2026-11-11, GitHub master of the library (the 10 shipped references in src/forgeproof/reference/ are byte-identical at this commit; see ORIGIN.md)"
 used_by = "twin-consensus lens (language twins), tests -m live, library tools"
 debt = "KD-1, KD-3"
 
@@ -22,7 +22,7 @@ class = "dependency"
 owner = "aura-code-corpus"
 pin = "schema code-corpus-export/v1"
 pinned = "2026-11-11 (scout reads the newest export whose manifest run_status is OK and re-checks every sha256; a newer schema is BLIND, never read)"
-used_by = "forge-gate scout (corpus intake, design §12.4)"
+used_by = "forgeproof scout (corpus intake, design §12.4)"
 debt = ""
 
 [[route]]
@@ -31,7 +31,7 @@ class = "host-binary"
 owner = "host"
 pin = "ollama model nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f, local (no remote_host)"
 pinned = "deploy host Ollama 0.31.2, read from /api/tags 2026-11-16 (DECISIONS-8b F9); dev machine: none installed (lenses BLIND)"
-used_by = "forge-gate scout: language-meaning and intent lenses (design §4a.3, build step 8b); scout.embed.DIGEST must equal this pin"
+used_by = "forgeproof scout: language-meaning and intent lenses (design §4a.3, build step 8b); scout.embed.DIGEST must equal this pin"
 debt = "KD-15"
 
 [[route]]

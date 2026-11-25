@@ -1,8 +1,8 @@
 """Self-contained correct implementation of k-nearest neighbors classification.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/knn_classifier_good.py --pattern knn_classifier
+    forgeproof verify examples/knn_classifier_good.py --pattern knn_classifier
 """
 import math
 import random

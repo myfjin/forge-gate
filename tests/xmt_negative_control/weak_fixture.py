@@ -12,7 +12,7 @@ _pkg = Path(__file__).resolve().parents[2]
 if str(_pkg) not in sys.path:
     sys.path.insert(0, str(_pkg))
 
-from forge_gate.fixture_engine import emit, get_fn, load_module
+from forgeproof.fixture_engine import emit, get_fn, load_module
 
 
 def main():

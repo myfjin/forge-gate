@@ -1,13 +1,13 @@
 """Test ddmin: shrink a failing input to a minimal failing subset.
 
 BRIEF-DEBUG-FEATURE-2026-09-05.md §3.3 (delta debugging) and §8.2 (cap
-the search and report the cap). Taxonomy-agnostic; no forge-gate imports.
+the search and report the cap). Taxonomy-agnostic; no forgeproof imports.
 """
 from __future__ import annotations
 
 import pytest
 
-from forge_gate.debug_core import ShrinkResult, ddmin
+from forgeproof.debug_core import ShrinkResult, ddmin
 
 
 # ─────────────────────────────────────────────────────────────────────────────

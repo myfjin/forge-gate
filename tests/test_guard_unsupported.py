@@ -14,7 +14,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from forge_gate import lenses
+from forgeproof import lenses
 
 
 def _fake_proc(stdout: str, returncode: int = 0, stderr: str = "") -> SimpleNamespace:

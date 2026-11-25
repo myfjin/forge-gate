@@ -1,4 +1,4 @@
-"""Smoke tests for Forge Gate CLI.
+"""Smoke tests for ForgeProof CLI.
 
 These are basic happy-path and failure-path tests. 4Q owns the dedicated
 disaster + contract suite; coordinate before expanding this file.
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.catalog import reference_path
+from forgeproof.catalog import reference_path
 
 FIXTURES = [
     "kmeans_clustering",
@@ -43,7 +43,7 @@ def _copy_correct(tmp_path: Path, pattern: str) -> Path:
 def test_all_patterns_pass_on_aura_copy(tmp_path: Path, pattern: str):
     user_file = _copy_correct(tmp_path, pattern)
     result = subprocess.run(
-        [sys.executable, "-m", "forge_gate.cli", "verify", str(user_file), "--pattern", pattern],
+        [sys.executable, "-m", "forgeproof.cli", "verify", str(user_file), "--pattern", pattern],
         capture_output=True,
         text=True,
     )
@@ -66,7 +66,7 @@ def test_broken_linear_regression_fails(tmp_path: Path):
     user_file.write_text(broken, encoding="utf-8")
 
     result = subprocess.run(
-        [sys.executable, "-m", "forge_gate.cli", "verify", str(user_file), "--pattern", "linear_regression_gd"],
+        [sys.executable, "-m", "forgeproof.cli", "verify", str(user_file), "--pattern", "linear_regression_gd"],
         capture_output=True,
         text=True,
     )
@@ -79,7 +79,7 @@ def test_missing_function_fails(tmp_path: Path):
     user_file.write_text("def not_the_function(X, y):\n    return None\n", encoding="utf-8")
 
     result = subprocess.run(
-        [sys.executable, "-m", "forge_gate.cli", "verify", str(user_file), "--pattern", "linear_regression_gd"],
+        [sys.executable, "-m", "forgeproof.cli", "verify", str(user_file), "--pattern", "linear_regression_gd"],
         capture_output=True,
         text=True,
     )

@@ -1,9 +1,9 @@
 """Self-contained BROKEN implementation of polynomial regression.
 
 The bug: fits degree 1 instead of the requested degree (ignores the degree
-argument), so quadratic coefficients are wrong. Verify with Forge Gate to see FAIL.
+argument), so quadratic coefficients are wrong. Verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/polynomial_regression_bad.py --pattern polynomial_regression
+    forgeproof verify examples/polynomial_regression_bad.py --pattern polynomial_regression
 """
 import math
 import random

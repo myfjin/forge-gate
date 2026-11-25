@@ -47,15 +47,15 @@ def _git(tree, *args):
 
 
 CALC = "def add(a, b):\n    return a + b\n"
-TEST_CALC = "from forge_gate.calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
+TEST_CALC = "from forgeproof.calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
 
 
 def make_tree(base: Path) -> Path:
     tree = base / "tree"
-    (tree / "src" / "forge_gate").mkdir(parents=True, mode=0o700)
+    (tree / "src" / "forgeproof").mkdir(parents=True, mode=0o700)
     (tree / "tests").mkdir(mode=0o700)
-    (tree / "src" / "forge_gate" / "__init__.py").write_text("")
-    (tree / "src" / "forge_gate" / "calc.py").write_text(CALC)
+    (tree / "src" / "forgeproof" / "__init__.py").write_text("")
+    (tree / "src" / "forgeproof" / "calc.py").write_text(CALC)
     (tree / "tests" / "test_calc.py").write_text(TEST_CALC)
     (tree / ".gitignore").write_text("__pycache__/\n")
     _git(tree, "init", "-q")
@@ -95,7 +95,7 @@ def test_each_tool_runs_as_a_script_from_a_foreign_cwd(tmp_path, tool):
             "--record", str(rec), "--tag", "cwd", "--max-load", "1000", "--wait", "0"]
     if tool == "fg_mutrun.py":
         spec = tmp_path / "spec.json"
-        spec.write_text(json.dumps([{"id": "K", "file": "src/forge_gate/calc.py", "old": "a + b",
+        spec.write_text(json.dumps([{"id": "K", "file": "src/forgeproof/calc.py", "old": "a + b",
                                      "new": "a - b", "tests": ["tests/test_calc.py"], "what": "kill"}]))
         argv += ["--spec", str(spec)]
     p = subprocess.run(argv, cwd=elsewhere, env=env, capture_output=True, text=True, timeout=300)
@@ -107,7 +107,7 @@ def test_each_tool_runs_as_a_script_from_a_foreign_cwd(tmp_path, tool):
         assert out[1].startswith("K KILLED rc=1 | kill | "), out
         assert out[-2:] == ["KILLED: 1/1", "porcelain_after="], out
     r = json.loads(rec.read_text().splitlines()[-1])
-    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forge_gate" / "paths.py").resolve()
+    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forgeproof" / "paths.py").resolve()
     assert list(elsewhere.iterdir()) == []  # nothing written in the cwd
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the 100-test diverse corpus for Forge Gate property validation."""
+"""Generate the 100-test diverse corpus for ForgeProof property validation."""
 from __future__ import annotations
 
 import json

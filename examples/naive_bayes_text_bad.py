@@ -2,9 +2,9 @@
 
 The bug: training ignores the labels and pools all documents into a single class,
 so both class priors are 0.5 and word probabilities are identical. Predictions
-become random/majority-class. Verify with Forge Gate to see FAIL.
+become random/majority-class. Verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/naive_bayes_text_bad.py --pattern naive_bayes_text
+    forgeproof verify examples/naive_bayes_text_bad.py --pattern naive_bayes_text
 """
 import math
 import random

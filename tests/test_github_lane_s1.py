@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.scout import box, fetchproxy, ghpool, ratify
+from forgeproof import config
+from forgeproof.scout import box, fetchproxy, ghpool, ratify
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 TARGET = "fake.test:443"
@@ -98,7 +98,7 @@ def _records(d: Path) -> list[dict]:
 CRASHER = textwrap.dedent("""
     import json, os, sys
     from pathlib import Path
-    from forge_gate.scout import box, fetchproxy
+    from forgeproof.scout import box, fetchproxy
     rdir, hs, host, port = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], int(sys.argv[4])
     box.available = lambda: None
     box.red_arm = lambda mode, fetch=None, **kw: {"ok": True, "probe": {"fake": True}, "proxy_log": [],

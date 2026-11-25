@@ -2,7 +2,7 @@
 """Guard lens — gating NaN/Inf finiteness check for scalar parameters.
 
 STATUS: GATING. A genuine NaN-defect FAIL fails the build. `guard` is in both
-ENFORCED_EXTRA_LENSES and ENFORCED_LENSES (src/forge_gate/lenses.py), and
+ENFORCED_EXTRA_LENSES and ENFORCED_LENSES (src/forgeproof/lenses.py), and
 _run_guard() sets objected=True on a FAIL verdict. This header read ADVISORY
 until 2026-09-04; it had been false since the lens was promoted to gating.
 

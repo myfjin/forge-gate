@@ -58,9 +58,9 @@ def _git(tree, *args):
 
 def make_tree(base: Path, tests: dict, files: dict | None = None) -> Path:
     t = base / "tree"
-    (t / "src" / "forge_gate").mkdir(parents=True)
+    (t / "src" / "forgeproof").mkdir(parents=True)
     (t / "tests").mkdir()
-    (t / "src" / "forge_gate" / "__init__.py").write_text("")
+    (t / "src" / "forgeproof" / "__init__.py").write_text("")
     (t / "pytest.ini").write_text("[pytest]\ntestpaths = tests\n")
     (t / "README.md").write_text("readme\n")
     for name, body in tests.items():
@@ -118,8 +118,8 @@ def test_green_run_prints_the_verdict_line_and_records_every_field(tmp_path, gat
     assert r["tool_md5"] == hashlib.md5(TOOL.read_bytes()).hexdigest()
     head = subprocess.run([GIT, "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True)
     assert r["tool_head"] == (head.stdout.strip() if head.returncode == 0 else None)
-    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forge_gate" / "paths.py").resolve()
-    assert Path(r["forge_gate_file"]).resolve().parent == (tree / "src" / "forge_gate").resolve()
+    assert Path(r["paths_file"]).resolve() == (REPO / "src" / "forgeproof" / "paths.py").resolve()
+    assert Path(r["forgeproof_file"]).resolve().parent == (tree / "src" / "forgeproof").resolve()
     assert r["pytest_timeout_loaded"] is (importlib.util.find_spec("pytest_timeout") is not None)
     assert r["load_before"] == r["load_after"] == 0.0 and r["max_load"] == 1000.0
     m = os.umask(0)
@@ -136,13 +136,13 @@ def test_green_run_prints_the_verdict_line_and_records_every_field(tmp_path, gat
     assert code2 == 0 and len(gate.rec.read_text().splitlines()) == 2 and r2["run_id"] != r["run_id"]
 
 
-# ---- G0: the tool's own forge_gate.paths --------------------------------------------------------
+# ---- G0: the tool's own forgeproof.paths --------------------------------------------------------
 
 def test_g0_a_tool_that_would_load_paths_from_elsewhere_refuses(tmp_path):
     tree = make_tree(tmp_path, PASS2_SKIP1)
     fake = tmp_path / "copy"
     (fake / "tools").mkdir(parents=True)
-    (fake / "src").mkdir()           # this copy's own src has no forge_gate ...
+    (fake / "src").mkdir()           # this copy's own src has no forgeproof ...
     shutil.copy(TOOL, fake / "tools" / "fg_gate.py")
     shutil.copy(TOOL.parent / "fg_common.py", fake / "tools" / "fg_common.py")  # S3c: a whole tool
     env = dict(os.environ, PYTHONPATH=str(REPO / "src"),   # ... but another one is importable
@@ -234,14 +234,14 @@ def test_g4_a_missing_tool_is_refused_before_pytest(tmp_path, gate, monkeypatch,
 
 # ---- G5: import preflight ------------------------------------------------------------------------
 
-def test_g5_forge_gate_resolving_outside_the_tree_is_refused(tmp_path, gate):
-    other = tmp_path / "elsewhere" / "forge_gate"
+def test_g5_forgeproof_resolving_outside_the_tree_is_refused(tmp_path, gate):
+    other = tmp_path / "elsewhere" / "forgeproof"
     other.mkdir(parents=True)
     (other / "__init__.py").write_text("")
     site = f"import sys\nsys.path.insert(0, {str(other.parent)!r})\n"   # the egg-link trap, portably
     tree = make_tree(tmp_path, PASS2_SKIP1, {"src/sitecustomize.py": site})
     code, line, r = gate(tree)
-    assert code == 2 and "import preflight: forge_gate imported from" in line, line
+    assert code == 2 and "import preflight: forgeproof imported from" in line, line
     assert _junits(gate.rec) == []
 
 
@@ -738,7 +738,7 @@ def test_s3e_the_main_wrapper_turns_an_escaped_base_exception_into_gate_error_ex
     shutil.copy2(TOOL, tools / "fg_gate.py")
     common = (REPO / "tools" / "fg_common.py").read_text()
     (tools / "fg_common.py").write_text(common + f"\n\ndef _run_id():\n    raise {raise_}\n")
-    shutil.copytree(REPO / "src" / "forge_gate", tmp_path / "copy" / "src" / "forge_gate",
+    shutil.copytree(REPO / "src" / "forgeproof", tmp_path / "copy" / "src" / "forgeproof",
                     ignore=shutil.ignore_patterns("__pycache__"))
     tree = make_tree(tmp_path, PASS2_SKIP1)
     rec = tmp_path / "rec" / "r.jsonl"

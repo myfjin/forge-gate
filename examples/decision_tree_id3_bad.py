@@ -4,7 +4,7 @@ The bug: build_tree stops at depth 0 (max_depth forced to 0), so every node is a
 leaf predicting the majority class. Accuracy collapses to ~0.5. Verify with Forge
 Gate to see FAIL.
 
-    forge-gate verify examples/decision_tree_id3_bad.py --pattern decision_tree_id3
+    forgeproof verify examples/decision_tree_id3_bad.py --pattern decision_tree_id3
 """
 import math
 import random

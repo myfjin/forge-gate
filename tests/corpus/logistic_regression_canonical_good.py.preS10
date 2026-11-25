@@ -1,9 +1,9 @@
 """Self-contained correct implementation of binary logistic regression.
 
 This file can be run standalone (`python examples/logistic_regression_good.py`)
-or verified against the Forge Gate oracle:
+or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/logistic_regression_good.py --pattern logistic_regression
+    forgeproof verify examples/logistic_regression_good.py --pattern logistic_regression
 """
 import math
 import random
@@ -69,7 +69,7 @@ def logistic_regression_predict(
 if __name__ == "__main__":
     random.seed(42)
 
-    # Same seed-locked synthetic data the Forge Gate oracle uses.
+    # Same seed-locked synthetic data the ForgeProof oracle uses.
     n_samples = 40
     X, y = [], []
     for _ in range(n_samples // 2):

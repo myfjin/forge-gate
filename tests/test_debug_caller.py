@@ -1,4 +1,4 @@
-"""Test the forge-gate debug caller-layer routing (BRIEF §4, §9 step 2).
+"""Test the forgeproof debug caller-layer routing (BRIEF §4, §9 step 2).
 
 What we test here:
   - extract_code() recovers the code from LensResult.reason format, returns
@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import pytest
 
-from forge_gate.debug_caller import extract_code, route, _HANDLERS
-from forge_gate.debug_core import DebugEvidence
-from forge_gate.lenses import LensResult
-from forge_gate.unsupported import _u, declared_codes
+from forgeproof.debug_caller import extract_code, route, _HANDLERS
+from forgeproof.debug_core import DebugEvidence
+from forgeproof.lenses import LensResult
+from forgeproof.unsupported import _u, declared_codes
 
 
 def _lens(name: str, status: str, reason: str) -> LensResult:

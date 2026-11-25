@@ -3,7 +3,7 @@
 #
 # The Guard lens needs no oracle. It feeds NaN/Inf into a function's scalar
 # parameters and checks whether a finiteness guard exists. This works on any
-# code, not just patterns in the Forge Gate catalog.
+# code, not just patterns in the ForgeProof catalog.
 #
 # This test is written BEFORE the lens exists. 4Q builds the lens against it.
 #
@@ -14,7 +14,7 @@ set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 GUARD_LENS="$ROOT/tools/guard_lens.py"
-FORGE_GATE="$ROOT/src/forge_gate"
+FORGE_GATE="$ROOT/src/forgeproof"
 PYTHON="/usr/bin/python3"
 
 FAILED=0

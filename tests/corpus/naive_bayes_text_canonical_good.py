@@ -1,8 +1,8 @@
 """Self-contained correct implementation of Multinomial Naive Bayes for text.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/naive_bayes_text_good.py --pattern naive_bayes_text
+    forgeproof verify examples/naive_bayes_text_good.py --pattern naive_bayes_text
 """
 import math
 import random

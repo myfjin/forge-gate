@@ -1,4 +1,4 @@
-"""Negative-control test for the debug wire-up (step 5, forge-gate 2026-09-07).
+"""Negative-control test for the debug wire-up (step 5, forgeproof 2026-09-07).
 
 BRIEF-DEBUG-FEATURE-2026-09-05.md acceptance criteria §6:
   1. Verdict unchanged with/without debug -- proved by test_verdict_algebra_unchanged
@@ -30,8 +30,8 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from forge_gate import lenses as L  # noqa: E402
-from forge_gate.debug_core import DebugEvidence  # noqa: E402
+from forgeproof import lenses as L  # noqa: E402
+from forgeproof.debug_core import DebugEvidence  # noqa: E402
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -306,9 +306,9 @@ def test_attach_debug_does_not_swallow_base_exception(monkeypatch, broken_patter
 
     # debug_caller is lazy-imported inside _attach_debug; register a stub.
     import types as _t
-    dc = _t.ModuleType("forge_gate.debug_caller")
+    dc = _t.ModuleType("forgeproof.debug_caller")
     dc.route = raise_boom
-    monkeypatch.setitem(sys.modules, "forge_gate.debug_caller", dc)
+    monkeypatch.setitem(sys.modules, "forgeproof.debug_caller", dc)
 
     result = L.LensResult("guard", "FAIL", "boom", objected=True)
     with pytest.raises(KeyboardInterrupt):
@@ -521,7 +521,7 @@ def test_determinism_fail_populates_debug(monkeypatch, broken_pattern_file):
 
 
 def test_determinism_unsupported_routes_u1(monkeypatch, broken_pattern_file):
-    import forge_gate.unsupported as U
+    import forgeproof.unsupported as U
     monkeypatch.setattr(
         L, "_run_determinism_once",
         lambda uf, p, t: L.LensResult("determinism", "UNSUPPORTED",

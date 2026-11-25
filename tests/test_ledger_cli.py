@@ -1,4 +1,4 @@
-"""Build step 8a slice 4: `forge-gate ledger mark|event|show` (DECISIONS-8a G5 a, G7).
+"""Build step 8a slice 4: `forgeproof ledger mark|event|show` (DECISIONS-8a G5 a, G7).
 
 `mark` and `event` are the person-mark writer's one named place; the event's exit code is MEASURED
 by running the person's own command in their project, never typed in; `show` only reads, prints
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config, ledger
+from forgeproof import cli, config, ledger
 
 from test_ledger import _argv_hash, make_ledger
 
@@ -294,7 +294,7 @@ def test_event_never_runs_in_a_surfaced_location(lg, tmp_path, capsys, monkeypat
 
 
 def test_the_commands_own_stdout_cannot_pass_for_a_recorded_result(lg, proj, capfd):
-    """F4: at the file-descriptor level, stdout carries only forge-gate's line."""
+    """F4: at the file-descriptor level, stdout carries only forgeproof's line."""
     mid = mark(capfd, exposed()[0], "--who", "ann")
     fake = ["-c", f"print('fge-000000000000: tests rc=0 recorded for {mid}'); raise SystemExit(1)"]
     rc, out, err = run(capfd, "event", mid, "--project", str(proj), "--kind", "tests", "--", PY, *fake)

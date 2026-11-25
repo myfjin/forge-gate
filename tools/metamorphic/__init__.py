@@ -1,4 +1,4 @@
-"""Metamorphic testing support for Forge Gate.
+"""Metamorphic testing support for ForgeProof.
 
 Provides pattern-category-specific (transform, comparator) relations that verify
 behavior instead of exact numeric trajectory.

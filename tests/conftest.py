@@ -1,7 +1,7 @@
 """Test-session routes (project standard §6: the default tier runs on fixtures only).
 
 1. The suite runs from a source checkout, so the lens tools (tools/) are right here.
-   An installed (non-editable) Forge Gate cannot find tools/ by itself (KNOWN-DEBT
+   An installed (non-editable) ForgeProof cannot find tools/ by itself (KNOWN-DEBT
    KD-2), so point it at this checkout unless the caller already chose one.
 2. Outside `pytest -m live`, the library route is switched off: an exported
    FORGE_GATE_LIBRARY_DIR is removed, and the host's config.toml is replaced by a copy
@@ -34,7 +34,7 @@ def _live_selected(markexpr: str) -> bool:
 
 
 def _config_without(drop) -> None:
-    from forge_gate import config
+    from forgeproof import config
 
     cf = config.config_file()
     raw = config._load() if cf is not None and cf.is_file() else {}
@@ -42,7 +42,7 @@ def _config_without(drop) -> None:
             for k, v in raw.items() if k not in drop and isinstance(v, str)}
     tmpdir = REPO / "tmp"   # gitignored; never the system temp dir (/tmp on the deploy host)
     tmpdir.mkdir(exist_ok=True)
-    fd, path = tempfile.mkstemp(prefix="forge-gate-test-config-", suffix=".toml", dir=tmpdir)
+    fd, path = tempfile.mkstemp(prefix="forgeproof-test-config-", suffix=".toml", dir=tmpdir)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write("[paths]\n")
         for k, v in sorted(keep.items()):
@@ -75,7 +75,7 @@ def pytest_configure(config):
 
 def pytest_report_header(config):
     """Prove which code this run measures (standard §5: print __file__ in every arm)."""
-    import forge_gate
+    import forgeproof
 
-    return [f"forge_gate imported from: {forge_gate.__file__}",
+    return [f"forgeproof imported from: {forgeproof.__file__}",
             f"config: {os.environ.get('FORGE_GATE_CONFIG')}"]

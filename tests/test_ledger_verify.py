@@ -1,4 +1,4 @@
-"""Build step 8a slice 3: `forge-gate verify` is the oracle-run writer (design §4a.5 V4-2;
+"""Build step 8a slice 3: `forgeproof verify` is the oracle-run writer (design §4a.5 V4-2;
 DECISIONS-8a G4 a, D3). A default-strength final PASS on a file that carries a handed-out result id
 AND the code behind it appends one oracle outcome per id; nothing else does, and the ledger never
 changes verify's verdict, stdout or exit code. Fixtures only."""
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config, ledger
-from forge_gate.catalog import reference_path
+from forgeproof import cli, config, ledger
+from forgeproof.catalog import reference_path
 
 from test_ledger import make_ledger
 from test_scout_slice1 import _export

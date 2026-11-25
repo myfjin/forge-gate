@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify_js_selftest.sh — Forge Gate ruler for JS pattern self-tests.
+# verify_js_selftest.sh — ForgeProof ruler for JS pattern self-tests.
 #
 # For each pattern file passed as an argument the ruler checks:
 #   1. the file actually contains a self-test (assert / throw / process.exit)

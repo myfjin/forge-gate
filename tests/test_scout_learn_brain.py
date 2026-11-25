@@ -28,8 +28,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.scout import cards, learn
+from forgeproof import config
+from forgeproof.scout import cards, learn
 
 from test_scout_learn import Env, engines_with  # noqa: E402  (same fixtures as the unit arms)
 
@@ -242,7 +242,7 @@ def test_a_chaos_pass_written_by_learn_itself_makes_exactly_its_row_hard(brain, 
     read by the reader copy and moves its row, and only its row, to hard. The child run is stubbed
     with a clean PASS result: the real child's verdicts are tested against the validator in
     test_scout_chaos_parity.py. The gate in learn._check is the real one."""
-    from forge_gate.scout.engines import chaos
+    from forgeproof.scout.engines import chaos
     from test_scout_learn import PY_BODY
 
     data = _scratch(tmp_path, brain, "arm-chaos")

@@ -8,8 +8,8 @@ import sys
 
 import pytest
 
-from forge_gate import cli, config, ledger
-from forge_gate.scout import experience as X, report, rule2, shape_lens, slots
+from forgeproof import cli, config, ledger
+from forgeproof.scout import experience as X, report, rule2, shape_lens, slots
 
 from test_ledger import make_ledger
 from test_scout_slice1 import _export, export_root  # noqa: F401  (fixture)
@@ -186,7 +186,7 @@ def test_an_unreadable_ledger_is_blind_never_zero(export_root, lg, tmp_path, cap
 def test_a_behaviour_explore_pair_never_makes_behaviour_found(monkeypatch):
     """8b s4: behaviour's explore slot draws from ANY scored pair (also below TAU); the outcome is judged
     on the agreeing top only."""
-    from forge_gate.scout import behaviour, box
+    from forgeproof.scout import behaviour, box
 
     def fake(job, query, members, timeout):
         if job["mode"] == "facts":
@@ -213,7 +213,7 @@ def test_refused_outcome_rows_with_none_accepted_are_blind_never_zero(export_roo
 def test_behaviour_rule2_judges_the_top_hits_never_the_explore_pair(monkeypatch):
     """8b s4 review F1 (HIGH): with an explore pair drawn on every rank, behaviour's own Rule-2 set
     must still pass; before the fix it failed three cases and switched behaviour off."""
-    from forge_gate.scout import behaviour as B, box
+    from forgeproof.scout import behaviour as B, box
     rel = {B.SQ_LOOP, B.SQ_GEN}
 
     def fake(job, query, members, timeout):

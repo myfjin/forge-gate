@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.scout import ratify
+from forgeproof.scout import ratify
 
 P = ratify.REQUIRED_PRINCIPAL      # the published copy renames the principal; the tests follow it
 MAINTAINER_KEY_ID = "dad6972af38242fc"   # who P must be: pinned by key, which no rename touches

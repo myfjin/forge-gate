@@ -2,7 +2,7 @@
 
 All three UNSUPPORTED shapes at tools/twin_consensus.py are tool coverage gaps
 (verified 2026-09-05): CatalogError (line 272), fixture missing under
-src/forge_gate/fixtures/ (line 276), no twins configured (line 336). Single
+src/forgeproof/fixtures/ (line 276), no twins configured (line 336). Single
 code at the adapter; classifier at the tool layer if a shape ever needs U-code
 discrimination.
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from forge_gate import lenses
+from forgeproof import lenses
 
 
 def _tc(status, reason, details=None):

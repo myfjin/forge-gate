@@ -2,9 +2,9 @@
 
 The bug is a single flipped sign: gradient *ascent* is performed instead of
 gradient descent, so weights diverge from the oracle. Run standalone to see the
-divergence, or verify with Forge Gate to see FAIL.
+divergence, or verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/linear_regression_gd_bad.py --pattern linear_regression_gd
+    forgeproof verify examples/linear_regression_gd_bad.py --pattern linear_regression_gd
 """
 import random
 from typing import List, Tuple

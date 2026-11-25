@@ -8,7 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from forge_gate import lenses
+from forgeproof import lenses
 
 
 # ------------------------------------------------------------------ metamorphic

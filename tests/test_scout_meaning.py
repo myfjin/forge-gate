@@ -13,8 +13,8 @@ import re
 
 import pytest
 
-from forge_gate import cli, config, ledger
-from forge_gate.scout import embed, meaning_lens as M, report, rule2, shape_lens
+from forgeproof import cli, config, ledger
+from forgeproof.scout import embed, meaning_lens as M, report, rule2, shape_lens
 
 from test_scout_slice1 import _export, export_root  # noqa: F401  (fixture)
 

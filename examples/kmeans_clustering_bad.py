@@ -2,9 +2,9 @@
 
 The bug is a single wrong assignment: each point is assigned to the *farthest*
 centroid instead of the nearest. This blows up intra-cluster distance and collapses
-centroid separation. Verify with Forge Gate to see FAIL.
+centroid separation. Verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/kmeans_clustering_bad.py --pattern kmeans_clustering
+    forgeproof verify examples/kmeans_clustering_bad.py --pattern kmeans_clustering
 """
 import math
 import random

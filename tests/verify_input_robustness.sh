@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify_input_robustness.sh — Forge Gate input-robustness reporting gate.
+# verify_input_robustness.sh — ForgeProof input-robustness reporting gate.
 #
 # For each JS pattern passed as an argument the gate runs its entry function on
 # a set of generated inputs BEYOND the pattern's own fixture:
@@ -144,7 +144,7 @@ def derive_entry_name(text, alias_name):
 
 
 def strip_iife(source):
-    """Remove the trailing self-test IIFE from a Forge Gate pattern file."""
+    """Remove the trailing self-test IIFE from a ForgeProof pattern file."""
     idx = source.find('(function () {')
     if idx < 0:
         return source

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config, ledger
+from forgeproof import config, ledger
 
 REPO = Path(__file__).resolve().parents[1]
 SHA = "a" * 64
@@ -208,7 +208,7 @@ def test_concurrent_writers_never_tear_a_line(lg):
     script = textwrap.dedent(f"""
         import sys
         sys.path.insert(0, {str(REPO / 'src')!r})
-        from forge_gate import ledger
+        from forgeproof import ledger
         for i in range(60):
             ledger.record_exposure(query_sha256={SHA!r}, query_lang='python', d={str(lg)!r}, wait=30,
                                    hits=[dict(lens='shape', rank=r, score=0.5, pool='corpus', trust='raw',

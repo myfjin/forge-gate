@@ -1,9 +1,9 @@
 """Self-contained correct implementation of k-Means clustering.
 
 This file can be run standalone (`python examples/kmeans_clustering_good.py`)
-or verified against the Forge Gate oracle:
+or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/kmeans_clustering_good.py --pattern kmeans_clustering
+    forgeproof verify examples/kmeans_clustering_good.py --pattern kmeans_clustering
 """
 import math
 import random
@@ -82,7 +82,7 @@ def intra_cluster_distance(
 if __name__ == "__main__":
     random.seed(42)
 
-    # Same seed-locked synthetic data the Forge Gate oracle uses.
+    # Same seed-locked synthetic data the ForgeProof oracle uses.
     n_per_cluster = 20
     X = []
     for _ in range(n_per_cluster):

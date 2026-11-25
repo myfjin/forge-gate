@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Run the 100-test Forge Gate corpus and score correct verdicts.
+"""Run the 100-test ForgeProof corpus and score correct verdicts.
 
 Usage:
     python tests/run_corpus.py
 
 Reads tests/corpus_manifest.json (format: {"count": N, "items": [...]})
-and runs `python3 -m forge_gate.cli verify` on each entry. Prints the number
+and runs `python3 -m forgeproof.cli verify` on each entry. Prints the number
 of matching verdicts and lists any mismatches. Exits 0 when the score is >= 98/100.
 """
 from __future__ import annotations
@@ -22,7 +22,7 @@ REPO_ROOT = MANIFEST.parent.parent
 
 
 def run_one(file_path: Path, pattern: str, timeout: float = 60.0, lenses: str = "default") -> str:
-    """Run forge-gate verify and return the verdict status."""
+    """Run forgeproof verify and return the verdict status."""
     env = os.environ.copy()
     env["PYTHONPATH"] = (
         str(REPO_ROOT / "src") + os.pathsep + str(REPO_ROOT / "tools")
@@ -31,7 +31,7 @@ def run_one(file_path: Path, pattern: str, timeout: float = 60.0, lenses: str = 
     cmd = [
         sys.executable,
         "-m",
-        "forge_gate.cli",
+        "forgeproof.cli",
         "verify",
         str(file_path),
         "--pattern",
@@ -111,7 +111,7 @@ def main() -> int:
     total = len(results)
     correct_total = sum(1 for r in results if r["correct"])
 
-    print(f"\nForge Gate corpus [lenses={lenses}]: {correct_total}/{total} correct verdicts\n")
+    print(f"\nForgeProof corpus [lenses={lenses}]: {correct_total}/{total} correct verdicts\n")
     print("Breakdown by kind:")
     for kind in sorted(kind_totals.keys()):
         c = kind_correct[kind]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""fg_gate: run the forge-gate suite on a worktree and print one verdict that the tested
+"""fg_gate: run the forgeproof suite on a worktree and print one verdict that the tested
 tree cannot fake (shared-tools loop, slice S2; behaviour G0-G12 of the loop's design doc).
 
     fg_gate.py --tree DIR --python PY --record FILE --tag T [--must-run ENTRY ...]
@@ -10,9 +10,9 @@ Exit 0 GREEN, 1 RED, 2 GATE-ERROR. The last stdout line is
 One JSON line is appended to FILE before that line is printed.
 
 The tool is a measuring instrument: nothing the tested tree does may change the verdict.
-- G0  it loads its OWN ``forge_gate.paths`` (``<tool checkout>/src``), never the tested tree's;
+- G0  it loads its OWN ``forgeproof.paths`` (``<tool checkout>/src``), never the tested tree's;
 - G3  the suite's environment is built from nothing (``env -i`` semantics);
-- G4/G5 a missing ``timeout``/``git``, a missing pytest, or ``import forge_gate`` resolving
+- G4/G5 a missing ``timeout``/``git``, a missing pytest, or ``import forgeproof`` resolving
   outside ``DIR/src`` (an editable install elsewhere) is an error, not a red or green;
 - G6  a loaded box waits (poll every 30 s), then errors;
 - G7/G8 counts come only from this run's own fresh junit file;

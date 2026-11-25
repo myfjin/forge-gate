@@ -1,6 +1,6 @@
-"""Route tests (project standard v0.3 §1-§3, §6; Forge Gate build step 1, 2026-11-11).
+"""Route tests (project standard v0.3 §1-§3, §6; ForgeProof build step 1, 2026-11-11).
 
-Every route out of the project goes through ``forge_gate.config``. These tests need no
+Every route out of the project goes through ``forgeproof.config``. These tests need no
 library, no network and no particular $HOME: they run on fixtures only.
 """
 from __future__ import annotations
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.catalog import reference_dir, reference_path, resolve_pattern, list_patterns
+from forgeproof import config
+from forgeproof.catalog import reference_dir, reference_path, resolve_pattern, list_patterns
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -95,7 +95,7 @@ _HOME_CALL = re.compile(r"Path\.home\(\)|expanduser\(\s*[\"']~")
 
 
 def _shipped_files():
-    for root in (REPO / "src" / "forge_gate", REPO / "tools"):
+    for root in (REPO / "src" / "forgeproof", REPO / "tools"):
         for p in root.rglob("*"):
             if p.is_file() and p.suffix in {".py", ".json", ".sh", ".toml"} and "__pycache__" not in p.parts:
                 yield p
@@ -106,13 +106,13 @@ def _shipped_files():
 # test and runs only inside the isolation box. The list is exact, so it cannot grow unnoticed.
 # step 6b-2 adds the chaos port (review item, named in the 6b-2 ledger row): its LIB default is
 # never used; chaos_runner.py points LIB at a staged copy of the pinned library.
-PORTED_EXEMPT = {"src/forge_gate/scout/engines/executor_port.py",
-                 "src/forge_gate/scout/engines/chaos_port.py"}
+PORTED_EXEMPT = {"src/forgeproof/scout/engines/executor_port.py",
+                 "src/forgeproof/scout/engines/chaos_port.py"}
 
 
 def test_ported_exemptions_are_exact_and_carry_their_header():
-    assert PORTED_EXEMPT == {"src/forge_gate/scout/engines/executor_port.py",
-                             "src/forge_gate/scout/engines/chaos_port.py"}   # pinned: widening it is a review item
+    assert PORTED_EXEMPT == {"src/forgeproof/scout/engines/executor_port.py",
+                             "src/forgeproof/scout/engines/chaos_port.py"}   # pinned: widening it is a review item
     for rel in PORTED_EXEMPT:
         assert (REPO / rel).read_text().startswith("# Ported from "), rel
 
@@ -139,7 +139,7 @@ def test_canary_exemption_is_one_line():
 def test_no_home_paths_outside_the_loader():
     hits, canary = [], _canary_line()
     for p in _shipped_files():
-        if p.name == "config.py" and p.parent.name == "forge_gate":
+        if p.name == "config.py" and p.parent.name == "forgeproof":
             continue
         if str(p.relative_to(REPO)) in PORTED_EXEMPT and p.read_text().startswith("# Ported from "):
             continue
@@ -148,13 +148,13 @@ def test_no_home_paths_outside_the_loader():
                 continue
             if _HOME_PATH.search(line) or _HOME_CALL.search(line):
                 hits.append(f"{p.relative_to(REPO)}:{i}: {line.strip()[:100]}")
-    assert not hits, "home paths outside forge_gate/config.py:\n" + "\n".join(hits)
+    assert not hits, "home paths outside forgeproof/config.py:\n" + "\n".join(hits)
 
 
-def test_lenses_outside_a_checkout_name_forge_gate_home(monkeypatch, tmp_path):
+def test_lenses_outside_a_checkout_name_forgeproof_home(monkeypatch, tmp_path):
     """An install without a checkout: tool lenses go ERROR naming FORGE_GATE_HOME and
     evaluate() still returns a verdict (it must not crash)."""
-    from forge_gate import lenses
+    from forgeproof import lenses
 
     monkeypatch.setattr(lenses, "TOOLS_DIR", tmp_path / "no-tools")
     # Other tests leave the real tools/ on sys.path and its modules cached; remove both,

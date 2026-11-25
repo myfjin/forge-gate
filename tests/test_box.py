@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli
-from forge_gate.scout import box
+from forgeproof import cli
+from forgeproof.scout import box
 
 LINUX = box.available() is None
 
@@ -184,7 +184,7 @@ import json as _json
 import socket as _socket
 import threading as _threading
 
-from forge_gate.scout import fetchproxy
+from forgeproof.scout import fetchproxy
 
 
 @pytest.fixture

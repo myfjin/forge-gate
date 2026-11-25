@@ -1,7 +1,7 @@
 # Guard Lens
 
 The Guard Lens is a **gating** NaN/Inf finiteness check for scalar parameters
-in Python functions submitted to Forge Gate. It needs no oracle: it poisons
+in Python functions submitted to ForgeProof. It needs no oracle: it poisons
 scalar arguments with `NaN` or `±Inf`, runs the function, and decides whether
 the code silently turns poison into a plausible finite result.
 
@@ -13,7 +13,7 @@ gate; `INCONCLUSIVE`, `ERROR`, `UNSUPPORTED`, and `PASS` never do.
 
 ## Why this lens matters
 
-Every other Forge Gate lens needs an **oracle** — a known-correct
+Every other ForgeProof lens needs an **oracle** — a known-correct
 implementation of a known algorithm. When a submitted file does not match a
 pattern in the catalog, those lenses return `UNSUPPORTED`. They cannot judge
 code they have never seen.
@@ -172,4 +172,4 @@ oracles survived the criterion:
 * `tools/guard_lens.py` — implementation
 * `tests/verify_guard_lens.sh` — 15-gate acceptance criterion
 * `tests/verify_guard_lens_isolation.sh` — adversarial isolation criterion
-* `src/forge_gate/lenses.py` — gating integration
+* `src/forgeproof/lenses.py` — gating integration

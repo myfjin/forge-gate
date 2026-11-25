@@ -11,8 +11,8 @@ import re
 
 import pytest
 
-from forge_gate import config
-from forge_gate.catalog import reference_dir
+from forgeproof import config
+from forgeproof.catalog import reference_dir
 
 pytestmark = pytest.mark.live
 

@@ -5,7 +5,7 @@ also *subtracts* X^T*y from the bias vector before solving, producing weights
 that are the negative of the OLS solution and completely wrong. Verify with Forge
 Gate to see FAIL.
 
-    forge-gate verify examples/ridge_regression_normal_eq_bad.py --pattern ridge_regression_normal_eq
+    forgeproof verify examples/ridge_regression_normal_eq_bad.py --pattern ridge_regression_normal_eq
 """
 import random
 from typing import List

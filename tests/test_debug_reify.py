@@ -1,10 +1,10 @@
 """Tests for step-3 helpers in debug_core: capture_traceback, dump_leaf_locals,
-_safe_repr. All three are taxonomy-agnostic; nothing forge-gate-specific here.
+_safe_repr. All three are taxonomy-agnostic; nothing forgeproof-specific here.
 BRIEF-DEBUG-FEATURE-2026-09-05.md §9 step 3.
 """
 from __future__ import annotations
 
-from forge_gate.debug_core import (
+from forgeproof.debug_core import (
     capture_traceback,
     dump_leaf_locals,
     _safe_repr,
@@ -113,7 +113,7 @@ def test_capture_traceback_truncates_when_over_cap(monkeypatch):
     conditional `if 'truncated' in text: assert ...` silently passes when
     truncation didn't happen -- that shape is what M3 in the mutation suite
     exploited to survive."""
-    from forge_gate import debug_core
+    from forgeproof import debug_core
     monkeypatch.setattr(debug_core, "_TB_CAP_BYTES", 200)
     try:
         raise RuntimeError("x" * 500)  # message alone blows past 200

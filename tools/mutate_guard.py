@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Surgical defence-removal mutation harness for the Forge Gate GUARD lens.
+"""Surgical defence-removal mutation harness for the ForgeProof GUARD lens.
 
 WHY THIS EXISTS
 ---------------
@@ -357,7 +357,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     # ---------------------------------------------------------- CRASH SAFETY
     # An in-place mutation tool that is SIGKILLed leaves the target MUTATED.
     # This is not hypothetical: guard-lens-watchdog.sh kill -9'd an xmt.py run
-    # at 21:12 on 2026-09-03 and stranded a mutant in the live forge-gate tree.
+    # at 21:12 on 2026-09-03 and stranded a mutant in the live forgeproof tree.
     # So: park a pristine copy plus a lock BEFORE touching anything, and heal
     # automatically if a previous run died holding the lock.
     pristine_park = target.with_suffix(target.suffix + ".PRISTINE")
