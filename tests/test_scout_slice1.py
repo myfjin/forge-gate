@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config
-from forge_gate.scout import corpus, report, rule2, shape, shape_lens
+from forgeproof import cli, config
+from forgeproof.scout import corpus, report, rule2, shape, shape_lens
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -64,7 +64,7 @@ def export_root(tmp_path, monkeypatch):
 
 # --- port-and-freeze ---------------------------------------------------------------------
 def test_shape_port_body_matches_its_origin_md5():
-    lines = (REPO / "src/forge_gate/scout/shape.py").read_bytes().split(b"\n")
+    lines = (REPO / "src/forgeproof/scout/shape.py").read_bytes().split(b"\n")
     marker = lines.index(b"# --- ported body below ---")
     body = b"\n".join(lines[marker + 1:])
     assert hashlib.md5(body).hexdigest() == "0350722f31814c31085d55cce603cfd6"
@@ -243,7 +243,7 @@ def test_scout_executes_no_pool_or_query_code(export_root, tmp_path, capsys, mon
     q_canary = tmp_path / "QUERY-CANARY"
     body = f"import pathlib\npathlib.Path({str(q_canary)!r}).write_text('ran')\n" * 5
     rc, out = _scout(tmp_path, body, json_out=False, capsys=capsys)
-    assert rc == 0 and "FORGE-GATE SCOUT REPORT" in out
+    assert rc == 0 and "FORGEPROOF SCOUT REPORT" in out
     assert not canary.exists() and not q_canary.exists()
 
 

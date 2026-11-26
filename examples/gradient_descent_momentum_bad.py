@@ -2,9 +2,9 @@
 
 The bug: momentum velocity is subtracted instead of accumulated
 (vx = -momentum * vx + lr * gx), killing momentum and making it slower than vanilla.
-Verify with Forge Gate to see FAIL.
+Verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/gradient_descent_momentum_bad.py --pattern gradient_descent_momentum
+    forgeproof verify examples/gradient_descent_momentum_bad.py --pattern gradient_descent_momentum
 """
 
 

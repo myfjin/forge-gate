@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""eXtreme Mutation Testing (XMT) harness for Forge Gate fixtures.
+"""eXtreme Mutation Testing (XMT) harness for ForgeProof fixtures.
 
 For each gate-ready pattern, we take the signed AURA oracle (the answer key),
 neutralize each top-level function body one at a time, and run the pattern's
@@ -24,11 +24,11 @@ from typing import Dict, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
-CATALOG_PATH = SRC_ROOT / "forge_gate" / "data" / "gate_catalog.json"
-FIXTURES_DIR = SRC_ROOT / "forge_gate" / "fixtures"
+CATALOG_PATH = SRC_ROOT / "forgeproof" / "data" / "gate_catalog.json"
+FIXTURES_DIR = SRC_ROOT / "forgeproof" / "fixtures"
 
 sys.path.insert(0, str(SRC_ROOT))  # in-project: this checkout's own package
-from forge_gate.config import python as _python  # noqa: E402
+from forgeproof.config import python as _python  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -188,8 +188,8 @@ def run_fixture(fixture_script: Path, user_file: Path, pattern: str, timeout: fl
 
 def evaluate_pattern(pattern: str, meta: Dict, verbose: bool = False) -> Tuple[int, int, List[MutantResult]]:
     """Run XMT on one pattern. Returns (killed, total, details)."""
-    # The shipped reference copy of meta["aura_path"] (see forge_gate/reference/ORIGIN.md).
-    aura_path = SRC_ROOT / "forge_gate" / "reference" / f"{pattern}.py"
+    # The shipped reference copy of meta["aura_path"] (see forgeproof/reference/ORIGIN.md).
+    aura_path = SRC_ROOT / "forgeproof" / "reference" / f"{pattern}.py"
     source = aura_path.read_text(encoding="utf-8")
 
     fixture_script = FIXTURES_DIR / f"{meta['fixture']}.py"
@@ -283,7 +283,7 @@ def run_negative_control(verbose: bool = False) -> bool:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Forge Gate eXtreme Mutation Testing (XMT) harness"
+        description="ForgeProof eXtreme Mutation Testing (XMT) harness"
     )
     ap.add_argument(
         "--negative-control",
@@ -293,7 +293,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.negative_control:
-        print("Forge Gate eXtreme Mutation Testing (XMT) harness")
+        print("ForgeProof eXtreme Mutation Testing (XMT) harness")
         print("=" * 60)
         print("Running permanently checked-in negative control...")
         return 0 if run_negative_control(verbose=True) else 1
@@ -303,7 +303,7 @@ def main() -> int:
         print("No patterns found in catalog.", file=sys.stderr)
         return 1
 
-    print("Forge Gate eXtreme Mutation Testing (XMT) harness")
+    print("ForgeProof eXtreme Mutation Testing (XMT) harness")
     print("=" * 60)
 
     total_killed = 0

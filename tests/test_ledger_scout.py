@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config, ledger
-from forge_gate.scout import report, rule2
+from forgeproof import cli, config, ledger
+from forgeproof.scout import report, rule2
 
 from test_ledger import make_ledger
 from test_scout_slice1 import CANARY_NAME, _bodies, _export, _scout

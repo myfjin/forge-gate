@@ -31,9 +31,9 @@ LOAD_KEY = "FORGE_GATE_GATE_MAX_LOAD"
 # tool_head's included (S3e), goes through ``_git`` and is bounded by this.
 GIT_TIMEOUT_S = 120.0
 PREFLIGHT = (
-    "import json, sys, forge_gate, pytest\n"
+    "import json, sys, forgeproof, pytest\n"
     "try:\n    import pytest_timeout; t = True\nexcept Exception:\n    t = False\n"
-    "print(json.dumps({'forge_gate': forge_gate.__file__, 'pytest': pytest.__version__,"
+    "print(json.dumps({'forgeproof': forgeproof.__file__, 'pytest': pytest.__version__,"
     " 'python': sys.version.split()[0], 'pytest_timeout': t}))\n")
 
 
@@ -48,17 +48,17 @@ class GitTimeout(GateError):
 # ---- G0: own code first -------------------------------------------------------------------
 
 def _own_paths():
-    """Import ``forge_gate.paths`` from this tool's own checkout, and prove it came from there."""
+    """Import ``forgeproof.paths`` from this tool's own checkout, and prove it came from there."""
     own_src = Path(__file__).resolve().parents[1] / "src"
     if not sys.path or sys.path[0] != str(own_src):
         sys.path.insert(0, str(own_src))
     try:
-        from forge_gate import paths
+        from forgeproof import paths
     except Exception as e:  # noqa: BLE001 - any failure here is a broken instrument
-        raise GateError(f"G0: cannot import forge_gate.paths from {own_src}: {e}") from None
+        raise GateError(f"G0: cannot import forgeproof.paths from {own_src}: {e}") from None
     got = Path(os.path.realpath(paths.__file__))
     if not paths.is_under(got, paths.real(own_src)):
-        raise GateError(f"G0: forge_gate.paths loaded from {got}, not from the tool's own {own_src}")
+        raise GateError(f"G0: forgeproof.paths loaded from {got}, not from the tool's own {own_src}")
     return paths
 
 
@@ -156,7 +156,7 @@ def check_toplevel(env, tree: Path, paths) -> None:
 
 
 def import_preflight(python, tree: Path, env, paths, rec) -> None:
-    """G5: under ``env`` and cwd DIR, ``forge_gate`` and ``pytest`` import, and ``forge_gate``
+    """G5: under ``env`` and cwd DIR, ``forgeproof`` and ``pytest`` import, and ``forgeproof``
     resolves inside DIR/src. Records what it found."""
     pf = subprocess.run([python, "-c", PREFLIGHT], cwd=tree, env=env,
                         capture_output=True, text=True, timeout=120)
@@ -167,10 +167,10 @@ def import_preflight(python, tree: Path, env, paths, rec) -> None:
         info = json.loads(pf.stdout.strip().splitlines()[-1])
     except (ValueError, IndexError):
         raise GateError(f"import preflight printed no result: {pf.stdout[-200:]!r}") from None
-    rec.update(forge_gate_file=info["forge_gate"], pytest_version=info["pytest"],
+    rec.update(forgeproof_file=info["forgeproof"], pytest_version=info["pytest"],
                python_version=info["python"], pytest_timeout_loaded=info["pytest_timeout"])
-    if not paths.is_under(paths.real(info["forge_gate"]), paths.real(tree / "src")):
-        raise GateError(f"import preflight: forge_gate imported from {info['forge_gate']}, "
+    if not paths.is_under(paths.real(info["forgeproof"]), paths.real(tree / "src")):
+        raise GateError(f"import preflight: forgeproof imported from {info['forgeproof']}, "
                         f"not from {tree / 'src'}")
 
 

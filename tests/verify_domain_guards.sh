@@ -1,6 +1,6 @@
 #!/bin/bash
 # DOMAIN GUARDS — acceptance test for explicit rejection of semantically invalid
-# negative numeric parameters in the Forge Gate canonical oracles.
+# negative numeric parameters in the ForgeProof canonical oracles.
 #
 # These seven defects were found by measurement with tools/domain_classifier.py.
 # The maintainer approved fixing them. The fix is to RAISE on the invalid negative value,

@@ -1,8 +1,8 @@
 """Self-contained correct implementation of vanilla and momentum gradient descent.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/gradient_descent_momentum_good.py --pattern gradient_descent_momentum
+    forgeproof verify examples/gradient_descent_momentum_good.py --pattern gradient_descent_momentum
 """
 
 

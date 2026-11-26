@@ -1,8 +1,8 @@
 """Self-contained correct implementation of polynomial regression via least squares.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/polynomial_regression_good.py --pattern polynomial_regression
+    forgeproof verify examples/polynomial_regression_good.py --pattern polynomial_regression
 """
 import math
 import random

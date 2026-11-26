@@ -5,7 +5,7 @@ THE TEST IS: **can two different causes land in the same bucket?**
 """
 from __future__ import annotations
 import pytest
-from forge_gate.unsupported import _u, declared_codes, Unsupported, _REGISTRY
+from forgeproof.unsupported import _u, declared_codes, Unsupported, _REGISTRY
 
 
 # ------------------------------------------------------------------ registry discipline

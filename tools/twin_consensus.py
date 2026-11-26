@@ -28,10 +28,10 @@ SRC = REPO_ROOT / "src"
 
 sys.path.insert(0, str(SRC))
 
-from forge_gate.catalog import CatalogError, load_aura_catalog, resolve_pattern
-from forge_gate.config import NotConfigured, library_dir
-from forge_gate.runner import run_file
-from forge_gate.verifier import verdict
+from forgeproof.catalog import CatalogError, load_aura_catalog, resolve_pattern
+from forgeproof.config import NotConfigured, library_dir
+from forgeproof.runner import run_file
+from forgeproof.verifier import verdict
 
 
 @dataclass(frozen=True)
@@ -272,7 +272,7 @@ def consensus_verify(user_file: Path, pattern: str, timeout: float = 60.0) -> Tw
     except CatalogError as exc:
         return TwinConsensus("UNSUPPORTED", pattern, str(user_file), str(exc), "UNSUPPORTED", 0)
 
-    fixture = SRC / "forge_gate" / "fixtures" / f"{meta['fixture']}.py"
+    fixture = SRC / "forgeproof" / "fixtures" / f"{meta['fixture']}.py"
     if not fixture.exists():
         return TwinConsensus("UNSUPPORTED", pattern, str(user_file), f"fixture missing: {fixture}", "UNSUPPORTED", 0)
 

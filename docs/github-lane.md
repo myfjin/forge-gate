@@ -1,6 +1,6 @@
 # The GitHub lane
 
-Forge Gate's GitHub pool admits files only from repos that are ratified: a signed line in
+ForgeProof's GitHub pool admits files only from repos that are ratified: a signed line in
 `scout/trusted_repos.jsonl`, checked against `scout/allowed_signers` and the trust pin in the
 host's config (`FORGE_GATE_RATIFY_PIN`), at a pinned commit, under a licence on a closed list.
 From GitHub we take **facts, not expression**: scout may show an admitted function as related to
@@ -32,11 +32,11 @@ host, unless a line says otherwise. Each is traced to a row of that loop's ledge
    fail the pin check (`PinMismatch`).
 6. **Admission** (`ghpool.admit`): signed line, pin, licence, inclusion rules; `tests/` and `docs/`
    files are refused.
-7. **Scout** searches the GitHub pool on every run: `forge-gate scout FILE` shows hits as
+7. **Scout** searches the GitHub pool on every run: `forgeproof scout FILE` shows hits as
    `github (raw)` with `pool=github trust=raw` and `scout:github:` ids. A planted control from the
    pool must find itself, else the pool is `BLIND(control)`; a pin failure makes it
    `BLIND(pin-mismatch)`.
-8. **Facts, outside learn:** `forge-gate github-facts ORG/REPO@SHA [--functions NAME ...]`, with
+8. **Facts, outside learn:** `forgeproof github-facts ORG/REPO@SHA [--functions NAME ...]`, with
    `FORGE_GATE_BOX_USER`, `FORGE_GATE_BOX_ROOT` and `FORGE_GATE_SCOUT_DIR` set in that command's own
    environment (no config edit). Without a box user it refuses and runs nothing
    (`BLIND(box-user-unset)`). It appends one row per function to
@@ -96,7 +96,7 @@ budget; functions past it are `BLIND(budget-cut)`.
 
 | key | default | unset |
 |---|---|---|
-| `FORGE_GATE_SCOUT_LIST_DIR` | `scout/` of the source checkout Forge Gate runs from | outside a checkout: `learn --github` fails `BLIND(unsigned: no signed list: FORGE_GATE_SCOUT_LIST_DIR is not set ...)`, nothing is read |
+| `FORGE_GATE_SCOUT_LIST_DIR` | `scout/` of the source checkout ForgeProof runs from | outside a checkout: `learn --github` fails `BLIND(unsigned: no signed list: FORGE_GATE_SCOUT_LIST_DIR is not set ...)`, nothing is read |
 
 The folder must hold `trusted_repos.jsonl` and `allowed_signers`. A value that is not an existing
 folder fails naming the key: a typo must not read as "no repo is ratified". Set it in the
@@ -142,6 +142,6 @@ If a `default:user:<name>:` line grants anything, narrow it for that folder only
 setfacl -m d:u:<name>:--- -m d:m::--- "$DIR"
 ```
 
-Forge Gate's own config folder is already narrowed this way (default entry `---`, mask `---`).
+ForgeProof's own config folder is already narrowed this way (default entry `---`, mask `---`).
 Do not change the home folder's ACL itself: other services rely on it. After making a key, check
 `getfacl -p <key>` shows no named user and `stat -c %a <key>` is `600`.

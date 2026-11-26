@@ -1,4 +1,4 @@
-"""The shared path canonicaliser (shared-tools S1): ``forge_gate.paths``, moved from ``ledger.py``.
+"""The shared path canonicaliser (shared-tools S1): ``forgeproof.paths``, moved from ``ledger.py``.
 
 Which test runs where: a case variant of a folder exists only on a case-insensitive file system
 (macOS APFS); a non-UTF-8 file name can be made only where the file system takes raw bytes (Linux).
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import ledger, paths
+from forgeproof import ledger, paths
 
 
 def _case_variant(p: Path) -> Path:

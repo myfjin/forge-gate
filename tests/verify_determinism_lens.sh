@@ -27,7 +27,7 @@ gate() { if [ "$2" = "PASS" ]; then note "$1" "✅ PASS"; else note "$1" "❌ FA
 verdict_of() {   # <file> <pattern> <lenses>  -> prints first-line verdict, retries harness errors
   local f="$1" p="$2" l="$3" r=""
   for _try in 1 2 3; do
-    r=$(timeout 300 $PY -m forge_gate.cli verify "$f" --pattern "$p" --lenses "$l" 2>/dev/null | head -1)
+    r=$(timeout 300 $PY -m forgeproof.cli verify "$f" --pattern "$p" --lenses "$l" 2>/dev/null | head -1)
     case "$r" in UNSTABLE*|"") sleep 1 ;; *) echo "$r"; return ;; esac
   done
   echo "${r:-NO-OUTPUT} (persisted after 3 attempts)"
@@ -42,7 +42,7 @@ verdict_of() {   # <file> <pattern> <lenses>  -> prints first-line verdict, retr
 lens_status_of() {   # <file> <pattern> -> the determinism lens's OWN status
   local f="$1" p="$2" out=""
   for _try in 1 2 3; do
-    out=$(timeout 300 $PY -m forge_gate.cli verify "$f" --pattern "$p" --lenses determinism 2>/dev/null \
+    out=$(timeout 300 $PY -m forgeproof.cli verify "$f" --pattern "$p" --lenses determinism 2>/dev/null \
           | grep -E "^[[:space:]]+determinism" | awk '{print $2}')
     case "$out" in ERROR|"") sleep 1 ;; *) echo "$out"; return ;; esac
   done
@@ -79,7 +79,7 @@ cp tests/corpus/linreg_normal_eq.py /tmp/dl_fixtures/ 2>/dev/null
 # ---------------------------------------------------------------- GATE 1
 # The lens must EXIST and be selectable. If this fails, nothing else is meaningful.
 echo; echo "--- GATE 1: lens exists and is wired ---"
-if $PY -c "import sys; sys.path.insert(0,'src'); from forge_gate.lenses import ALL_LENSES; sys.exit(0 if 'determinism' in ALL_LENSES else 1)" 2>/dev/null; then
+if $PY -c "import sys; sys.path.insert(0,'src'); from forgeproof.lenses import ALL_LENSES; sys.exit(0 if 'determinism' in ALL_LENSES else 1)" 2>/dev/null; then
   gate "determinism registered in ALL_LENSES" PASS
 else
   gate "determinism registered in ALL_LENSES" FAIL
@@ -89,7 +89,7 @@ fi
 # ---------------------------------------------------------------- GATE 2
 # THE POINT OF THE WHOLE THING. This file is a measured false-PASS today.
 echo; echo "--- GATE 2: NEGATIVE CONTROL — non-deterministic code must be CAUGHT ---"
-OUT=$(timeout 300 $PY -m forge_gate.cli verify /tmp/dl_fixtures/nd_micro.py \
+OUT=$(timeout 300 $PY -m forgeproof.cli verify /tmp/dl_fixtures/nd_micro.py \
       --pattern linear_regression_gd --lenses all 2>&1 | grep -vE "RuntimeWarning|warn\(Runtime")
 echo "$OUT" | head -4
 if echo "$OUT" | grep -qiE "determinism .*(FAIL|objected)" || \
@@ -106,7 +106,7 @@ echo; echo "--- GATE 3: SOUNDNESS — all 10 canonical oracles must PASS the len
 # Soundness is a PER-PATTERN fact. A pattern may fail the lens ONLY if it is declared
 # in DETERMINISM_ADVISORY_PATTERNS (where the lens does not gate). An undeclared failure
 # means the lens gates something its own oracle cannot satisfy = unsound.
-QUAR=$($PY -c "import sys; sys.path.insert(0,'src'); from forge_gate.lenses import DETERMINISM_ADVISORY_PATTERNS as Q; print(' '.join(sorted(Q)))" 2>/dev/null)
+QUAR=$($PY -c "import sys; sys.path.insert(0,'src'); from forgeproof.lenses import DETERMINISM_ADVISORY_PATTERNS as Q; print(' '.join(sorted(Q)))" 2>/dev/null)
 echo "    declared quarantine: ${QUAR:-<none>}"
 BAD=0; STALE=0
 for f in tests/corpus/*_canonical_good.py; do

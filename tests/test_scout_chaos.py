@@ -20,9 +20,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.scout import cards, learn
-from forge_gate.scout.engines import chaos, chaos_runner
+from forgeproof import config
+from forgeproof.scout import cards, learn
+from forgeproof.scout.engines import chaos, chaos_runner
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_scout_learn import PY_BODY, Env, _rows  # noqa: E402  (the 6b-1 fixtures)
@@ -552,7 +552,7 @@ def test_calibrate_stops_at_the_requested_runs_and_refuses_a_broken_child(env, m
 
 
 def test_cli_chaos_calibrate_holds_learns_lock_and_reports(env, monkeypatch, capsys):
-    from forge_gate import cli
+    from forgeproof import cli
     done = {"asked": 6, "survived": {}, "config": {"clean_runs": chaos.CALIBRATION_N}}
     monkeypatch.setattr(chaos, "calibrate", lambda runs: {**done, "asked": runs})
     assert cli.main(["chaos-calibrate", "--runs", "6"]) == learn.EXIT_OK
@@ -575,7 +575,7 @@ def test_cli_chaos_calibrate_holds_learns_lock_and_reports(env, monkeypatch, cap
     {"survived": {}, "config": {}}])
 def test_cli_chaos_calibrate_never_exits_ok_when_not_calibrated(env, monkeypatch, capsys, res):
     """Review F1: a latched or under-calibrated machine is not a successful calibration."""
-    from forge_gate import cli
+    from forgeproof import cli
     monkeypatch.setattr(chaos, "calibrate", lambda runs: res)
     assert cli.main(["chaos-calibrate"]) == learn.EXIT_BLIND
     assert "NOT calibrated" in capsys.readouterr().err
@@ -584,7 +584,7 @@ def test_cli_chaos_calibrate_never_exits_ok_when_not_calibrated(env, monkeypatch
 def test_cli_chaos_calibrate_bad_runs_unopenable_lock_and_io_errors_are_config(env, monkeypatch):
     """Review F4: --runs < 1 records nothing and says so; a LearnError keeps its own code; an
     OSError is a config error, not a traceback."""
-    from forge_gate import cli
+    from forgeproof import cli
     asked = []
     monkeypatch.setattr(chaos, "calibrate", lambda runs: asked.append(runs))
     for bad in ("0", "-5"):

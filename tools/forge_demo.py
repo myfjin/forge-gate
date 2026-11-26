@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Forge Gate — end-to-end demo.
+"""ForgeProof — end-to-end demo.
 
 Runs candidate files through the gate and prints the layered verdict. Zero LLM in
 any verdict path — compile, run, compare to the signed oracle.
 
 IMPORTANT: this demo does NOT compute its own verdict. It calls the real CLI and
-prints what the product actually says (forge_gate.lenses is the single source of
+prints what the product actually says (forgeproof.lenses is the single source of
 truth for the algebra). If the demo and the product ever disagreed, the demo would
 be lying to a customer -- so they cannot disagree by construction.
 """
@@ -24,7 +24,7 @@ def gate(f: str, pattern: str) -> dict:
     """Ask the real CLI for its verdict. --no-short-circuit gathers every lens's
     opinion even after the base fails; the VERDICT is identical either way."""
     p = subprocess.run(
-        [PY, "-m", "forge_gate.cli", "verify", f, "--pattern", pattern,
+        [PY, "-m", "forgeproof.cli", "verify", f, "--pattern", pattern,
          "--lenses", "all", "--no-short-circuit", "--json"],
         capture_output=True, text=True, cwd=str(ROOT), env=ENV, timeout=300,
     )
@@ -58,7 +58,7 @@ def main():
         "def linear_regression_gd(X, y, learning_rate=0.01, iterations=200):\n    return [2.4, 3.0], 0.0\n")
 
     print("=" * 78)
-    print("  FORGE GATE — deterministic verification for AI-generated code")
+    print("  FORGEPROOF — deterministic verification for AI-generated code")
     print("  Four execution-backed lenses. Zero LLM in the verdict path.")
     print("=" * 78)
 

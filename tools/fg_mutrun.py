@@ -23,7 +23,7 @@ Exit 0: every mutant KILLED and both controls green. 1: a mutant SURVIVED and no
 - M10    the index is never touched (git runs with ``--no-optional-locks``), nothing is committed.
 
 It reuses the gate's own code, which lives in ``fg_common.py`` beside it (slice S3c; loaded
-by path, bound here as ``fg``): G0 (its own ``forge_gate.paths``), G3 (the environment built
+by path, bound here as ``fg``): G0 (its own ``forgeproof.paths``), G3 (the environment built
 from nothing), G4/G5 preflights, G6 (load guard) and G7/G8 (a fresh junit per run, own process
 group, wall timeout). Stdlib only, Python 3.10+.
 """

@@ -1,8 +1,8 @@
 """Self-contained correct implementation of the Perceptron learning algorithm.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/perceptron_good.py --pattern perceptron
+    forgeproof verify examples/perceptron_good.py --pattern perceptron
 """
 import random
 from typing import List, Tuple

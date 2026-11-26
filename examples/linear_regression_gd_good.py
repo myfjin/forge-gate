@@ -1,9 +1,9 @@
 """Self-contained correct implementation of linear regression via batch gradient descent.
 
 This file can be run standalone (`python examples/linear_regression_gd_good.py`)
-or verified against the Forge Gate oracle:
+or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
+    forgeproof verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
 """
 import random
 from typing import List, Tuple
@@ -53,7 +53,7 @@ def linear_regression_gd(
 if __name__ == "__main__":
     random.seed(42)
 
-    # Same seed-locked synthetic data the Forge Gate oracle uses.
+    # Same seed-locked synthetic data the ForgeProof oracle uses.
     n_samples = 30
     X = [[random.uniform(-5, 5), random.uniform(-5, 5)] for _ in range(n_samples)]
     y = [2.0 * X[i][0] + 3.0 * X[i][1] + random.gauss(0, 0.5) for i in range(n_samples)]

@@ -1,10 +1,10 @@
 """Self-contained BROKEN implementation of the Perceptron learning algorithm.
 
 The bug: weight update is subtracted instead of added (w -= error * x instead of w +=).
-The perceptron never converges and accuracy stays around 0.5. Verify with Forge Gate
+The perceptron never converges and accuracy stays around 0.5. Verify with ForgeProof
 for FAIL.
 
-    forge-gate verify examples/perceptron_bad.py --pattern perceptron
+    forgeproof verify examples/perceptron_bad.py --pattern perceptron
 """
 import random
 from typing import List, Tuple

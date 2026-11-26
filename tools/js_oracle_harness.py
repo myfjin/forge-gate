@@ -46,7 +46,7 @@ REPO_ROOT = HARNESS_DIR.parent
 TSC = REPO_ROOT / "node_modules" / ".bin" / "tsc"  # from `npm ci` (package-lock.json)
 
 sys.path.insert(0, str(REPO_ROOT / "src"))  # in-project: this checkout's own package
-from forge_gate.config import engine as _configured_engine  # noqa: E402
+from forgeproof.config import engine as _configured_engine  # noqa: E402
 
 MAX_OUTPUT_BYTES = 2_000_000
 MAX_OUTPUT_LINES = 10_000
@@ -1150,7 +1150,7 @@ def _verify_kmeans(
 # Main
 # ---------------------------------------------------------------------------
 def main() -> int:
-    ap = argparse.ArgumentParser(description="JS oracle harness for Forge Gate")
+    ap = argparse.ArgumentParser(description="JS oracle harness for ForgeProof")
     ap.add_argument("--fixture", required=True, help="path to the JS fixture")
     args = ap.parse_args()
 

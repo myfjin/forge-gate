@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.scout import ghcache, ghsearch, ratify, report
-from forge_gate.scout.ids import make_id
-from forge_gate.scout.outcomes import BLIND, FOUND
+from forgeproof.scout import ghcache, ghsearch, ratify, report
+from forgeproof.scout.ids import make_id
+from forgeproof.scout.outcomes import BLIND, FOUND
 from test_scout_learn_github import GH, P
 
 pytestmark = pytest.mark.skipif(shutil.which("ssh-keygen") is None, reason="needs ssh-keygen")
@@ -280,7 +280,7 @@ def test_a_symlink_in_the_exported_tree_blinds_the_pool_even_with_the_right_byte
 
 
 def test_a_failing_rule2_never_reaches_the_github_search(tmp_path, monkeypatch):
-    from forge_gate.scout import rule2
+    from forgeproof.scout import rule2
     monkeypatch.setattr(rule2, "evaluate", lambda *a, **k: ["planted rule2 failure"])
     called = []
     monkeypatch.setattr(ghsearch, "search", lambda *a, **k: called.append(1) or ghsearch.GhResult(_clean_spy()))
@@ -292,7 +292,7 @@ def test_a_failing_rule2_never_reaches_the_github_search(tmp_path, monkeypatch):
 
 
 def _clean_spy():
-    from forge_gate.scout.outcomes import clean
+    from forgeproof.scout.outcomes import clean
     return clean("spy")
 
 

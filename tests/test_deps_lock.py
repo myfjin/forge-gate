@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
+from forgeproof import config
 
 REPO = Path(__file__).resolve().parents[1]
 CLASSES = {"dependency", "host-binary", "runtime-root"}
@@ -34,7 +34,7 @@ def test_grades_only_from_the_project_home():
 def test_every_outside_key_has_a_classed_row_and_no_row_is_stale():
     rows = _rows()
     keys = {r["key"] for r in rows}
-    src = (REPO / "src" / "forge_gate" / "config.py").read_text(encoding="utf-8")
+    src = (REPO / "src" / "forgeproof" / "config.py").read_text(encoding="utf-8")
     in_loader = set(re.findall(r'"(FORGE_GATE_[A-Z_]+)"', src)) | {
         "FORGE_GATE_" + n.upper() for n in ("node", "bun", "qjs")}
     assert OUTSIDE_KEYS <= in_loader, OUTSIDE_KEYS - in_loader
@@ -49,13 +49,13 @@ def test_every_outside_key_has_a_classed_row_and_no_row_is_stale():
 
 def test_library_pin_matches_the_reference_origin():
     pin = next(r["pin"] for r in _rows() if r["key"] == "FORGE_GATE_LIBRARY_DIR")
-    origin = (REPO / "src" / "forge_gate" / "reference" / "ORIGIN.md").read_text(encoding="utf-8")
+    origin = (REPO / "src" / "forgeproof" / "reference" / "ORIGIN.md").read_text(encoding="utf-8")
     commit = pin.split()[-1]
     assert re.fullmatch(r"[0-9a-f]{40}", commit), pin
     assert commit in origin, "deps.lock library pin and reference/ORIGIN.md disagree"
 
 
 def test_embedder_pin_matches_the_code():
-    from forge_gate.scout import embed
+    from forgeproof.scout import embed
     pin = next(r["pin"] for r in _rows() if r["key"] == "FORGE_GATE_EMBED_URL")
     assert embed.DIGEST in pin and embed.MODEL in pin, (pin, embed.MODEL, embed.DIGEST)

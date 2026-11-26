@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from forge_gate import cli
-from forge_gate.scout import embed, intent_lens as I, report, shape_lens
+from forgeproof import cli
+from forgeproof.scout import embed, intent_lens as I, report, shape_lens
 
 from test_scout_slice1 import _export, export_root  # noqa: F401  (fixture)
 
@@ -192,7 +192,7 @@ def test_a_baseline_the_trap_does_not_lure_is_reported():
 
 
 def test_intent_hits_get_exposure_rows(tmp_path, monkeypatch):
-    from forge_gate import config, ledger
+    from forgeproof import config, ledger
     from test_ledger import make_ledger
     monkeypatch.setenv(config.LEDGER_KEY, str(make_ledger(tmp_path)))
     rep = {"sha256": "0" * 64, "language": "python",

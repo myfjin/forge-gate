@@ -17,8 +17,8 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from forge_gate import lenses as L  # noqa: E402
-from forge_gate.view_coverage import check_all, derive_view  # noqa: E402
+from forgeproof import lenses as L  # noqa: E402
+from forgeproof.view_coverage import check_all, derive_view  # noqa: E402
 
 
 # ---- Test 1: green baseline — no mismatches on current code ------------------

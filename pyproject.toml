@@ -3,8 +3,8 @@ requires = ["setuptools>=59.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "forge-gate"
-version = "0.1.0"
+name = "forgeproof-cli"
+version = "0.2.0"
 description = "Deterministic regression gate for code-generating agents, with reference implementations from the AURA pattern library."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -30,11 +30,12 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 dependencies = [
-    "tomli>=2.0; python_version < '3.11'",  # config.toml on 3.10 (forge_gate/config.py)
+    "tomli>=2.0; python_version < '3.11'",  # config.toml on 3.10 (forgeproof/config.py)
 ]
 
 [project.scripts]
-forge-gate = "forge_gate.cli:main"
+forgeproof = "forgeproof.cli:main"
+forge-gate = "forge_gate._deprecated_cli:main"  # renamed 2026-11-25; removed in a later release
 
 [project.optional-dependencies]
 dev = [
@@ -46,7 +47,7 @@ dev = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-forge_gate = ["data/*.json", "reference/*.py", "reference/ORIGIN.md"]
+forgeproof = ["data/*.json", "reference/*.py", "reference/ORIGIN.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

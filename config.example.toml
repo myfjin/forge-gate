@@ -1,16 +1,16 @@
-# Per-host settings for Forge Gate. Copy to config.toml (not tracked) and edit.
+# Per-host settings for ForgeProof. Copy to config.toml (not tracked) and edit.
 # Every key can also be set as an environment variable of the same name, which wins.
 # A relative path is taken from the folder that holds config.toml.
-# Reference: src/forge_gate/config.py.
+# Reference: src/forgeproof/config.py.
 
 [paths]
 # The AURA pattern library checkout. NO default: the twin-consensus lens, the live
 # test tier (pytest -m live) and the library tools fail naming this key when unset.
-# `forge-gate verify` does not need it (its references ship in forge_gate/reference/).
+# `forgeproof verify` does not need it (its references ship in forgeproof/reference/).
 # FORGE_GATE_LIBRARY_DIR = "/path/to/aura-pattern-library"
 
 # The aura-code-corpus export root: the folder holding <run_id>/ exports (schema
-# code-corpus-export/v1). NO default. Only `forge-gate scout` reads it; unset, the
+# code-corpus-export/v1). NO default. Only `forgeproof scout` reads it; unset, the
 # corpus pool reports BLIND naming this key.
 # FORGE_GATE_CORPUS_EXPORT_DIR = "/path/to/aura-code-corpus/data/export/v1"
 
@@ -27,16 +27,16 @@
 # FORGE_GATE_BOX_USER = "fgbox"
 # FORGE_GATE_BOX_ROOT = "/var/lib/forge-gate-box"
 
-# The trust root for `forge-gate learn --github` (step 7, KD-13). The maintainer's ratify key id, pinned
+# The trust root for `forgeproof learn --github` (step 7, KD-13). The maintainer's ratify key id, pinned
 # here, outside the repo, so a commit that swaps scout/allowed_signers cannot move it. NO default:
 # unset, every GitHub file is BLIND(unsigned). Form: operator=<16 hex>.
 # FORGE_GATE_RATIFY_PIN = "operator=<16-hex key id>"
 # The folder holding the signed list (trusted_repos.jsonl) and allowed_signers (KD-13 f).
-# Default: scout/ of the source checkout. An installed Forge Gate has no checkout: set it, or
+# Default: scout/ of the source checkout. An installed ForgeProof has no checkout: set it, or
 # learn --github fails BLIND(unsigned) naming this key.
-# FORGE_GATE_SCOUT_LIST_DIR = "/path/to/forge-gate/scout"
+# FORGE_GATE_SCOUT_LIST_DIR = "/path/to/forgeproof/scout"
 
-# `forge-gate learn` (design §4.5, build step 6b-1). NO defaults; unset, learn fails naming the key.
+# `forgeproof learn` (design §4.5, build step 6b-1). NO defaults; unset, learn fails naming the key.
 # The Brain's data folder (its paths.DATA). learn appends ONLY to scout's own files there,
 # scout_registry{,_r,_rust,_sysadmin}.jsonl, which must already exist (the switch-on creates
 # them empty); it only reads the real ladders. It must hold logic_registry.jsonl.
@@ -52,9 +52,9 @@
 # recorded (scout and verify say so). Standard location: <checkout>/data/ledgers (gitignored).
 # The folder, exposure.jsonl, outcome.jsonl and ledger.lock must already exist: the switch-on
 # creates them (owner + ACL), never a writer. One shared ledger per host.
-# FORGE_GATE_LEDGER_DIR = "/path/to/forge-gate/data/ledgers"
+# FORGE_GATE_LEDGER_DIR = "/path/to/forgeproof/data/ledgers"
 # Build step 8b: the LOCAL embedder (Ollama, nomic-embed-text at the digest in deps.lock) for the
 # language-meaning and intent lenses. Loopback http only. Unset = those lenses are BLIND.
 # FORGE_GATE_EMBED_URL = "http://127.0.0.1:11434"
 # Its vector cache: scout runs only read it; one explicit fill command writes it (8b).
-# FORGE_GATE_EMBED_CACHE_DIR = "/path/to/forge-gate/data/embed-cache"
+# FORGE_GATE_EMBED_CACHE_DIR = "/path/to/forgeproof/data/embed-cache"

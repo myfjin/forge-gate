@@ -19,9 +19,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli, config
-from forge_gate.scout import box, ghcache, ghpool, plant, upstream_facts as uf
-from forge_gate.scout.outcomes import blind, found
+from forgeproof import cli, config
+from forgeproof.scout import box, ghcache, ghpool, plant, upstream_facts as uf
+from forgeproof.scout.outcomes import blind, found
 from test_scout_learn_github import GH
 
 pytestmark = pytest.mark.skipif(shutil.which("ssh-keygen") is None, reason="needs ssh-keygen")
@@ -632,7 +632,7 @@ def test_a_function_without_mutants_or_a_runner_name_clash_or_no_package_is_blin
 
 
 def test_the_fact_tool_never_imports_learn_or_cards():
-    for f in ("src/forge_gate/scout/upstream_facts.py", "src/forge_gate/scout/plant.py", "tools/fg_unittest_json.py"):
+    for f in ("src/forgeproof/scout/upstream_facts.py", "src/forgeproof/scout/plant.py", "tools/fg_unittest_json.py"):
         tree = ast.parse((REPO / f).read_text())
         names = set()
         for n in ast.walk(tree):
@@ -641,13 +641,13 @@ def test_the_fact_tool_never_imports_learn_or_cards():
             elif isinstance(n, ast.ImportFrom):
                 names |= {n.module or ""} | {a.name for a in n.names}
         assert not {x for x in names if x.split(".")[-1] in ("learn", "cards")}, (f, names)
-    # The package's own __init__ (step 3a) loads cards for every forge_gate.scout import; the tool
-    # must add no learn/cards module beyond what `import forge_gate.scout` alone loads.
-    code = ("import sys; import forge_gate.scout; base = {m for m in sys.modules if m.endswith(('.learn', '.cards'))}; "
-            "import forge_gate.scout.upstream_facts, forge_gate.scout.plant; "
+    # The package's own __init__ (step 3a) loads cards for every forgeproof.scout import; the tool
+    # must add no learn/cards module beyond what `import forgeproof.scout` alone loads.
+    code = ("import sys; import forgeproof.scout; base = {m for m in sys.modules if m.endswith(('.learn', '.cards'))}; "
+            "import forgeproof.scout.upstream_facts, forgeproof.scout.plant; "
             "print(sorted(base), sorted(m for m in sys.modules if m.endswith(('.learn', '.cards')) and m not in base))")
     r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, env=dict(os.environ, PYTHONPATH=str(REPO / "src")))
-    assert r.returncode == 0 and r.stdout.strip() == "['forge_gate.scout.cards'] []", (r.stdout, r.stderr)
+    assert r.returncode == 0 and r.stdout.strip() == "['forgeproof.scout.cards'] []", (r.stdout, r.stderr)
 
 
 def test_cli_github_facts_exit_codes(env, tmp_path, monkeypatch, capsys):

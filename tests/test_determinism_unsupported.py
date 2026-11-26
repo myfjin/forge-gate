@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 import pytest
 
-from forge_gate import lenses
+from forgeproof import lenses
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -51,7 +51,7 @@ def test_u1_reason_is_distinguishable_from_a_hypothetical_u4(monkeypatch):
     the same way ``lenses.py`` does and check they differ. If someone made both
     callsites call the same _u() code, this test would fire.
     """
-    from forge_gate.unsupported import _u
+    from forgeproof.unsupported import _u
 
     u1_summary = _u("U1:no_coverage", "no fixture for foo").summary()
     u4_summary = _u("U4:capture_failed", "some stderr").summary()

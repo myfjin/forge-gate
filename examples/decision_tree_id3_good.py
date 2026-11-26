@@ -1,8 +1,8 @@
 """Self-contained correct implementation of an ID3 decision tree.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/decision_tree_id3_good.py --pattern decision_tree_id3
+    forgeproof verify examples/decision_tree_id3_good.py --pattern decision_tree_id3
 """
 import math
 import random

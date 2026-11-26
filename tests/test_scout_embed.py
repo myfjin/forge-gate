@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import config
-from forge_gate.scout import embed
+from forgeproof import config
+from forgeproof.scout import embed
 
 
 def vec(text: str, dim: int = 8) -> list:

@@ -1,8 +1,8 @@
-# Forge Gate — Client Verdict Report
+# ForgeProof — Client Verdict Report
 
 ## Specification v1 — 2026-08-03
 
-This document specifies the format and language of the report Forge Gate
+This document specifies the format and language of the report ForgeProof
 emits after checking a submitted file. It is a template for code generation,
 not the code itself.
 
@@ -46,7 +46,7 @@ must state its blind spots in plain language.
 
 ### Always present, verbatim or close:
 
-> **Correctness of the algorithm itself was not checked.** Forge Gate tests
+> **Correctness of the algorithm itself was not checked.** ForgeProof tests
 > whether the code handles invalid inputs and edge cases correctly. It does
 > not verify that the algorithm implements the intended mathematics. A file
 > that passes all our checks may still compute the wrong thing for valid
@@ -197,7 +197,7 @@ python3 tools/guard_lens.py --fixture /path/to/submitted/file.py
 Or for a full report:
 
 ```
-python3 -m forge_gate.evaluate --file /path/to/submitted/file.py
+python3 -m forgeproof.evaluate --file /path/to/submitted/file.py
 ```
 
 ---
@@ -208,7 +208,7 @@ python3 -m forge_gate.evaluate --file /path/to/submitted/file.py
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  FORGE GATE — Verdict Report                               ║
+║  FORGEPROOF — Verdict Report                               ║
 ║  File: gradient_descent_momentum.py                         ║
 ║  Date: 2026-08-03                                          ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -226,7 +226,7 @@ python3 -m forge_gate.evaluate --file /path/to/submitted/file.py
 ═══ WHAT WAS NOT CHECKED ═══
 
   Correctness of the algorithm itself was not checked in full.
-  Forge Gate tests whether the code handles invalid inputs and
+  ForgeProof tests whether the code handles invalid inputs and
   edge cases correctly. It does not verify that the algorithm
   implements the intended mathematics. A file that passes all our
   checks may still compute the wrong thing for valid inputs.
@@ -318,7 +318,7 @@ python3 -m forge_gate.evaluate --file /path/to/submitted/file.py
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  FORGE GATE — Verdict Report                               ║
+║  FORGEPROOF — Verdict Report                               ║
 ║  File: custom_processor.py                                 ║
 ║  Date: 2026-08-03                                          ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -338,7 +338,7 @@ python3 -m forge_gate.evaluate --file /path/to/submitted/file.py
 
   ⚠️  THIS IS THE MOST IMPORTANT SECTION OF THIS REPORT.
 
-  Correctness of the algorithm itself was not checked. Forge Gate
+  Correctness of the algorithm itself was not checked. ForgeProof
   tests whether the code handles invalid inputs and edge cases
   correctly. It does not verify that the algorithm implements the
   intended mathematics. A file that passes all our checks may

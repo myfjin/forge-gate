@@ -2,7 +2,7 @@
 every self-test is in the runner or in KNOWN-DEBT.md).
 
 Each gate runs with PYTHONPATH and FORGE_GATE_HOME set to THIS checkout, so it measures
-this checkout's code even when another forge_gate is installed (on the deploy host au's
+this checkout's code even when another forgeproof is installed (on the deploy host au's
 user site had an editable install of the live repo; a branch's gate run measured master
 through it, 2026-11-11).
 

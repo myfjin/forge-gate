@@ -1,8 +1,8 @@
 """Self-contained correct implementation of ridge regression via normal equations.
 
-This file can be run standalone or verified against the Forge Gate oracle:
+This file can be run standalone or verified against the ForgeProof oracle:
 
-    forge-gate verify examples/ridge_regression_normal_eq_good.py --pattern ridge_regression_normal_eq
+    forgeproof verify examples/ridge_regression_normal_eq_good.py --pattern ridge_regression_normal_eq
 """
 import random
 from typing import List

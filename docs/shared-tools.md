@@ -7,7 +7,7 @@ re-learning host quirks in a new script every step:
 |---|---|---|
 | `tools/fg_gate.py` | the gate: runs the suite on a worktree and prints one verdict | `tests/test_fg_gate.py` |
 | `tools/fg_mutrun.py` | the mutant runner: text-exact mutants against named tests | `tests/test_fg_mutrun.py` |
-| `src/forge_gate/paths.py` | one path canonicaliser (`real`, `canonical`, `is_under`) | `tests/test_paths.py` |
+| `src/forgeproof/paths.py` | one path canonicaliser (`real`, `canonical`, `is_under`) | `tests/test_paths.py` |
 
 `tools/fg_common.py` is the library the two tools share (`tests/test_fg_common.py`). It is not
 a CLI. Each tool loads it **from its own directory, by path**: never an installed copy, never
@@ -55,7 +55,7 @@ GATE <GREEN|RED|ERROR> rc=<rc|none> passed=.. failed=.. errors=.. skipped=.. tre
 - **RED**: the tree unchanged, and either pytest rc 1 with at least one failure in this run's
   junit, or a must-run entry not passed while pytest ended normally (rc 0 or 1).
 - **GATE ERROR** is everything else: the run says nothing about the code. Among others:
-  - a missing `timeout` or `git` on the suite's PATH, a missing pytest, or `import forge_gate`
+  - a missing `timeout` or `git` on the suite's PATH, a missing pytest, or `import forgeproof`
     resolving outside `DIR/src` (an editable install elsewhere);
   - the box stayed loaded past `--wait`;
   - pytest rc 1 **without** a failure in the junit (rc 1 also means "No module named pytest"),
@@ -68,7 +68,7 @@ GATE <GREEN|RED|ERROR> rc=<rc|none> passed=.. failed=.. errors=.. skipped=.. tre
 **What the record holds** (one JSON line, written **before** the verdict line is printed): the
 tool's path and md5, `common_file`/`common_md5` (fg_common.py), `tool_head`, the tree hash before
 and after, the porcelain before and after, the PATH the suite saw, which `timeout`/`git` it found,
-where `forge_gate` was imported from, the pytest version and whether `pytest-timeout` loaded,
+where `forgeproof` was imported from, the pytest version and whether `pytest-timeout` loaded,
 the umask, the load before/after and the seconds waited, the counts, the must-run outcomes, and
 the verdict with its reason.
 
@@ -92,7 +92,7 @@ python tools/fg_mutrun.py --tree DIR --python PY --spec FILE.json --record FILE 
 The spec is a JSON list. Each entry has exactly these keys:
 
 ```json
-[{"id": "M1", "file": "src/forge_gate/x.py", "old": "a == b", "new": "a != b",
+[{"id": "M1", "file": "src/forgeproof/x.py", "old": "a == b", "new": "a != b",
   "tests": ["tests/test_x.py::test_y"], "what": "the comparison is inverted"}]
 ```
 
@@ -174,10 +174,10 @@ hung git, not a tuning value, and it stays.
 
 The record (M9) is written before the summary is printed.
 
-## The path canonicaliser: `src/forge_gate/paths.py`
+## The path canonicaliser: `src/forgeproof/paths.py`
 
 ```python
-from forge_gate import paths
+from forgeproof import paths
 paths.real(p)          # os.path.realpath, as a Path
 paths.canonical(p)     # the spelling the file system stores (F_GETPATH where it exists)
 paths.is_under(p, root)  # identity (device + inode) of p or a lexical parent equals root's
@@ -210,9 +210,9 @@ hypothesis about load first.
   which `env -i` hides. The default gate PATH adds that prefix when it exists; otherwise set
   `FORGE_GATE_GATE_PATH`. A `timeout` missing from the gate PATH is a GATE ERROR before pytest
   starts.
-- **A user-site editable install** (an egg-link to another checkout) makes `import forge_gate`
+- **A user-site editable install** (an egg-link to another checkout) makes `import forgeproof`
   load that checkout's code from any worktree unless `PYTHONPATH=DIR/src` is set. The tools set
-  it and then prove where `forge_gate` came from.
+  it and then prove where `forgeproof` came from.
 - **No `pytest-timeout` on a host:** pytest then warns about the unknown `timeout` option and the
   per-test marks do nothing. The gate's own wall timeout still bounds the run, and the record
   says whether the plugin loaded.

@@ -13,9 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate import cli
-from forge_gate.scout import ghcache, ghpool, learn, ratify
-from forge_gate.scout.engines import chaos
+from forgeproof import cli
+from forgeproof.scout import ghcache, ghpool, learn, ratify
+from forgeproof.scout.engines import chaos
 from test_ratify import _key, _sign            # throwaway ssh keys + signer
 from test_scout_learn import Env, _rows, engines_with
 
@@ -83,7 +83,7 @@ class GH:
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):
-    from forge_gate import config
+    from forgeproof import config
     e = Env(tmp_path)
     monkeypatch.setenv(config.BRAIN_DATA_KEY, str(e.data))
     monkeypatch.setenv(config.SCOUT_DIR_KEY, str(e.scout))
@@ -136,7 +136,7 @@ def test_a_fail_row_from_github_carries_the_125_metadata_and_no_author(env, tmp_
     assert "open-source code" in row["belief_sentence"]["text"] and row["strength"] == "none"
     rep = json.loads((env.scout / learn.REPORT_NAME).read_text())
     cards = rep if isinstance(rep, list) else rep.get("cards", rep)
-    assert f"forge-gate learn --github python/cpython@{gh.sha} Lib/urllib/request.py" in json.dumps(cards)
+    assert f"forgeproof learn --github python/cpython@{gh.sha} Lib/urllib/request.py" in json.dumps(cards)
 
 
 def test_a_library_copy_from_github_is_blind_and_runs_no_child(env, tmp_path, monkeypatch):
@@ -288,7 +288,7 @@ def test_the_trust_pin_is_read_from_the_host_config(env, tmp_path, monkeypatch):
     gh = _gh(tmp_path)
     opts = {k: v for k, v in gh.opts.items() if k != "trust_pin_value"}
     monkeypatch.delenv(ghpool.TRUST_PIN_KEY, raising=False)
-    from forge_gate import config
+    from forgeproof import config
     if config.configured(ghpool.TRUST_PIN_KEY) is None:
         with pytest.raises(ghpool.NotAdmitted, match="must be set"):
             ghpool.admit(gh.spec, "Lib/urllib/request.py", **opts)

@@ -1,6 +1,6 @@
 # Known debt
 
-The list of known issues in Forge Gate that are not fixed yet. Each item says what is
+The list of known issues in ForgeProof that are not fixed yet. Each item says what is
 wrong, where, what "done" looks like, who owns it and the date it must be decided by.
 Rules (AURA project standard v0.3 §6): the count of unwired self-tests and `violation`
 routes never grows; an item past its decide-by date fails the standard; a `deps.lock`
@@ -21,13 +21,13 @@ is reviewed by a seat that did not build it.
   checkout that still had those folders; not against the pinned commit, which has none.
 - **Reproduce:** set `FORGE_GATE_LIBRARY_DIR` to a library checkout with a second
   `knn_classifier.py` outside `python/`, then
-  `forge-gate verify src/forge_gate/reference/knn_classifier.py --pattern knn_classifier`.
+  `forgeproof verify src/forgeproof/reference/knn_classifier.py --pattern knn_classifier`.
 - **Done looks like:** twins resolved only from the library's canonical language trees
   (or from its catalog paths), a test with a planted draft copy that goes RED on today's
   code and GREEN after, and the red arm run by the reviewer.
 - **Owner:** Claude. **Decide by:** 2026-11-25.
 
-## KD-2 · an installed Forge Gate needs a source checkout for five lenses
+## KD-2 · an installed ForgeProof needs a source checkout for five lenses
 
 - **What:** the lens tools (`tools/`: metamorphic, invariant, twin, guard, JS oracle) are
   not in the installed package. `pip install .` alone runs property-primary only; the
@@ -37,7 +37,7 @@ is reviewed by a seat that did not build it.
 - **Done looks like:** `tools/` moved into the package (or declared as package data with
   imports fixed), `pip install .` from a clean clone with an empty `$HOME` runs every lens
   without `FORGE_GATE_HOME`, and the route test is updated to match.
-- **Owner:** Claude. **Decide by:** before the first public release of Forge Gate (§7b
+- **Owner:** Claude. **Decide by:** before the first public release of ForgeProof (§7b
   publish step); 2026-12-15 at the latest.
 
 ## KD-3 · the deploy host's library checkout is not at the pinned commit
@@ -85,9 +85,9 @@ is reviewed by a seat that did not build it.
 
 ## KD-6 · a quarantined lens result prints as a bare FAIL inside a PASS
 
-- **What:** `verify src/forge_gate/reference/kmeans_clustering.py` prints
+- **What:** `verify src/forgeproof/reference/kmeans_clustering.py` prints
   `determinism FAIL non-deterministic output …` with an overall `PASS`. The FAIL is
-  deliberately quarantined (`DETERMINISM_ADVISORY_PATTERNS`, `src/forge_gate/lenses.py`, measured
+  deliberately quarantined (`DETERMINISM_ADVISORY_PATTERNS`, `src/forgeproof/lenses.py`, measured
   2026-08-01: k-means lands in a different valid local optimum), but the printed line does not
   say so, so a reader sees a FAIL inside a PASS with no reason. Found by 6E (review B1-2).
 - **Done looks like:** the line reads `determinism FAIL (quarantined: …)`, rendered from the same
@@ -97,7 +97,7 @@ is reviewed by a seat that did not build it.
 
 ## KD-7 · scout slice 1 leaves three parts of §12.4 unbuilt
 
-- **What:** `forge-gate scout` (build step 5) reads the corpus export and runs the shape
+- **What:** `forgeproof scout` (build step 5) reads the corpus export and runs the shape
   lens, but (a) writes no `.intake-health` signal and no phase-1 staging queue (both need
   `FORGE_GATE_SCOUT_DIR`, and the queue only matters once `learn` exists, step 6b);
   (b) the shape lens has no score band yet, so trust never breaks ties
@@ -156,7 +156,7 @@ is reviewed by a seat that did not build it.
 
 ## KD-11 · `learn` (step 6b-1) is plumbing: corpus-only, no engine wired
 
-- **What:** (a) **For now** `forge-gate learn` accepts only a file whose bytes are an item of the
+- **What:** (a) **For now** `forgeproof learn` accepts only a file whose bytes are an item of the
   readable corpus export (the maintainer L2, 2026-11-13: a temporary limit, not the design). A local author
   file gets `BLIND(not in a pool)`. **Lifted for GitHub only (step 7, 2026-11-14):** `learn --github
   org/repo@<commit> <path>` reads a file of a ratified repo from the private pinned cache (ghpool; KD-13).
@@ -201,7 +201,7 @@ is reviewed by a seat that did not build it.
   `extraction.sha256` + function, decided before the live switch-on; (d) decided in 6b-2;
   (e) each built or dropped from the design; (f) a test that runs learn's card writer against the
   deployed reader for every verdict an engine can return; (g) logged in the switch-on deploy plan;
-  (h) the scout reader on the dev machine too (the deploy host done 2026-11-13, 3fddd78; forge-gate's brain
+  (h) the scout reader on the dev machine too (the deploy host done 2026-11-13, 3fddd78; forgeproof's brain
   arm shows 6be79ec leaves learned cards `unmatched`), and the by-hand Brain writers take
   the build lock at CLI entry (6E: yes); (i) a switch-on check on each host that
   `FORGE_GATE_BRAIN_DATA` resolves to the Brain's `paths.DATA`; (j) a recovery step that rebuilds a
@@ -238,7 +238,7 @@ is reviewed by a seat that did not build it.
     host, chaos is BLIND for every probe there until an operator archives the file, so on the deploy host
     chaos is BLIND by rule, not by odds. **Calibration floor (KD-12 m, built 2026-11-14):** a
     machine gives no chaos verdict until it has CALIBRATION_N = 1200 clean gate runs recorded
-    under its current configuration (`forge-gate chaos-calibrate`). N is measured, not guessed:
+    under its current configuration (`forgeproof chaos-calibrate`). N is measured, not guessed:
     `chaos_runner._gate`, 400 runs per host in 10 fresh processes, 2026-11-14: the dev machine
     1/400 seqlock survivals (M1, venv py3.11, rustc 1.99.1), the deploy host 399/400 (i7-4770HQ,
     py3.10, rustc 1.75). For a 1-in-391 survival rate, ln(0.05)/ln(1-1/391) ~ 1170 runs miss
@@ -259,7 +259,7 @@ is reviewed by a seat that did not build it.
   - (g) KD-11 (d) is kept for 6b-2: a FAIL-only function still gets a candidate row (strength
     `none`) carrying its FAIL card. The design's §3 says "measured-passing" (named conflict; the
     row cannot promote, so this is not the unsafe side). The maintainer decides at the switch-on plan.
-  - (i) Parity is shown per host and per interpreter pair. Scout's child uses forge-gate's
+  - (i) Parity is shown per host and per interpreter pair. Scout's child uses forgeproof's
     Python (3.11); the parity test runs the validator under `FG_TEST_VALIDATOR_PYTHON`, which
     is the host's own python3 (3.9 on the dev machine, 3.10 on the deploy host) in the 6b-2 runs (review F3).
   - (j) **DECIDED 2026-11-14 (the maintainer): library copies are not learned.** An exact copy adds no
@@ -306,7 +306,7 @@ is reviewed by a seat that did not build it.
   generated probes are a separate future engine; (b) a race probe repeated N times with a stated confidence, or
   kept BLIND; (c) the validator's seqlock NC fixed or ruled host-dependent by its owner
   (SIDE-QUEUE 2026-11-13); metamorphic wired the same way.
-- **Owner:** Claude (scout side); the validator's gate is outside forge-gate (the maintainer/6E). **Decide
+- **Owner:** Claude (scout side); the validator's gate is outside forgeproof (the maintainer/6E). **Decide
   by:** before the live switch-on (L4), 2026-11-25 at the latest.
 
 ## KD-13 · the GitHub lane (step 7): one repo, and what its first run left open
@@ -347,7 +347,7 @@ is reviewed by a seat that did not build it.
   fetched commit, and the other four signals as `null` (unknown) (ledger row `2026-11-22 17:28Z`).
   They stay unknown until there is a source.
   (f) the list and signer files are found through the source tree (`parents[3]`), so an installed
-  Forge Gate cannot find them (same shape as KD-2). **DONE 2026-11-22 (S1):** config key
+  ForgeProof cannot find them (same shape as KD-2). **DONE 2026-11-22 (S1):** config key
   `FORGE_GATE_SCOUT_LIST_DIR`, default `<checkout>/scout`; unset outside a checkout (or not a
   folder) fails naming the key, and `learn --github` says `BLIND(unsigned: no signed list: ...)`
   without reading anything. Tests in `tests/test_github_lane_s1.py`. The trust pin is unaffected.
@@ -384,10 +384,10 @@ is reviewed by a seat that did not build it.
 
 ## KD-14 · the outcome ledgers (step 8a): what they measure, and what they cannot
 
-- **What:** step 8a built the exposure and outcome ledgers (`src/forge_gate/ledger.py`,
+- **What:** step 8a built the exposure and outcome ledgers (`src/forgeproof/ledger.py`,
   `FORGE_GATE_LEDGER_DIR`, off when unset): scout records each result it shows (`scout-search`),
   verify records an oracle outcome for reused scout code (`oracle-run`), and
-  `forge-gate ledger mark|event|show` records a person's mark and the build/test run that scores it
+  `forgeproof ledger mark|event|show` records a person's mark and the build/test run that scores it
   (`person-mark`). Named writers are pinned by an AST route test. Open:
   (a) **same account.** Every writer runs as the calling user, and the ledger files are that user's
   files. Append-only, the shared lock and the row check are this code's discipline, not the OS's:
@@ -464,7 +464,7 @@ is reviewed by a seat that did not build it.
   files the person cannot write, or the maintainer's recorded acceptance of same-account trust; (b) a fixed
   set of commands, or the acceptance stays recorded; the maintainer decides whether event rows store
   sha256(cmd) and the project-root hash: DONE (F5, the maintainer 2026-11-16, the fields are audit-only); (c) exposures written after the print, or a
-  "shown" flag set after it; (d) a `forge-gate ledger repair` that does the procedure under the lock,
+  "shown" flag set after it; (d) a `forgeproof ledger repair` that does the procedure under the lock,
   with a red arm; (e) a measured fire rate on real use; (f) DONE: a reuse site is a project root (N3, the maintainer 2026-11-16); (g) the
   route scan also flags any `getattr` on the ledger module; (h) a per-host salt kept outside the
   ledger; (i) a measured worst-case lock hold, or an event that keeps its result and retries;
@@ -535,7 +535,7 @@ is reviewed by a seat that did not build it.
 ## KD-16 · the shared tools (gate, mutant runner, path canonicaliser): what they do not do
 
 - **What:** the shared-tools loop (2026-11-18/19) built `tools/fg_gate.py`, `tools/fg_mutrun.py`,
-  their shared library `tools/fg_common.py`, and `src/forge_gate/paths.py` (`docs/shared-tools.md`).
+  their shared library `tools/fg_common.py`, and `src/forgeproof/paths.py` (`docs/shared-tools.md`).
   What they do not do:
   (a) **mutants are text-exact only.** A mutant replaces one exact occurrence of a string in one
   file. There is no AST mutation, no operator catalogue, and no mutant that spans two files or two
@@ -572,7 +572,7 @@ in the loop's live run on the deploy host (more-itertools v10.8.0, run
 (`loops/github-lane-2026-11/LEDGER.md`, in the private docs), named by its UTC stamp.
 How the lane works: `docs/github-lane.md`.
 
-- **What:** `forge-gate github-facts ORG/REPO@SHA` plants small bugs into one function at a time,
+- **What:** `forgeproof github-facts ORG/REPO@SHA` plants small bugs into one function at a time,
   runs the repo's own tests in the run-mode box, and appends one fact row per function to
   `$FORGE_GATE_SCOUT_DIR/github_facts.jsonl` (`scout/upstream_facts.py`, `scout/plant.py`,
   `tools/fg_unittest_json.py`). What it does not do, or does only partly:
@@ -580,7 +580,7 @@ How the lane works: `docs/github-lane.md`.
   it; scout's learn and cards never see a fact. That is by design for this loop (DESIGN v3 §3
   "Out": no change to `learn.py` or `cards.py`). Measured 2026-11-22: no scheduled job or timer
   runs scout or learn on either host, and neither host's config sets `FORGE_GATE_SCOUT_DIR` or
-  `AURA_SCOUT_REPORT_CARDS`; learning happens only when someone runs `forge-gate learn` by hand.
+  `AURA_SCOUT_REPORT_CARDS`; learning happens only when someone runs `forgeproof learn` by hand.
   Done looks like, in this order: (1) a design step "learn reads facts": scout uses a function's
   fact (strongly or weakly tested upstream) when it shows that function as related to agent code,
   never as a PASS, and the design says where the facts live (live scout dir → Brain); (2) one
@@ -663,7 +663,7 @@ How the lane works: `docs/github-lane.md`.
     with no threshold that makes the pool BLIND (S2 F3, row `2026-11-22T13:23Z`);
   - the admission rules exist twice (`ghpool.admit` and `ghsearch._repo_members`) and can drift;
     tests pin today's behaviour (S2 review note);
-  - every `forge-gate scout` run verifies the signatures and parses the whole GitHub pool, about
+  - every `forgeproof scout` run verifies the signatures and parses the whole GitHub pool, about
     7 s on the cpython cache, with no opt-out (S2 review note);
   - the fact tool has no DIRECT import of `learn` or `cards`, but `scout/__init__.py` imports
     `cards`, so cards is loaded in-process (S3 F5, row `2026-11-22T15:25Z`);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Forge Gate — Wave 2 (#5): Daikon-style mined invariant contracts.
+"""ForgeProof — Wave 2 (#5): Daikon-style mined invariant contracts.
 
 Mine likely invariants from a signed oracle (run it across many input
 instances, observe outputs), propose ratifiable contracts, then check
@@ -23,7 +23,7 @@ CONTRACTS = ROOT / "tools" / "invariant_contracts"
 CONTRACTS.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ROOT / "src"))  # in-project: this checkout's own package
 
-from forge_gate.catalog import reference_path  # noqa: E402
+from forgeproof.catalog import reference_path  # noqa: E402
 
 
 def load(path, name):
@@ -124,7 +124,7 @@ ADAPTERS = {
 
 def mine(pattern, n=100):
     a = ADAPTERS[pattern]
-    # The shipped reference copy (forge_gate/reference/, byte copy of a["oracle"] in the
+    # The shipped reference copy (forgeproof/reference/, byte copy of a["oracle"] in the
     # library; see reference/ORIGIN.md). mine() never reads the library itself.
     oracle = load(reference_path(pattern), "oracle")
     fn = getattr(oracle, a["fn"])

@@ -1,4 +1,4 @@
-"""Tests for the KEYSTONE verdict algebra (forge_gate.lenses).
+"""Tests for the KEYSTONE verdict algebra (forgeproof.lenses).
 
 The algebra is what every customer-facing skin will sit on, so it is tested in
 isolation from the (slow) real lenses: the lens runners are monkeypatched and only
@@ -16,7 +16,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from forge_gate import lenses as L  # noqa: E402
+from forgeproof import lenses as L  # noqa: E402
 
 
 def _base(status="PASS"):
@@ -192,7 +192,7 @@ def test_cli_json_end_to_end(tmp_path):
     good = REPO_ROOT / "tests" / "corpus" / "linreg_normal_eq.py"
     env = {"PYTHONPATH": f"{REPO_ROOT / 'src'}:{REPO_ROOT / 'tools'}", "PATH": "/usr/bin:/bin"}
     proc = subprocess.run(
-        [sys.executable, "-m", "forge_gate.cli", "verify", str(good),
+        [sys.executable, "-m", "forgeproof.cli", "verify", str(good),
          "--pattern", "linear_regression_gd", "--lenses", "all", "--json"],
         capture_output=True, text=True, cwd=str(REPO_ROOT), env=env, timeout=600,
     )

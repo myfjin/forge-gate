@@ -2,9 +2,9 @@
 
 The bug is a single flipped sign: gradient *ascent* is performed during fitting
 instead of gradient descent, so weights diverge and accuracy collapses. Verify
-with Forge Gate to see FAIL.
+with ForgeProof to see FAIL.
 
-    forge-gate verify examples/logistic_regression_bad.py --pattern logistic_regression
+    forgeproof verify examples/logistic_regression_bad.py --pattern logistic_regression
 """
 import math
 import random

@@ -1,9 +1,9 @@
 """Self-contained BROKEN implementation of k-nearest neighbors classification.
 
 The bug: selects the k *farthest* neighbors instead of the k nearest.
-Accuracy collapses. Verify with Forge Gate to see FAIL.
+Accuracy collapses. Verify with ForgeProof to see FAIL.
 
-    forge-gate verify examples/knn_classifier_bad.py --pattern knn_classifier
+    forgeproof verify examples/knn_classifier_bad.py --pattern knn_classifier
 """
 import math
 import random

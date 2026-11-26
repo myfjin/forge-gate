@@ -1,9 +1,9 @@
-# Getting started with Forge Gate
+# Getting started with ForgeProof
 
-Forge Gate is **install-from-git** while it is alpha (0.1.0). There is no PyPI package yet.
+ForgeProof is **install-from-git** while it is alpha (0.1.0). There is no PyPI package yet.
 
 This guide takes you from nothing to a real verdict on a real file, then shows you how to tell
-whether a test suite actually tests anything. It also says plainly what Forge Gate does not do
+whether a test suite actually tests anything. It also says plainly what ForgeProof does not do
 yet.
 
 ---
@@ -17,8 +17,8 @@ yet.
 
 ## Install
 
-    git clone https://github.com/myfjin/forge-gate.git
-    cd forge-gate
+    git clone https://github.com/myfjin/forgeproof.git
+    cd forgeproof
     python3 -m venv .venv
     .venv/bin/pip install . pytest pytest-timeout
     export FORGE_GATE_HOME="$PWD"
@@ -41,9 +41,9 @@ proves the machinery works on this machine. Five slower groups (`live`, `gates`,
 `examples/` holds a pair of small programs for each of the 10 patterns the gate knows. The
 `_good` file implements the algorithm correctly; the `_bad` file has one deliberate bug.
 
-    .venv/bin/forge-gate list
-    .venv/bin/forge-gate verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
-    .venv/bin/forge-gate verify examples/linear_regression_gd_bad.py  --pattern linear_regression_gd
+    .venv/bin/forgeproof list
+    .venv/bin/forgeproof verify examples/linear_regression_gd_good.py --pattern linear_regression_gd
+    .venv/bin/forgeproof verify examples/linear_regression_gd_bad.py  --pattern linear_regression_gd
 
 `list` prints the 10 patterns. The good file ends in `PASS` and exit code 0; the bad one ends in
 `FAIL` and exit code 1. A verdict shows its reason, the numbers it measured, and one line per lens
@@ -101,7 +101,7 @@ Both are described, with every option and what they do not do, in `docs/shared-t
 
 - The verify gate covers **10 Python patterns**, each with a reference implementation that ships
   inside the package (byte copies from the AURA pattern library; where each came from is in
-  `src/forge_gate/reference/ORIGIN.md`).
+  `src/forgeproof/reference/ORIGIN.md`).
 - The `scout`, `learn`, `ledger` and `chaos-calibrate` commands are **advisory or plumbing**
   today. `KNOWN-DEBT.md` says what each one does not do yet.
 - **`KNOWN-DEBT.md` is the honest list.** Every known gap has its own entry: what it is, where it
@@ -109,11 +109,11 @@ Both are described, with every option and what they do not do, in `docs/shared-t
 
 ## Where to read next
 
-- [`README.md`](https://github.com/myfjin/forge-gate/blob/main/README.md): what Forge Gate is and why
-- [`docs/shared-tools.md`](https://github.com/myfjin/forge-gate/blob/main/docs/shared-tools.md): the gate and the mutant runner in full
-- [`docs/GUARD_LENS.md`](https://github.com/myfjin/forge-gate/blob/main/docs/GUARD_LENS.md): the lens that needs no reference
-- [`KNOWN-DEBT.md`](https://github.com/myfjin/forge-gate/blob/main/KNOWN-DEBT.md): what is not done, said plainly
-- [`CONTRIBUTING.md`](https://github.com/myfjin/forge-gate/blob/main/CONTRIBUTING.md): how to send a change
+- [`README.md`](https://github.com/myfjin/forgeproof/blob/main/README.md): what ForgeProof is and why
+- [`docs/shared-tools.md`](https://github.com/myfjin/forgeproof/blob/main/docs/shared-tools.md): the gate and the mutant runner in full
+- [`docs/GUARD_LENS.md`](https://github.com/myfjin/forgeproof/blob/main/docs/GUARD_LENS.md): the lens that needs no reference
+- [`KNOWN-DEBT.md`](https://github.com/myfjin/forgeproof/blob/main/KNOWN-DEBT.md): what is not done, said plainly
+- [`CONTRIBUTING.md`](https://github.com/myfjin/forgeproof/blob/main/CONTRIBUTING.md): how to send a change
 
 ## Contributing
 

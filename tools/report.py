@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Forge Gate — client verdict report generator.
+"""ForgeProof — client verdict report generator.
 
 This tool does NOT compute its own verdict. It runs the guard lens and
 domain classifier on a submitted file and renders the result as a human-facing
@@ -27,10 +27,10 @@ ROOT = Path(__file__).resolve().parents[1]
 GUARD_LENS = ROOT / "tools" / "guard_lens.py"
 
 # Import the reason-code registry from src/ (BRIEF §3.2). Report.py is in tools/
-# and unsupported.py is in src/forge_gate/; the sys.path insertion keeps the
+# and unsupported.py is in src/forgeproof/; the sys.path insertion keeps the
 # import boundary explicit and one-way (tools/ imports src/, never the reverse).
 sys.path.insert(0, str(ROOT / "src"))
-from forge_gate.unsupported import _u  # noqa: E402
+from forgeproof.unsupported import _u  # noqa: E402
 DOMAIN_CLASSIFIER = ROOT / "tools" / "domain_classifier.py"
 
 BANNED_PHRASES = [
@@ -206,7 +206,7 @@ def render(
     )
     coverage_lines.append(SHAPE_DISCLOSURE)
     coverage_lines.append(
-        "Correctness of the algorithm itself was not checked. Forge Gate tests "
+        "Correctness of the algorithm itself was not checked. ForgeProof tests "
         "whether the code handles invalid inputs and edge cases correctly. It does "
         "not verify that the algorithm implements the intended mathematics. A file "
         "that passes all our checks may still compute the wrong thing for valid inputs."
@@ -306,7 +306,7 @@ def render(
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     report = []
     report.append("╔══════════════════════════════════════════════════════════════╗")
-    report.append("║  FORGE GATE — Verdict Report                                 ║")
+    report.append("║  FORGEPROOF — Verdict Report                                 ║")
     report.append(f"║  File: {fixture.name:<55}║")
     report.append(f"║  Date: {date:<55}║")
     report.append("╚══════════════════════════════════════════════════════════════╝")
@@ -371,7 +371,7 @@ def render(
 
 
 def main(argv: List[str]) -> int:
-    ap = argparse.ArgumentParser(description="Forge Gate client verdict report")
+    ap = argparse.ArgumentParser(description="ForgeProof client verdict report")
     ap.add_argument("--fixture", required=True, help="Python file to report on")
     ap.add_argument("--json", action="store_true", help="Emit JSON instead of rendered report")
     args = ap.parse_args(argv[1:])

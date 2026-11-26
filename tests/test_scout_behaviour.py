@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from forge_gate.scout import behaviour, box, contract, envfit, report, signature
+from forgeproof.scout import behaviour, box, contract, envfit, report, signature
 
 LINUX = box.available() is None
 PORT_BODY_MD5 = "20593fe438f7e0f72cef105ae295c530"   # the port after its two recorded comment edits (source md5: tests/test_port_provenance.py)
@@ -179,7 +179,7 @@ def test_pairs_that_never_answer_are_counted_and_blind_not_clean():
 
 def test_keyword_baseline_case_can_fail():
     """6E B6-2: the keyword baseline must rank a trap above a true match, or the case is void."""
-    from forge_gate.scout import shape_lens as s
+    from forgeproof.scout import shape_lens as s
     kw = {k: s.keyword_score(behaviour.Q_SQ, v) for k, v in behaviour.POOL.items()}
     assert kw["kw_trap"] > min(kw[k] for k in behaviour.RELATED), kw
 

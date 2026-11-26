@@ -1,6 +1,6 @@
 #!/bin/bash
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# ACCEPTANCE TEST for the Forge Gate client REPORT GENERATOR.
+# ACCEPTANCE TEST for the ForgeProof client REPORT GENERATOR.
 #
 # The report generator (tools/report.py, built by 4Q) consumes the guard lens
 # output and emits a human-facing report following docs/REPORT_TEMPLATE.md.
