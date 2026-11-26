@@ -35,14 +35,20 @@ ForgeProof asks two questions that do not depend on trusting the author:
 
 ## Status
 
-Alpha (0.2.0). Not on PyPI yet: install from a checkout. On PyPI the package will be called
-`forgeproof-cli` (`forgeproof` is too close to an existing project there); the command and the
-import stay `forgeproof`. The verify gate covers 10 Python
+Alpha (0.2.0), on PyPI as [`forgeproof-cli`](https://pypi.org/project/forgeproof-cli/)
+(`forgeproof` is too close to an existing project there); the command and the import are
+`forgeproof`. The verify gate covers 10 Python
 patterns. Several commands (`scout`, `learn`, `ledger`, `chaos-calibrate`) are advisory or
 plumbing today. **`KNOWN-DEBT.md` lists every known gap**: what it
 is, where, what "fixed" will look like, and who owns it.
 
 ## Install
+
+```bash
+pip install forgeproof-cli        # the tool: every lens, no checkout needed
+```
+
+To run the tests or work on ForgeProof, install from a checkout:
 
 ```bash
 git clone https://github.com/myfjin/forgeproof.git && cd forgeproof
@@ -237,8 +243,8 @@ tests and its known-debt entry.
 3. **All six languages.** The pattern library holds Python, R, Rust, Go, C++ and JavaScript. The
    scores scout reads exist for Python, R and Rust today; Go, C++ and JavaScript need their own
    extractors first.
-4. **A first release on PyPI**, as `forgeproof-cli`. Its condition is met: since KD-2 was fixed
-   (2026-11-25), an installed copy runs every lens without a source checkout.
+4. **A first release on PyPI**: done. `forgeproof-cli` 0.2.0 (2026-11-26), once KD-2 was fixed so
+   that an installed copy runs every lens without a source checkout.
 5. **A free web service.** Paste code and have it checked in an isolated sandbox, with no account.
    You choose whether we may keep your code to improve the checks, and we never show one person's
    code to anyone else. Prefer to keep everything private? Run this repository on your own
