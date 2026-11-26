@@ -13,11 +13,9 @@ from .lenses import ALL_LENSES, DEFAULT_LENSES, evaluate, parse_lens_selection, 
 from .runner import run_file
 from .verifier import verdict
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 VERIFY_TIMEOUT = 60.0         # verify's defaults; a run above either is looser (8a crew review, 6E D3)
 VERIFY_MEMORY_MB = 512
 CORPUS_ITEM = re.compile(r"corpus:c_[0-9a-f]{16}", re.ASCII)   # D2: content-addressed corpus item
-METAMORPHIC_TOOLS_DIR = REPO_ROOT / "tools"
 
 
 def _fixture_script(name: str) -> Path:

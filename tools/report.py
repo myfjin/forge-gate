@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
-GUARD_LENS = ROOT / "tools" / "guard_lens.py"
+GUARD_LENS = ROOT / "src" / "forgeproof" / "lens_tools" / "guard_lens.py"
 
 # Import the reason-code registry from src/ (BRIEF §3.2). Report.py is in tools/
 # and unsupported.py is in src/forgeproof/; the sys.path insertion keeps the

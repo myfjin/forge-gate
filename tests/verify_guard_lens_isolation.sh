@@ -20,7 +20,7 @@ set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-GUARD_LENS="$ROOT/tools/guard_lens.py"
+GUARD_LENS="$ROOT/src/forgeproof/lens_tools/guard_lens.py"
 PYTHON="/usr/bin/python3"
 
 # Probe bounds: the test must never become the next thing that cooks the box.

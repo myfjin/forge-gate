@@ -28,34 +28,16 @@ from typing import Any, Dict, List, Optional
 from forgeproof.debug_core import DebugEvidence, capture_source
 from forgeproof.unsupported import _u
 
-from forgeproof.config import NotConfigured, home as _home, where as _where  # noqa: E402
 from forgeproof.config import scratch_dir as _scratch_dir  # noqa: E402
+from forgeproof.lens_tools import GUARD_LENS
 
 # The folder that holds the forgeproof package: src/ in a checkout, site-packages in an
 # install. Child scripts put it on sys.path; it is right in both shapes.
 _PKG_PARENT = Path(__file__).resolve().parents[1]
-# tools/ (metamorphic, invariant, twin, guard) is NOT in the installed package: it lives
-# in a source checkout, found through config.home() (FORGE_GATE_HOME or the checkout this
-# file sits in). KNOWN-DEBT KD-2: package tools/ so an install alone runs every lens.
-REPO_ROOT = _home() or Path(__file__).resolve().parents[2]
-TOOLS_DIR = REPO_ROOT / "tools"
-
-
-def _tools_hint() -> str:
-    """'' when tools/ is present; else the key-naming reason, appended to a lens ERROR."""
-    try:
-        _require_tools()
-        return ""
-    except NotConfigured as exc:
-        return f" ({exc})"
-
-
-def _require_tools() -> None:
-    if not (TOOLS_DIR / "guard_lens.py").is_file():
-        raise NotConfigured(
-            f"lens tools not found at {TOOLS_DIR}: this lens runs from a source checkout; "
-            f"set FORGE_GATE_HOME to one ({_where()})"
-        )
+# The lens tools (metamorphic, invariant, twin, guard) ship inside the package, in
+# forgeproof/lens_tools/ (KNOWN-DEBT KD-2, done 2026-11-25): an install alone runs every lens,
+# with no source checkout and no FORGE_GATE_HOME. They always come from the package this file
+# is in, never from another checkout, so the lenses and their tools cannot be two versions.
 
 BASE_LENS = "property-primary"
 SUPPLEMENTARY_LENSES = ("metamorphic", "invariant", "twin-consensus")
@@ -85,7 +67,7 @@ ENFORCED_LENSES: set = set(SUPPLEMENTARY_LENSES) | {"determinism", "guard"}
 # The RELATION SOUNDNESS LAW says a check may only GATE where the canonical oracle
 # itself survives it. That is a per-pattern fact, not a global one -- so quarantine the
 # specific offender instead of disarming the whole lens (the same shape as
-# ADVISORY_RELATIONS in tools/metamorphic/relations.py).
+# ADVISORY_RELATIONS in lens_tools/metamorphic/relations.py).
 #
 # MEASURED 2026-08-01, reproduced across two clean runs:
 #   kmeans_clustering canonical oracle -> determinism FAIL
@@ -179,22 +161,6 @@ class GateVerdict:
         }
 
 
-class _ToolsPath:
-    """tools/ on sys.path only while a lens runs."""
-    def __enter__(self):
-        # Never raises: evaluate() does not guard each lens, so a missing tools/ must
-        # surface as that lens's ERROR (with _tools_hint), not crash the whole verdict.
-        sys.path.insert(0, str(TOOLS_DIR))
-        return self
-
-    def __exit__(self, *exc):
-        try:
-            sys.path.remove(str(TOOLS_DIR))
-        except ValueError:
-            pass
-        return False
-
-
 def _run_metamorphic(user_file: Path, pattern: str) -> LensResult:
     # DEBUG WIRE-UP (step 5): capture source UNCONDITIONALLY at the top,
     # before any subprocess. Per 6E: the ordering constraint is load-bearing,
@@ -206,20 +172,18 @@ def _run_metamorphic(user_file: Path, pattern: str) -> LensResult:
     except Exception:
         src_text, src_origin = "", str(user_file)
 
-    with _ToolsPath():
-        try:
-            from metamorphic.runner import run_metamorphic
-            verdict, results, summary = run_metamorphic(user_file, pattern)
-        except Exception as exc:
-            # ERROR intentionally leaves debug=None per Q4 design (populate
-            # only on FAIL/UNSUPPORTED). ERROR is "harness broke", not a
-            # code fault -- no evidence artifact to surface. 6E step-5
-            # design-note 2026-09-07: don't pass extras that never surface.
-            return LensResult("metamorphic", "ERROR", f"{type(exc).__name__}: {exc}{_tools_hint()}")
+    try:
+        from forgeproof.lens_tools.metamorphic.runner import run_metamorphic
+        verdict, results, summary = run_metamorphic(user_file, pattern)
+    except Exception as exc:
+        # ERROR intentionally leaves debug=None per Q4 design (populate
+        # only on FAIL/UNSUPPORTED). ERROR is "harness broke", not a
+        # code fault -- no evidence artifact to surface. 6E step-5
+        # design-note 2026-09-07: don't pass extras that never surface.
+        return LensResult("metamorphic", "ERROR", f"{type(exc).__name__}: {exc}")
     detail = []
     try:
-        with _ToolsPath():
-            from metamorphic.relations import is_gating
+        from forgeproof.lens_tools.metamorphic.relations import is_gating
         for r in results or []:
             if not r.passed:
                 mark = "FAIL" if is_gating(r.name) else "ADVISORY"
@@ -298,9 +262,8 @@ def _shrink_metamorphic_source(
             tf.write("".join(subset_lines))
             tmp = Path(tf.name)
         try:
-            with _ToolsPath():
-                from metamorphic.runner import run_metamorphic
-                v, _, _ = run_metamorphic(tmp, pattern)
+            from forgeproof.lens_tools.metamorphic.runner import run_metamorphic
+            v, _, _ = run_metamorphic(tmp, pattern)
             return v == "RELATION-FAIL"
         finally:
             try:
@@ -370,12 +333,11 @@ def _run_invariant(user_file: Path, pattern: str) -> LensResult:
     except Exception:
         src_text, src_origin = "", str(user_file)
 
-    with _ToolsPath():
-        try:
-            import invariant_gate
-            status, reason = invariant_gate.verify(str(user_file), pattern)
-        except Exception as exc:
-            return LensResult("invariant", "ERROR", f"{type(exc).__name__}: {exc}{_tools_hint()}")
+    try:
+        from forgeproof.lens_tools import invariant_gate
+        status, reason = invariant_gate.verify(str(user_file), pattern)
+    except Exception as exc:
+        return LensResult("invariant", "ERROR", f"{type(exc).__name__}: {exc}")
     if status == "FAIL":
         return _attach_debug(
             LensResult("invariant", "FAIL", reason, objected=True),
@@ -406,12 +368,11 @@ def _run_twin(user_file: Path, pattern: str, timeout: float) -> LensResult:
     except Exception:
         src_text, src_origin = "", str(user_file)
 
-    with _ToolsPath():
-        try:
-            import twin_consensus
-            tc = twin_consensus.consensus_verify(user_file, pattern, timeout=timeout)
-        except Exception as exc:
-            return LensResult("twin-consensus", "ERROR", f"{type(exc).__name__}: {exc}{_tools_hint()}")
+    try:
+        from forgeproof.lens_tools import twin_consensus
+        tc = twin_consensus.consensus_verify(user_file, pattern, timeout=timeout)
+    except Exception as exc:
+        return LensResult("twin-consensus", "ERROR", f"{type(exc).__name__}: {exc}")
     detail = list(tc.details or [])
     if tc.status in ("FAIL", "UNSTABLE"):
         # Brief §4.3 spec: "both twin outputs side by side, the metric each
@@ -812,11 +773,9 @@ def _run_guard(user_file: Path, timeout: float) -> LensResult:
     if not runner:
         return LensResult("guard", "ERROR", "python3 not available")
 
-    try:
-        _require_tools()
-    except NotConfigured as exc:
-        return LensResult("guard", "ERROR", str(exc))
-    cmd = [runner, str(TOOLS_DIR / "guard_lens.py"), "--fixture", str(user_file)]
+    if not GUARD_LENS.is_file():
+        return LensResult("guard", "ERROR", f"guard lens missing from the installed package: {GUARD_LENS}")
+    cmd = [runner, str(GUARD_LENS), "--fixture", str(user_file)]
     try:
         proc = subprocess.run(
             cmd,

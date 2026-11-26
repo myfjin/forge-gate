@@ -169,7 +169,7 @@ oracles survived the criterion:
 
 ## Source files
 
-* `tools/guard_lens.py` — implementation
+* `src/forgeproof/lens_tools/guard_lens.py` — implementation
 * `tests/verify_guard_lens.sh` — 15-gate acceptance criterion
 * `tests/verify_guard_lens_isolation.sh` — adversarial isolation criterion
 * `src/forgeproof/lenses.py` — gating integration

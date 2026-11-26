@@ -12,7 +12,7 @@ is reviewed by a seat that did not build it.
 
 ## KD-1 · twin-consensus lens takes non-canonical files as "twins"
 
-- **What:** `tools/twin_consensus.py` `_resolve_twins()` searches the whole library with
+- **What:** `src/forgeproof/lens_tools/twin_consensus.py` (was `tools/`) `_resolve_twins()` searches the whole library with
   `rglob(f"{pattern}{ext}")`. A library checkout that holds draft or playground copies of a
   pattern (e.g. under `tools/pattern-scoring/`) yields several same-language "twins"; when
   one draft fails the fixture the lens reports `UNSTABLE: reference twins disagree` and the
@@ -27,7 +27,23 @@ is reviewed by a seat that did not build it.
   code and GREEN after, and the red arm run by the reviewer.
 - **Owner:** Claude. **Decide by:** 2026-11-25.
 
-## KD-2 · an installed ForgeProof needs a source checkout for five lenses
+## KD-2 · an installed ForgeProof needs a source checkout for five lenses · DONE 2026-11-25
+
+- **DONE 2026-11-25:** the lens tools moved into the package, `src/forgeproof/lens_tools/`
+  (`metamorphic/`, `invariant_gate.py` with `invariant_contracts/`, `twin_consensus.py`,
+  `guard_lens.py`); the contracts are package data. `lenses.py` imports them from the package
+  it is in and runs `guard_lens.py` by its path there, so it never reads `FORGE_GATE_HOME`
+  or another checkout for a lens. Route tests (`tests/test_routes.py`):
+  `test_every_lens_runs_without_a_checkout` (in-process, no checkout, key unset) and
+  `test_a_built_wheel_runs_every_lens_with_no_checkout` (builds the wheel, runs `verify`
+  from it with `-I`, an empty `HOME`, no `FORGE_GATE_*`): one good file, exact status per
+  lens, twin UNSUPPORTED only for the library. The black-box CLI suite ran on a clean `pip
+  install` on both hosts with no `FORGE_GATE_HOME`; record in the GitHub-lane ledger.
+  Not moved, on purpose: the JS oracle (`tools/js_oracle_harness.py`) is not a `verify`
+  lens; it is a checkout gate (`pytest -m js`, `npm ci`), so a pip install has no JS oracle.
+  `xmt_harness.py` and `domain_classifier.py` are checkout gates too. `FORGE_GATE_HOME`
+  still names where `config.toml` is read and `github-facts`' test runner
+  (`tools/fg_unittest_json.py`, a checkout tool).
 
 - **What:** the lens tools (`tools/`: metamorphic, invariant, twin, guard, JS oracle) are
   not in the installed package. `pip install .` alone runs property-primary only; the
@@ -69,7 +85,7 @@ is reviewed by a seat that did not build it.
   branch did not change `tools/guard_lens.py` beyond a comment, so this is treated as
   flaky, not fixed.
 - **Done looks like:** the probe run 10 times in a row on the deploy host with 0 survivors,
-  or the race named and closed in `tools/guard_lens.py` with a test that reproduces it.
+  or the race named and closed in `src/forgeproof/lens_tools/guard_lens.py` (was `tools/`) with a test that reproduces it.
 - **Owner:** Claude. **Decide by:** 2026-11-25.
 
 ## KD-5 · the slow gates are measured green only on Linux

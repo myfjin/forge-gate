@@ -46,17 +46,17 @@ is, where, what "fixed" will look like, and who owns it.
 
 ```bash
 git clone https://github.com/myfjin/forgeproof.git && cd forgeproof
-python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout
-export FORGE_GATE_HOME="$PWD"                   # needed until KD-2 is fixed (see below)
+python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout "setuptools>=61"
 PYTHONPATH=src .venv/bin/python -m pytest -q   # default tier: fixtures only, no network, no library
 npm ci                                          # only for the JS oracle (TypeScript type gate)
 ```
 
-Several lenses still read files from the checkout rather than from the installed package
-(`KNOWN-DEBT.md`, KD-2). Without `FORGE_GATE_HOME` pointing at the clone, a correct file comes out
-`UNSTABLE` instead of `PASS`.
+An install runs every lens on its own: the lens tools ship inside the package (`KNOWN-DEBT.md`,
+KD-2, fixed 2026-11-25), so no `FORGE_GATE_HOME` is needed for a verdict. The clone is needed for
+the tests, the shared tools in `tools/` and the JS oracle.
 
-Python 3.10 or newer. Without `npm ci` the JS oracle's type gate reports `unavailable`.
+Python 3.10 or newer. Without `npm ci` the JS oracle's type gate reports `unavailable`. The JS
+oracle is a checkout gate (`pytest -m js`), not a `verify` lens, so a pip install does not have it.
 
 ## Configuration
 
@@ -67,7 +67,7 @@ environment variable, or a key in `config.toml` `[paths]` (per host, not tracked
 | key | needed for | default |
 |---|---|---|
 | `FORGE_GATE_LIBRARY_DIR` | the twin-consensus lens, `pytest -m live`, library tools | none: unset, those fail naming the key |
-| `FORGE_GATE_HOME` | the lens tools when ForgeProof is installed outside a checkout | the checkout |
+| `FORGE_GATE_HOME` | where `config.toml` is read, and `github-facts`' test runner (a checkout tool); no lens needs it | the checkout |
 | `FORGE_GATE_PYTHON` | child runs (oracles, fixtures, lenses) | the interpreter running ForgeProof |
 | `FORGE_GATE_NODE`, `_BUN`, `_QJS` | the JS oracle's three engines | `PATH` |
 | `FORGE_GATE_SCRATCH` | short-lived lens scripts | `<checkout>/tmp` |
@@ -237,7 +237,8 @@ tests and its known-debt entry.
 3. **All six languages.** The pattern library holds Python, R, Rust, Go, C++ and JavaScript. The
    scores scout reads exist for Python, R and Rust today; Go, C++ and JavaScript need their own
    extractors first.
-4. **A first release on PyPI**, once an installed copy no longer needs a source checkout (KD-2).
+4. **A first release on PyPI**, as `forgeproof-cli`. Its condition is met: since KD-2 was fixed
+   (2026-11-25), an installed copy runs every lens without a source checkout.
 5. **A free web service.** Paste code and have it checked in an isolated sandbox, with no account.
    You choose whether we may keep your code to improve the checks, and we never show one person's
    code to anyone else. Prefer to keep everything private? Run this repository on your own

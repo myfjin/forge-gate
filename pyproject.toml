@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=59.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]   # 61: the first that reads [project] (PEP 621); 59 builds an empty wheel
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -41,13 +41,14 @@ forge-gate = "forge_gate._deprecated_cli:main"  # renamed 2026-11-25; removed in
 dev = [
     "pytest",
     "pytest-timeout",
+    "setuptools>=61",   # tests/test_routes.py builds a wheel; Python 3.12 brings no setuptools
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-forgeproof = ["data/*.json", "reference/*.py", "reference/ORIGIN.md"]
+forgeproof = ["data/*.json", "reference/*.py", "reference/ORIGIN.md", "lens_tools/invariant_contracts/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

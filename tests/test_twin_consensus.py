@@ -13,10 +13,9 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "tools"))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from twin_consensus import _metrics_consensus  # noqa: E402
+from forgeproof.lens_tools.twin_consensus import _metrics_consensus  # noqa: E402
 
 
 def twin(name, status="PASS", **metrics):

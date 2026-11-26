@@ -191,7 +191,7 @@ One sentence in plain language.
 The literal command, so the client can run it themselves:
 
 ```
-python3 tools/guard_lens.py --fixture /path/to/submitted/file.py
+python3 src/forgeproof/lens_tools/guard_lens.py --fixture /path/to/submitted/file.py
 ```
 
 Or for a full report:
@@ -301,7 +301,7 @@ python3 -m forgeproof.evaluate --file /path/to/submitted/file.py
 
 ═══ HOW TO REPRODUCE ═══
 
-  python3 tools/guard_lens.py \
+  python3 src/forgeproof/lens_tools/guard_lens.py \
     --fixture /path/to/gradient_descent_momentum.py
 
 ═══ WHY THIS REPORT IS HONEST ═══
@@ -375,7 +375,7 @@ python3 -m forgeproof.evaluate --file /path/to/submitted/file.py
 
 ═══ HOW TO REPRODUCE ═══
 
-  python3 tools/guard_lens.py \
+  python3 src/forgeproof/lens_tools/guard_lens.py \
     --fixture /path/to/custom_processor.py
 
 ═══ WHY THIS REPORT IS HONEST ═══

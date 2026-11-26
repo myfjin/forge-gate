@@ -31,6 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from forgeproof import lenses as L  # noqa: E402
+from forgeproof import lens_tools
 from forgeproof.debug_core import DebugEvidence  # noqa: E402
 
 
@@ -126,13 +127,13 @@ def _stub_meta_fail(monkeypatch, *, with_debug=True):
     import types as _t
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = fake_run
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
     rel = _t.ModuleType("metamorphic.relations")
     rel.is_gating = lambda name: True
-    monkeypatch.setitem(sys.modules, "metamorphic.relations", rel)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.relations", rel)
     # Also register the parent package so `from metamorphic.runner import ...` works.
     pkg = _t.ModuleType("metamorphic")
-    monkeypatch.setitem(sys.modules, "metamorphic", pkg)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", pkg)
 
 
 def test_metamorphic_relation_fail_wireup_populates_seven_evidence_fields(
@@ -206,11 +207,11 @@ def test_metamorphic_unsupported_routes_through_u1(monkeypatch, broken_pattern_f
     import types as _t
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = lambda uf, p: ("UNSUPPORTED", [], "no coverage for this pattern")
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
     rel = _t.ModuleType("metamorphic.relations")
     rel.is_gating = lambda name: True
-    monkeypatch.setitem(sys.modules, "metamorphic.relations", rel)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.relations", rel)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     result = L._run_metamorphic(broken_pattern_file, "scale_invariance")
     assert result.status == "UNSUPPORTED"
@@ -224,11 +225,11 @@ def test_metamorphic_pass_does_not_populate_debug(monkeypatch, broken_pattern_fi
     import types as _t
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = lambda uf, p: ("OK", [], "all relations held")
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
     rel = _t.ModuleType("metamorphic.relations")
     rel.is_gating = lambda name: True
-    monkeypatch.setitem(sys.modules, "metamorphic.relations", rel)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.relations", rel)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     result = L._run_metamorphic(broken_pattern_file, "scale_invariance")
     assert result.status == "PASS"
@@ -340,8 +341,8 @@ def test_metamorphic_runner_exception_returns_error_with_no_debug(monkeypatch, b
     def raiser(*a, **kw):
         raise RuntimeError("runner exploded")
     mod.run_metamorphic = raiser
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     result = L._run_metamorphic(broken_pattern_file, "any_pattern")
     assert result.status == "ERROR"
@@ -358,7 +359,8 @@ def _stub_invariant(monkeypatch, *, status, reason):
     import types as _t
     mod = _t.ModuleType("invariant_gate")
     mod.verify = lambda uf, p: (status, reason)
-    monkeypatch.setitem(sys.modules, "invariant_gate", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.invariant_gate", mod)
+    monkeypatch.setattr(lens_tools, "invariant_gate", mod, raising=False)
 
 
 def test_invariant_fail_populates_debug(monkeypatch, broken_pattern_file):
@@ -408,7 +410,8 @@ def _stub_twin(monkeypatch, *, status, reason, details=()):
     tc.reason = reason
     tc.details = list(details)
     mod.consensus_verify = lambda uf, p, timeout: tc
-    monkeypatch.setitem(sys.modules, "twin_consensus", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", mod)
+    monkeypatch.setattr(lens_tools, "twin_consensus", mod, raising=False)
 
 
 def test_twin_fail_populates_debug(monkeypatch, broken_pattern_file):
@@ -444,7 +447,8 @@ def _stub_twin_with_metrics(monkeypatch, *, status, reason, details, metrics, to
     tc.tolerance = tolerance
     mod = _t.ModuleType("twin_consensus")
     mod.consensus_verify = lambda uf, p, timeout: tc
-    monkeypatch.setitem(sys.modules, "twin_consensus", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", mod)
+    monkeypatch.setattr(lens_tools, "twin_consensus", mod, raising=False)
 
 
 def test_twin_unstable_populates_debug(monkeypatch, broken_pattern_file):
@@ -475,7 +479,8 @@ def test_twin_unstable_uses_compiler_output_when_stub_provides_it(monkeypatch, b
     tc.details = []; tc.compiler_output = "error: 'foo' was not declared"
     mod = _t.ModuleType("twin_consensus")
     mod.consensus_verify = lambda uf, p, timeout: tc
-    monkeypatch.setitem(sys.modules, "twin_consensus", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.twin_consensus", mod)
+    monkeypatch.setattr(lens_tools, "twin_consensus", mod, raising=False)
     r = L._run_twin(broken_pattern_file, "p", timeout=5.0)
     assert r.debug is not None
     assert r.debug.compiler_output == "error: 'foo' was not declared"
@@ -563,8 +568,8 @@ def test_shrink_metamorphic_source_below_length_floor_skips(monkeypatch, broken_
     # (RELATION-FAIL on any subset), converges below the floor, and
     # returns a non-None result. Only the floor keeps ret=None here.
     mod.run_metamorphic = lambda uf, p: ("RELATION-FAIL", [], "")
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
     ret = L._shrink_metamorphic_source(broken_pattern_file, "p", "def f():\n    pass\n")
     assert ret is None
 
@@ -586,8 +591,8 @@ def test_shrink_metamorphic_source_shrinks_when_predicate_reproduces(
         return (v, [], "")
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = fake_run
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     ret = L._shrink_metamorphic_source(fake_file, "p", long_src)
     assert ret is not None
@@ -621,8 +626,8 @@ def test_shrink_cleans_up_tmp_files(monkeypatch, tmp_path):
         return ("RELATION-FAIL" if "BREAK_MARKER_LEAK" in text else "OK", [], "")
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = fake_run
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     ret = L._shrink_metamorphic_source(fake, "p", long_src)
     assert ret is not None  # sanity: shrink ran
@@ -639,8 +644,8 @@ def test_shrink_never_reproduces_returns_none(monkeypatch, tmp_path):
     import types as _t
     mod = _t.ModuleType("metamorphic.runner")
     mod.run_metamorphic = lambda uf, p: ("OK", [], "")
-    monkeypatch.setitem(sys.modules, "metamorphic.runner", mod)
-    monkeypatch.setitem(sys.modules, "metamorphic", _t.ModuleType("metamorphic"))
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic.runner", mod)
+    monkeypatch.setitem(sys.modules, "forgeproof.lens_tools.metamorphic", _t.ModuleType("metamorphic"))
 
     ret = L._shrink_metamorphic_source(fake, "p", long_src)
     assert ret is None  # predicate never confirmed FAIL

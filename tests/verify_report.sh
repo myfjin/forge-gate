@@ -19,7 +19,7 @@ set -u
 
 PYTHON="/usr/bin/python3"
 REPORTER="$ROOT/tools/report.py"
-LENS="$ROOT/tools/guard_lens.py"
+LENS="$ROOT/src/forgeproof/lens_tools/guard_lens.py"
 FIXTURE="$ROOT/tests/userside/retry_http.py"
 
 FAILED=0
@@ -166,7 +166,7 @@ else
 fi
 
 # ---------------------------------------------------------------- 6. reproduce command is present and real
-reproduce_cmd="python3 $ROOT/tools/guard_lens.py --fixture"
+reproduce_cmd="python3 $ROOT/src/forgeproof/lens_tools/guard_lens.py --fixture"
 if grep -qF "$reproduce_cmd" "$REPORT_FILE"; then
     gate "reproduce command present and real" PASS
 else

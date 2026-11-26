@@ -8,7 +8,7 @@ the input data, which is the one failure mode that destroys trust in a verificat
 This test perturbs every seed the relations use and runs all relations against their own
 canonical oracle. Any GATING relation the oracle violates fails this test. To add a new
 enforced relation, it must survive this sweep -- otherwise list it in
-tools/metamorphic/relations.py::ADVISORY_RELATIONS with the measured evidence.
+src/forgeproof/lens_tools/metamorphic/relations.py::ADVISORY_RELATIONS with the measured evidence.
 
 Run directly:   python3 tests/test_relation_soundness.py
 Run via pytest: pytest tests/test_relation_soundness.py
@@ -21,10 +21,9 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "tools"))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-import metamorphic.relations as R  # noqa: E402
+import forgeproof.lens_tools.metamorphic.relations as R  # noqa: E402
 
 PATTERN_CATEGORY = {
     "linear_regression_gd": "regression",
