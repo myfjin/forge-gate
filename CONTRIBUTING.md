@@ -27,7 +27,7 @@ button: its merge commit carries no sign-off. Rebase instead.
 
 ## Running the tests
 
-    python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout
+    python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout "setuptools>=61"
     PYTHONPATH=src .venv/bin/python -m pytest -q
 
 The default tier uses fixtures only: no network, no other project. Tests that need the

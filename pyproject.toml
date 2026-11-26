@@ -41,6 +41,7 @@ forge-gate = "forge_gate._deprecated_cli:main"  # renamed 2026-11-25; removed in
 dev = [
     "pytest",
     "pytest-timeout",
+    "setuptools>=61",   # tests/test_routes.py builds a wheel; Python 3.12 brings no setuptools
 ]
 
 [tool.setuptools.packages.find]

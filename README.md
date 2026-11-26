@@ -46,7 +46,7 @@ is, where, what "fixed" will look like, and who owns it.
 
 ```bash
 git clone https://github.com/myfjin/forgeproof.git && cd forgeproof
-python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout
+python3 -m venv .venv && .venv/bin/pip install . pytest pytest-timeout "setuptools>=61"
 PYTHONPATH=src .venv/bin/python -m pytest -q   # default tier: fixtures only, no network, no library
 npm ci                                          # only for the JS oracle (TypeScript type gate)
 ```
