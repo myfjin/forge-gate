@@ -4,7 +4,7 @@ RUN mode (built): bubblewrap with every namespace unshared, so network off (a fr
 has only its own loopback), no home folder and no secrets file visible (only /usr, /lib*,
 /bin, /sbin and a few /etc files are mounted, read-only), the source mounted read-only at
 /src, a throwaway copy at /work, an empty environment, uid 65534 inside the namespace, its
-own process tree, killed with its parent. If FORGE_GATE_BOX_USER is set, bubblewrap itself
+own process tree, killed with its parent. If FORGEPROOF_BOX_USER is set, bubblewrap itself
 runs as that unprivileged user (sudo -n -u), so an escape lands as that user, not ours.
 
 FETCH mode (built in step 7, slice 1): the same box, still in a fresh network namespace, plus
@@ -51,10 +51,10 @@ from .. import config
 from . import fetchproxy
 from .outcomes import Outcome, blind, clean, found
 
-BOX_USER_KEY = "FORGE_GATE_BOX_USER"
+BOX_USER_KEY = "FORGEPROOF_BOX_USER"
 # Where the box's copies live when a box user is set: a folder that user can reach (it cannot
 # reach our home, by design). Deploy host: /var/lib/forge-gate-box, owner au, group fgbox, 2770.
-BOX_ROOT_KEY = "FORGE_GATE_BOX_ROOT"
+BOX_ROOT_KEY = "FORGEPROOF_BOX_ROOT"
 _ETC = ("ld.so.cache", "ld.so.conf", "ld.so.conf.d", "alternatives", "localtime", "nsswitch.conf")
 _SYS = ("/usr", "/bin", "/sbin", "/lib", "/lib64", "/lib32")
 MEMORY_MB = 1024   # address-space cap for the box and everything in it (same mechanism as runner.run_file)
@@ -135,7 +135,7 @@ def box_root() -> Path:
     if r:
         return Path(r)
     if box_user():
-        raise RuntimeError(f"{BOX_USER_KEY} is set but {BOX_ROOT_KEY} is not: the box user cannot "
+        raise RuntimeError(f"{config.supplied_by(BOX_USER_KEY)} is set but {BOX_ROOT_KEY} is not: the box user cannot "
                            "reach our scratch folder")
     return config.scratch_dir() / "box"
 

@@ -103,7 +103,7 @@ def test_a_bad_sha_in_the_newest_ok_run_is_blind_never_a_fallback(export_root, t
 
 def test_unset_key_is_blind_naming_the_key(monkeypatch, tmp_path):
     monkeypatch.delenv(config.CORPUS_KEY, raising=False)
-    monkeypatch.setenv("FORGE_GATE_CONFIG", str(tmp_path / "absent.toml"))
+    monkeypatch.setenv("FORGEPROOF_CONFIG", str(tmp_path / "absent.toml"))
     it = corpus.read_export()
     assert it.outcome.kind == "BLIND" and config.CORPUS_KEY in it.outcome.reason
 

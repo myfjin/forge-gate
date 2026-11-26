@@ -17,7 +17,7 @@ and again when read, so a hand-appended row with the wrong writer never scores.
 
 Files and locking (G6, the 3b/6b lessons):
 
-* ``FORGE_GATE_LEDGER_DIR`` has no default. Unset = the ledgers are switched OFF and nothing is
+* ``FORGEPROOF_LEDGER_DIR`` has no default. Unset = the ledgers are switched OFF and nothing is
   written anywhere. The folder, both ledger files and ``ledger.lock`` must already exist: the
   switch-on creates them with their owner and ACL, never a writer (a typo'd folder must not get a
   fresh ledger nobody reads, and the first writer must not decide the owner).
@@ -141,7 +141,7 @@ def result_ids_in(text: str) -> list[str]:
 
 
 def enabled() -> bool:
-    """True when ``FORGE_GATE_LEDGER_DIR`` is set (it may still be wrong: writers check)."""
+    """True when ``FORGEPROOF_LEDGER_DIR`` is set (it may still be wrong: writers check)."""
     return config.configured(config.LEDGER_KEY) is not None
 
 

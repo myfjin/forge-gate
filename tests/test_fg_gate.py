@@ -2,7 +2,7 @@
 
 Every check has a test here that goes red when the check is removed. The gate runs on small
 throw-away git trees under tmp_path, never on this checkout. Its suite PATH is a bin dir made
-here (FORGE_GATE_GATE_PATH), so no test depends on where a host keeps GNU timeout.
+here (FORGEPROOF_GATE_PATH), so no test depends on where a host keeps GNU timeout.
 """
 from __future__ import annotations
 
@@ -198,7 +198,7 @@ def test_g3_the_suite_sees_only_the_gate_env(tmp_path, gate, monkeypatch):
     body = ("import os\n\ndef test_env():\n    e = os.environ\n"
             "    assert 'FG_GATE_LEAK_PROBE' not in e\n"
             f"    assert e['PYTHONPATH'] == {tree_txt + '/src'!r}\n"
-            f"    assert e['FORGE_GATE_HOME'] == {tree_txt!r}\n"
+            f"    assert e['FORGEPROOF_HOME'] == {tree_txt!r}\n"
             f"    assert e['PATH'] == {str(tmp_path / 'bin')!r}\n"
             f"    assert e['PYTHONPYCACHEPREFIX'].startswith({str((tmp_path / 'rec').resolve())!r})\n"
             "    assert e['LANG'] == 'en_US.UTF-8' and 'LC_ALL' not in e\n")

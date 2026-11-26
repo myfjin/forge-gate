@@ -1,6 +1,24 @@
 # Changelog
 
-## 0.2.0 (unreleased): Forge Gate is now ForgeProof
+## 0.2.1 (2026-11-26): settings are `FORGEPROOF_*`
+
+- **Settings renamed** (rename slice B): every setting is now `FORGEPROOF_<NAME>`, for example
+  `FORGEPROOF_HOME`, `FORGEPROOF_LIBRARY_DIR`, `FORGEPROOF_CONFIG`, `FORGEPROOF_SCRATCH`,
+  `FORGEPROOF_NODE`. This holds in the environment and in `config.toml` alike.
+- **The old names still work:** when `FORGEPROOF_<NAME>` is unset, `FORGE_GATE_<NAME>` is read
+  instead, so an existing environment or `config.toml` needs no change. When both are set and
+  differ, `FORGEPROOF_<NAME>` wins, and one notice on stderr says so.
+- **`forgeproof --version`** prints `forgeproof <version>` and exits 0 (before, it printed the usage
+  and exited 2). `forge-gate --version` prints the same, after its notice.
+- **Removal date for the old names: 0.3.0.** The `forge-gate` command, `import forge_gate`, and the
+  `FORGE_GATE_*` fallback for settings all go in 0.3.0. Their notices now say so: a setting read
+  under its old name prints one line on stderr (once per process, never on stdout). Before
+  upgrading to 0.3.0, rename `FORGE_GATE_<NAME>` to `FORGEPROOF_<NAME>` in your environment and
+  `config.toml`.
+- **Unchanged on purpose:** the `FORGE_GATE_RESULT` fixture protocol line, the `forge-gate-ratify`
+  signature namespace and the `# forge-gate-result:` marker. They are data formats, not settings.
+
+## 0.2.0 (2026-11-26): Forge Gate is now ForgeProof
 
 - **Renamed** (2026-11-25): the project, the Python package and the command are now `forgeproof`.
   The name `forgegate` was already taken on PyPI and npm by another tool for AI agents, so we

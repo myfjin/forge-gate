@@ -13,7 +13,7 @@ shipped tool no longer reads the library at run time (build step 1, Q1, 2026-11-
 - **Changed here:** nothing. Do not edit them in this repo. Fix the pattern in the
   library, then re-copy, and update the commit and every sha256 below in the same change.
 - **Drift check:** `tests/test_live_library.py` (tier `live`, needs
-  `FORGE_GATE_LIBRARY_DIR`) compares each copy against the library checkout.
+  `FORGEPROOF_LIBRARY_DIR`) compares each copy against the library checkout.
 
 | file here | path in the library | sha256 |
 |---|---|---|

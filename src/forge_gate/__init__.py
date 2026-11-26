@@ -2,7 +2,7 @@
 
 ``import forge_gate`` and ``import forge_gate.<module>`` keep working for one release: each
 ``forge_gate.<module>`` IS ``forgeproof.<module>`` (the same module object). Import ``forgeproof``
-instead; this alias will be removed in a later release.
+instead; this alias is removed in 0.3.0.
 """
 
 import importlib
@@ -16,7 +16,7 @@ _OWN = (_OLD + "._deprecated_cli",)  # real modules of this shim package, never 
 
 warnings.warn(
     "the 'forge_gate' package was renamed to 'forgeproof' (2026-11-25); import 'forgeproof' instead. "
-    "This alias will be removed in a later release.",
+    "This alias is removed in 0.3.0.",
     DeprecationWarning,
     stacklevel=2,
 )

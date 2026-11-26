@@ -115,8 +115,8 @@ def test_ref_tree_is_read_only_inside_the_box(tmp_path, monkeypatch):
     """6E 6a pre-note: what a candidate is compared against must not be writable by it. Run
     WITHOUT the box user: through it, file modes alone would block the write, and this test
     would no longer see the mount."""
-    monkeypatch.delenv("FORGE_GATE_BOX_USER", raising=False)
-    monkeypatch.delenv("FORGE_GATE_BOX_ROOT", raising=False)
+    monkeypatch.delenv("FORGEPROOF_BOX_USER", raising=False)
+    monkeypatch.delenv("FORGEPROOF_BOX_ROOT", raising=False)
     src, ref = tmp_path / "src", tmp_path / "ref"
     src.mkdir(); ref.mkdir(); (ref / "c.py").write_text("x = 1\n")
     (src / "w.py").write_text(

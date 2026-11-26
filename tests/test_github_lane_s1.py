@@ -201,12 +201,12 @@ def test_an_unwritable_record_makes_the_result_blind(tmp_path, short_root, echo,
     assert r.fetch_record_file is None
 
 
-# ---- KD-13 (f): FORGE_GATE_SCOUT_LIST_DIR ------------------------------------------------------
+# ---- KD-13 (f): FORGEPROOF_SCOUT_LIST_DIR ------------------------------------------------------
 
 @pytest.fixture
 def no_list_key(monkeypatch, tmp_path):
     monkeypatch.delenv(config.SCOUT_LIST_DIR_KEY, raising=False)
-    monkeypatch.setenv("FORGE_GATE_CONFIG", str(tmp_path / "no-config.toml"))   # no [paths] at all
+    monkeypatch.setenv("FORGEPROOF_CONFIG", str(tmp_path / "no-config.toml"))   # no [paths] at all
 
 
 def test_the_list_dir_key_wins_and_the_checkout_is_the_default(tmp_path, monkeypatch, no_list_key):

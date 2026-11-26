@@ -36,7 +36,7 @@ from forgeproof.lens_tools import GUARD_LENS
 _PKG_PARENT = Path(__file__).resolve().parents[1]
 # The lens tools (metamorphic, invariant, twin, guard) ship inside the package, in
 # forgeproof/lens_tools/ (KNOWN-DEBT KD-2, done 2026-11-25): an install alone runs every lens,
-# with no source checkout and no FORGE_GATE_HOME. They always come from the package this file
+# with no source checkout and no FORGEPROOF_HOME. They always come from the package this file
 # is in, never from another checkout, so the lenses and their tools cannot be two versions.
 
 BASE_LENS = "property-primary"

@@ -27,6 +27,7 @@ def test_old_import_is_the_same_module_and_warns():
     assert r.returncode == 0, r.stderr
     assert "SAME" in r.stdout
     assert "renamed to 'forgeproof'" in r.stderr
+    assert "removed in 0.3.0" in r.stderr
 
 
 def test_old_import_fails_when_warnings_are_errors():
@@ -49,5 +50,24 @@ def test_old_cli_says_renamed_and_runs_forgeproof():
             "try:\n    rc = main(['--help'])\nexcept SystemExit as e:\n    rc = e.code\n"
             "sys.exit(rc or 0)", "-W", "ignore::DeprecationWarning")
     assert r.returncode == 0, r.stderr
-    assert "renamed to 'forgeproof'" in r.stderr
+    assert "renamed to 'forgeproof'" in r.stderr and "removed in 0.3.0" in r.stderr
     assert "usage: forgeproof" in r.stdout
+
+
+def _version(module: str) -> subprocess.CompletedProcess:
+    return _py("import sys\nfrom %s import main\n"
+               "try:\n    rc = main(['--version'])\nexcept SystemExit as e:\n    rc = e.code\n"
+               "sys.exit(rc or 0)" % module, "-W", "ignore::DeprecationWarning")
+
+
+def test_version_flag_prints_the_version_and_exits_0():
+    r = _version("forgeproof.cli")
+    assert r.returncode == 0, (r.returncode, r.stdout, r.stderr)
+    assert r.stdout.strip() == f"forgeproof {forgeproof.__version__}", r.stdout
+
+
+def test_old_command_version_flag_prints_the_same_plus_its_notice():
+    r = _version("forge_gate._deprecated_cli")
+    assert r.returncode == 0, (r.returncode, r.stdout, r.stderr)
+    assert r.stdout.strip() == f"forgeproof {forgeproof.__version__}", r.stdout
+    assert "renamed to 'forgeproof'" in r.stderr and "removed in 0.3.0" in r.stderr

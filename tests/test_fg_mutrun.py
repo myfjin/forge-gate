@@ -2,7 +2,7 @@
 
 Every check has a test here that goes red when the check is removed. The runner works on small
 throw-away git trees under tmp_path, never on this checkout. Its suite PATH is a bin dir made
-here (FORGE_GATE_GATE_PATH), so no test depends on where a host keeps GNU timeout.
+here (FORGEPROOF_GATE_PATH), so no test depends on where a host keeps GNU timeout.
 """
 from __future__ import annotations
 

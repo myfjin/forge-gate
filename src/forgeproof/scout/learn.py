@@ -30,14 +30,14 @@ The pipeline, in order:
    rest BLIND(not wired)).
 5. SURVIVAL GATE. A function with no engine verdict gets no row and no card.
 6. APPEND + CARDS. Rows go to scout's OWN ladder files in the Brain's data folder,
-   ``$FORGE_GATE_BRAIN_DATA/scout_registry{,_r,_rust,_sysadmin}.jsonl`` (6E's decision A,
+   ``$FORGEPROOF_BRAIN_DATA/scout_registry{,_r,_rust,_sysadmin}.jsonl`` (6E's decision A,
    2026-11-13, for review finding F3). Only learn writes them; the Brain reads them after its
    real ladders, so no extractor, reconcile or regate run can delete a learned row. learn never
    writes a real ladder file: it reads all eight files for the duplicate check. All of it runs
    under ``scout_learn.lock`` (learn-vs-learn singleton, LOCK_NB, fails fast) AND the registry
    build's own lock (L1: the hourly build reads these files and rewrites the real ladders in
    place). The build lock is waited for, then learn fails loudly. Rows whose id is already in any
-   of the eight files are skipped and reported, never duplicated. Cards go to ``$FORGE_GATE_SCOUT_DIR/learn_report.json`` through
+   of the eight files are skipped and reported, never duplicated. Cards go to ``$FORGEPROOF_SCOUT_DIR/learn_report.json`` through
    ``cards.stage_report`` (write_report's checks and temp file), so every check runs before
    the registry changes; then the rows are appended and the report swapped in. A failure
    after the append cuts the registry back to its old size: nothing is kept.

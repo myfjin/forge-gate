@@ -8,7 +8,7 @@
 #          the result depends on it; runtime-root = per-host scratch, never hashed.
 
 [[route]]
-key = "FORGE_GATE_LIBRARY_DIR"
+key = "FORGEPROOF_LIBRARY_DIR"
 class = "dependency"
 owner = "aura-pattern-library"
 pin = "commit c39c1dcc3adb0aa9bd04eb30f1f00045c14c88ce"
@@ -17,7 +17,7 @@ used_by = "twin-consensus lens (language twins), tests -m live, library tools"
 debt = "KD-1, KD-3"
 
 [[route]]
-key = "FORGE_GATE_CORPUS_EXPORT_DIR"
+key = "FORGEPROOF_CORPUS_EXPORT_DIR"
 class = "dependency"
 owner = "aura-code-corpus"
 pin = "schema code-corpus-export/v1"
@@ -26,7 +26,7 @@ used_by = "forgeproof scout (corpus intake, design §12.4)"
 debt = ""
 
 [[route]]
-key = "FORGE_GATE_EMBED_URL"
+key = "FORGEPROOF_EMBED_URL"
 class = "host-binary"
 owner = "host"
 pin = "ollama model nomic-embed-text:latest digest 0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f, local (no remote_host)"
@@ -35,7 +35,7 @@ used_by = "forgeproof scout: language-meaning and intent lenses (design §4a.3, 
 debt = "KD-15"
 
 [[route]]
-key = "FORGE_GATE_PYTHON"
+key = "FORGEPROOF_PYTHON"
 class = "host-binary"
 owner = "host"
 pin = "requires-python >= 3.10 (pyproject.toml); default sys.executable"
@@ -43,7 +43,7 @@ pinned = "deploy host /usr/bin/python3 3.10.12, dev machine venv 3.11, 2026-11-1
 used_by = "every child run: oracles, fixtures, guard, determinism, XMT mutants"
 
 [[route]]
-key = "FORGE_GATE_NODE"
+key = "FORGEPROOF_NODE"
 class = "host-binary"
 owner = "host"
 pin = "any; must be V8"
@@ -51,7 +51,7 @@ pinned = "unpinned, 2026-11-11"
 used_by = "JS oracle (tools/js_oracle_harness.py)"
 
 [[route]]
-key = "FORGE_GATE_BUN"
+key = "FORGEPROOF_BUN"
 class = "host-binary"
 owner = "host"
 pin = "any; must be JavaScriptCore"
@@ -59,7 +59,7 @@ pinned = "unpinned, 2026-11-11"
 used_by = "JS oracle"
 
 [[route]]
-key = "FORGE_GATE_QJS"
+key = "FORGEPROOF_QJS"
 class = "host-binary"
 owner = "host"
 pin = "any; must be QuickJS"

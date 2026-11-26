@@ -28,7 +28,7 @@ from . import fetchproxy, ghcache, ratify
 
 POOL = "github"
 # KD-13 (f): the signed list and its signer file are found through config.scout_list_dir()
-# (FORGE_GATE_SCOUT_LIST_DIR, default <checkout>/scout), never through this file's position, so an
+# (FORGEPROOF_SCOUT_LIST_DIR, default <checkout>/scout), never through this file's position, so an
 # installed ForgeProof can be pointed at them. Both are tracked and public-safe (G8).
 LIST_NAME = "trusted_repos.jsonl"
 SIGNERS_NAME = "allowed_signers"
@@ -182,7 +182,7 @@ class Admitted:
                 "lang": self.lang}
 
 
-TRUST_PIN_KEY = "FORGE_GATE_RATIFY_PIN"   # untracked config: "operator=<16-hex key id>" (review open question)
+TRUST_PIN_KEY = "FORGEPROOF_RATIFY_PIN"   # untracked config: "operator=<16-hex key id>" (review open question)
 
 
 def trust_pin(raw: str | None) -> tuple[str, str] | None:

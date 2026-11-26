@@ -1,9 +1,9 @@
-"""The ``forge-gate`` command: renamed ``forgeproof`` on 2026-11-25. Kept for one release."""
+"""The ``forge-gate`` command: renamed ``forgeproof`` on 2026-11-25. Kept until 0.3.0, which removes it."""
 
 import sys
 
 NOTICE = ("forge-gate: this command was renamed to 'forgeproof' (2026-11-25). "
-          "Running 'forgeproof' now; please update your scripts.")
+          "Running 'forgeproof' now; please update your scripts: 'forge-gate' is removed in 0.3.0.")
 
 
 def main(argv=None) -> int:

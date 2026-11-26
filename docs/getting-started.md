@@ -23,7 +23,7 @@ yet.
     .venv/bin/pip install . pytest pytest-timeout
 
 The install runs every lens on its own: the lens tools ship inside the package (`KNOWN-DEBT.md`,
-KD-2, fixed 2026-11-25), so no `FORGE_GATE_HOME` is needed for a verdict.
+KD-2, fixed 2026-11-25), so no `FORGEPROOF_HOME` is needed for a verdict.
 
 ## Run the tests
 
@@ -52,7 +52,7 @@ that ran (a `FAIL` stops at the first lens that objects):
         property-primary   PASS   Linear regression quality properties hold
         metamorphic        PASS   All 3 gating relations passed
         invariant          PASS   all ratified invariants hold
-        twin-consensus     UNSUPPORTED   ... FORGE_GATE_LIBRARY_DIR is not set ...
+        twin-consensus     UNSUPPORTED   ... FORGEPROOF_LIBRARY_DIR is not set ...
         determinism        PASS   3 runs identical at tolerance 1e-12
         guard              PASS   all NaN inputs handled ...
 
@@ -60,7 +60,7 @@ that ran (a `FAIL` stops at the first lens that objects):
 
 - `UNSUPPORTED` means "this lens could not measure here", and it says why. It never counts as a
   pass in disguise. Twin-consensus compares your code with the same pattern written in other
-  languages, so it needs a checkout of the AURA pattern library; until `FORGE_GATE_LIBRARY_DIR`
+  languages, so it needs a checkout of the AURA pattern library; until `FORGEPROOF_LIBRARY_DIR`
   points at one, it says so and steps aside.
 - `UNSTABLE` means a lens errored or the references disagreed, so no verdict could be trusted.
 - **Known oddity:** `kmeans_clustering_good.py` shows `determinism FAIL` inside a `PASS`. k-means

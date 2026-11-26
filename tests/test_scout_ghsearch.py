@@ -158,7 +158,7 @@ def test_unsigned_or_wrongly_pinned_lines_are_never_searched(tmp_path):
     r = _search(gh2, trust_pin_value=f"{P}={gh2.fives_id}")
     assert r.outcome.kind == BLIND and r.outcome.reason.startswith("unsigned: no verified line"), r.outcome
     r = _search(gh2, trust_pin_value="")
-    assert r.outcome.kind == BLIND and "FORGE_GATE_RATIFY_PIN must be set" in r.outcome.reason
+    assert r.outcome.kind == BLIND and "FORGEPROOF_RATIFY_PIN must be set" in r.outcome.reason
 
 
 def test_one_refused_line_beside_a_good_one_blinds_the_pool_not_a_clean_search(tmp_path):
@@ -299,7 +299,7 @@ def _clean_spy():
 def test_a_trust_pin_naming_another_principal_is_unsigned(tmp_path):
     gh = _gh(tmp_path)
     r = _search(gh, trust_pin_value=f"fives={gh.fives_id}")
-    assert r.outcome.kind == BLIND and "FORGE_GATE_RATIFY_PIN must be set" in r.outcome.reason, r.outcome
+    assert r.outcome.kind == BLIND and "FORGEPROOF_RATIFY_PIN must be set" in r.outcome.reason, r.outcome
     assert r.hits == []
 
 

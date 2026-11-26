@@ -4,12 +4,12 @@
 ``forgeproof github-facts ORG/REPO@SHA [--functions ...]``. For every admitted top-level function
 (admission is ``ghpool.admit``, read only), it plants up to 12 single-node bugs (``plant``, R5),
 runs the repo's OWN unittest suite in the run-mode isolation box once per bug, and appends one
-FACT ROW per function to ``$FORGE_GATE_SCOUT_DIR/github_facts.jsonl``. A fact row is never a PASS
+FACT ROW per function to ``$FORGEPROOF_SCOUT_DIR/github_facts.jsonl``. A fact row is never a PASS
 and never a card: this module imports neither ``learn`` nor ``cards`` and writes nothing else
 (its own throwaway staging folder under the box root is removed after each module).
 
 Rules, as built:
-- R0: no ``FORGE_GATE_BOX_USER`` -> one run row BLIND(box-user-unset); nothing is admitted or run.
+- R0: no ``FORGEPROOF_BOX_USER`` -> one run row BLIND(box-user-unset); nothing is admitted or run.
 - R1: the suite runs unmutated before a function's mutants and after them (the "after" control
   of one function is the "before" control of the next in the same module). Both must exit 0 with
   >= 1 test and the same set of passing test ids, else BLIND(control-red | control-unstable |

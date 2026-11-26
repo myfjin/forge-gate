@@ -312,7 +312,7 @@ def test_without_an_embedder_meaning_is_blind_and_scout_still_reports(export_roo
     _export(export_root, "20261102T000000Z", _members())
     rep = _scout(tmp_path, capsys)
     m = rep["related"]["corpus"]["lenses"]["meaning"]
-    assert m["outcome"] == "BLIND" and "not-configured: FORGE_GATE_EMBED_URL" in m["reason"]
+    assert m["outcome"] == "BLIND" and "not-configured: FORGEPROOF_EMBED_URL" in m["reason"]
     assert rep["checks"]["rule2-meaning"]["outcome"] == "BLIND"
 
 

@@ -192,11 +192,11 @@ old private names (`_real`, `_canon`, `_under`) as aliases; no other module may 
 
 | variable | what | default |
 |---|---|---|
-| `FORGE_GATE_GATE_PATH` | the PATH the suite runs under | `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`, plus `$HOME/homebrew/bin` and `/opt/homebrew/bin` when they exist |
-| `FORGE_GATE_GATE_MAX_LOAD` | the 1-minute load average the run waits under | half the CPU count; `--max-load` wins over both |
+| `FORGEPROOF_GATE_PATH` | the PATH the suite runs under | `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`, plus `$HOME/homebrew/bin` and `/opt/homebrew/bin` when they exist |
+| `FORGEPROOF_GATE_MAX_LOAD` | the 1-minute load average the run waits under | half the CPU count; `--max-load` wins over both |
 
 The suite's environment is built from nothing (`env -i` semantics): `PATH` (above), `HOME`,
-`PYTHONPATH=DIR/src`, a fresh `PYTHONPYCACHEPREFIX` outside the tree, `FORGE_GATE_HOME=DIR`,
+`PYTHONPATH=DIR/src`, a fresh `PYTHONPYCACHEPREFIX` outside the tree, `FORGEPROOF_HOME=DIR`,
 and `LANG`/`LC_ALL` if set. Nothing else from the caller's environment reaches the suite.
 
 **The load guard.** Before pytest starts, the gate polls the 1-minute load every 30 s until it
@@ -208,7 +208,7 @@ hypothesis about load first.
 
 - **GNU `timeout` on macOS** may live only in a user's Homebrew prefix (`~/homebrew/bin`),
   which `env -i` hides. The default gate PATH adds that prefix when it exists; otherwise set
-  `FORGE_GATE_GATE_PATH`. A `timeout` missing from the gate PATH is a GATE ERROR before pytest
+  `FORGEPROOF_GATE_PATH`. A `timeout` missing from the gate PATH is a GATE ERROR before pytest
   starts.
 - **A user-site editable install** (an egg-link to another checkout) makes `import forgeproof`
   load that checkout's code from any worktree unless `PYTHONPATH=DIR/src` is set. The tools set
