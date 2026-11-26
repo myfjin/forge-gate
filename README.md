@@ -45,8 +45,13 @@ is, where, what "fixed" will look like, and who owns it.
 ## Install
 
 ```bash
-pip install forgeproof-cli        # the tool: every lens, no checkout needed
+uv tool install forgeproof-cli    # or: pipx install forgeproof-cli
 ```
+
+This puts the `forgeproof` command on your PATH, in an environment of its own. Inside a virtualenv,
+`pip install forgeproof-cli` works too. A global `pip install` into Homebrew's or a recent Ubuntu's
+system Python is refused (`externally-managed-environment`, PEP 668), which is why a tool installer
+is the way to get the command. Upgrade with `uv tool upgrade forgeproof-cli`.
 
 It needs Python 3.10 or newer. macOS's built-in `/usr/bin/python3` is 3.9, and there pip says
 "No matching distribution found for forgeproof-cli": use a newer Python (for example from Homebrew).
