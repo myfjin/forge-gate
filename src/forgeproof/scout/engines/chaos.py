@@ -23,7 +23,7 @@ must never be easier to get. The semantics, read and measured, are in
     timeout is not clean, and gives BLIND (see engines/chaos_runner.py).
 - HOST HISTORY (parent review, 2026-11-13). The gate is a race on some hosts, so 3 clean runs
   only bound the odds; they cannot make one file's verdict identical to the validator's own run.
-  Every gate run is recorded per host in ``$FORGE_GATE_SCOUT_DIR/chaos_gate_history.json``. Once
+  Every gate run is recorded per host in ``$FORGEPROOF_SCOUT_DIR/chaos_gate_history.json``. Once
   any NC has survived on a host, chaos is BLIND for every probe there, and stays BLIND until an
   operator archives the file. A host whose gate is unreliable is an input class where parity
   cannot be shown. A history that cannot be read is BLIND too (fail closed).

@@ -201,6 +201,8 @@ def main(argv: list[str] | None = None) -> int:
         prog="forgeproof",
         description="Deterministic regression gate for code-generating agents.",
     )
+    from forgeproof import __version__
+    ap.add_argument("--version", action="version", version=f"forgeproof {__version__}")
     sub = ap.add_subparsers(dest="command", required=True)
 
     list_parser = sub.add_parser("list", help="list gate-ready patterns")
@@ -276,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
     facts_parser = sub.add_parser(
         "github-facts",
         help="measure whether a ratified repo's own tests notice planted bugs, per function, in the box "
-             "(writes only $FORGE_GATE_SCOUT_DIR/github_facts.jsonl; a fact row, never a PASS)")
+             "(writes only $FORGEPROOF_SCOUT_DIR/github_facts.jsonl; a fact row, never a PASS)")
     facts_parser.add_argument("spec", metavar="ORG/REPO@SHA", help="a ratified repo at its signed pin")
     facts_parser.add_argument("--functions", nargs="+", metavar="NAME",
                               help="only these functions: NAME, PATH::NAME or MODULE:NAME (default: every "
@@ -340,7 +342,7 @@ def cmd_box_selftest(args) -> int:
         print(f"  probe said (boxed): {boxed['probe']}")
         user = box.box_user()
         depth = (f"box user {user}" if user else
-                 f"namespaces only; FORGE_GATE_BOX_USER unset, so an escape lands as {getpass.getuser()}")
+                 f"namespaces only; FORGEPROOF_BOX_USER unset, so an escape lands as {getpass.getuser()}")
         print(f"  control: unboxed reached our own listener {unboxed['control_target']}")
         print(f"PASS: every boxed attempt blocked, every unboxed attempt leaked ({depth})" if ok else
               "FAIL: " + ("a boxed attempt got through" if not boxed["ok"] else "the unboxed control did not leak: targets not real"))
@@ -349,7 +351,7 @@ def cmd_box_selftest(args) -> int:
 
 def cmd_github_facts(args) -> int:
     """Exit 0 when at least one function was MEASURED, 3 when every row is BLIND, 2 when there
-    is no place for the rows ($FORGE_GATE_SCOUT_DIR)."""
+    is no place for the rows ($FORGEPROOF_SCOUT_DIR)."""
     from . import config
     from .scout import upstream_facts
 

@@ -24,8 +24,9 @@ BASE_PATH = ("/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin")
 POLL_S = 30
 DEFAULT_WAIT_S = 900
 DEFAULT_TIMEOUT_S = 1800
-PATH_KEY = "FORGE_GATE_GATE_PATH"
-LOAD_KEY = "FORGE_GATE_GATE_MAX_LOAD"
+PATH_KEY = "FORGEPROOF_GATE_PATH"
+LOAD_KEY = "FORGEPROOF_GATE_MAX_LOAD"
+OLD_KEYS = {PATH_KEY: "FORGE_GATE_GATE_PATH", LOAD_KEY: "FORGE_GATE_GATE_MAX_LOAD"}   # read second (rename slice B)
 # S3d: a git call that runs while fg_mutrun blocks SIGTERM/SIGHUP/SIGINT (M4's diff, the
 # restore's status) would otherwise yield only to SIGKILL; every git call either tool makes,
 # tool_head's included (S3e), goes through ``_git`` and is bounded by this.
@@ -107,8 +108,8 @@ def strict_parser(prog: str) -> argparse.ArgumentParser:
 # ---- G3: the environment, built from nothing ------------------------------------------------
 
 def gate_path(environ) -> str:
-    if environ.get(PATH_KEY):
-        return environ[PATH_KEY]
+    if _setting(environ, PATH_KEY):
+        return _setting(environ, PATH_KEY)
     dirs = list(BASE_PATH)
     home = environ.get("HOME", "")
     for extra in ((os.path.join(home, "homebrew", "bin") if home else None), "/opt/homebrew/bin"):
@@ -117,10 +118,17 @@ def gate_path(environ) -> str:
     return ":".join(dirs)
 
 
+def _setting(environ, key: str) -> str:
+    """The new name, else the old one (this tool is stdlib-only, so it cannot use forgeproof.config)."""
+    return environ.get(key) or environ.get(OLD_KEYS[key]) or ""
+
+
 def build_env(environ, tree: Path, pyc: Path) -> dict:
+    # Both names point at the tree: the new one for code after rename slice B, the old one for
+    # trees from before it (the gate also runs older commits).
     env = {"PATH": gate_path(environ), "HOME": environ.get("HOME", ""),
            "PYTHONPATH": str(tree / "src"), "PYTHONPYCACHEPREFIX": str(pyc),
-           "FORGE_GATE_HOME": str(tree)}
+           "FORGEPROOF_HOME": str(tree), "FORGE_GATE_HOME": str(tree)}
     for k in ("LANG", "LC_ALL"):
         if k in environ:
             env[k] = environ[k]
@@ -179,8 +187,8 @@ def import_preflight(python, tree: Path, env, paths, rec) -> None:
 def threshold(arg, environ) -> float:
     if arg is not None:
         return float(arg)
-    if environ.get(LOAD_KEY):
-        return float(environ[LOAD_KEY])
+    if _setting(environ, LOAD_KEY):
+        return float(_setting(environ, LOAD_KEY))
     return (os.cpu_count() or 2) / 2
 
 

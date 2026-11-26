@@ -8,7 +8,7 @@ Per query, in this order (the admission rules of ``ghpool.admit``, paid once ins
 1. the cache root and the signed list must exist; else BLIND(no-cache) / BLIND(unsigned);
 2. the signed list is verified ONCE (``ratify.verify_list``: every signature of every line is
    checked once per query); no verified line → BLIND(unsigned);
-3. the host's trust pin (``FORGE_GATE_RATIFY_PIN``) must name the key that signed each line as
+3. the host's trust pin (``FORGEPROOF_RATIFY_PIN``) must name the key that signed each line as
    the required principal; ANY line that fails 2 or 3 makes the whole pool BLIND(unsigned) (review
    F2: a dropped line must not read as a clean search);
 4. per verified line: ``ghcache.check_cache`` ONCE for that cache and one ``ls-tree``. Any

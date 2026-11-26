@@ -22,8 +22,8 @@ The tool is a measuring instrument: nothing the tested tree does may change the 
 The code it shares with fg_mutrun.py lives in ``fg_common.py`` beside it (slice S3c), loaded
 from this file's own directory by path; without it the gate is a GATE-ERROR, never a verdict.
 
-Settings (tool env vars, not config keys): ``FORGE_GATE_GATE_PATH`` (the suite's PATH) and
-``FORGE_GATE_GATE_MAX_LOAD`` (the load threshold). Stdlib only, Python 3.10+.
+Settings (tool env vars, not config keys): ``FORGEPROOF_GATE_PATH`` (the suite's PATH) and
+``FORGEPROOF_GATE_MAX_LOAD`` (the load threshold); the old ``FORGE_GATE_*`` names are read second. Stdlib only, Python 3.10+.
 """
 from __future__ import annotations
 

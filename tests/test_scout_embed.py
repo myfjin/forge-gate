@@ -158,7 +158,7 @@ def test_a_proxy_in_the_environment_never_sees_a_body(fake, monkeypatch):
 
 
 def test_get_without_the_key_is_not_configured():
-    with pytest.raises(embed.EmbedError, match="not-configured: FORGE_GATE_EMBED_URL"):
+    with pytest.raises(embed.EmbedError, match="not-configured: FORGEPROOF_EMBED_URL"):
         embed.get()
 
 
@@ -196,7 +196,7 @@ def test_cosine():
 # ---------------------------------------------------------------- the cache
 
 def test_cache_without_the_key_is_not_configured():
-    with pytest.raises(embed.EmbedError, match="not-configured: FORGE_GATE_EMBED_CACHE_DIR"):
+    with pytest.raises(embed.EmbedError, match="not-configured: FORGEPROOF_EMBED_CACHE_DIR"):
         embed.read_cache()
 
 

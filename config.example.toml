@@ -1,5 +1,8 @@
 # Per-host settings for ForgeProof. Copy to config.toml (not tracked) and edit.
 # Every key can also be set as an environment variable of the same name, which wins.
+# Until 0.2.0 the keys were FORGE_GATE_<NAME>. Those old names are still read (here and in the
+# environment) when the FORGEPROOF_<NAME> key is unset; if both are set in the same place,
+# FORGEPROOF_ wins. The environment still comes before this file, under either name.
 # A relative path is taken from the folder that holds config.toml.
 # Reference: src/forgeproof/config.py.
 
@@ -7,54 +10,54 @@
 # The AURA pattern library checkout. NO default: the twin-consensus lens, the live
 # test tier (pytest -m live) and the library tools fail naming this key when unset.
 # `forgeproof verify` does not need it (its references ship in forgeproof/reference/).
-# FORGE_GATE_LIBRARY_DIR = "/path/to/aura-pattern-library"
+# FORGEPROOF_LIBRARY_DIR = "/path/to/aura-pattern-library"
 
 # The aura-code-corpus export root: the folder holding <run_id>/ exports (schema
 # code-corpus-export/v1). NO default. Only `forgeproof scout` reads it; unset, the
 # corpus pool reports BLIND naming this key.
-# FORGE_GATE_CORPUS_EXPORT_DIR = "/path/to/aura-code-corpus/data/export/v1"
+# FORGEPROOF_CORPUS_EXPORT_DIR = "/path/to/aura-code-corpus/data/export/v1"
 
 # JavaScript engines for the JS oracle (tools/js_oracle_harness.py). Default: PATH.
 # Set one when the engine is installed outside PATH, e.g. a per-user bun.
-# FORGE_GATE_NODE = "/usr/bin/node"
-# FORGE_GATE_BUN  = "/path/to/.bun/bin/bun"
-# FORGE_GATE_QJS  = "/path/to/qjs"
+# FORGEPROOF_NODE = "/usr/bin/node"
+# FORGEPROOF_BUN  = "/path/to/.bun/bin/bun"
+# FORGEPROOF_QJS  = "/path/to/qjs"
 
-# The isolation box (scout, design §4a.6). Optional. FORGE_GATE_BOX_USER makes bubblewrap
+# The isolation box (scout, design §4a.6). Optional. FORGEPROOF_BOX_USER makes bubblewrap
 # itself run as that unprivileged user (via `sudo -n -u`), so an escape lands as that user.
-# It then needs FORGE_GATE_BOX_ROOT: a folder the box user can reach, for the box's copies.
+# It then needs FORGEPROOF_BOX_ROOT: a folder the box user can reach, for the box's copies.
 # Deploy host: user fgbox (no login), root /var/lib/forge-gate-box (au:fgbox, 2770).
-# FORGE_GATE_BOX_USER = "fgbox"
-# FORGE_GATE_BOX_ROOT = "/var/lib/forge-gate-box"
+# FORGEPROOF_BOX_USER = "fgbox"
+# FORGEPROOF_BOX_ROOT = "/var/lib/forge-gate-box"
 
 # The trust root for `forgeproof learn --github` (step 7, KD-13). The maintainer's ratify key id, pinned
 # here, outside the repo, so a commit that swaps scout/allowed_signers cannot move it. NO default:
 # unset, every GitHub file is BLIND(unsigned). Form: operator=<16 hex>.
-# FORGE_GATE_RATIFY_PIN = "operator=<16-hex key id>"
+# FORGEPROOF_RATIFY_PIN = "operator=<16-hex key id>"
 # The folder holding the signed list (trusted_repos.jsonl) and allowed_signers (KD-13 f).
 # Default: scout/ of the source checkout. An installed ForgeProof has no checkout: set it, or
 # learn --github fails BLIND(unsigned) naming this key.
-# FORGE_GATE_SCOUT_LIST_DIR = "/path/to/forgeproof/scout"
+# FORGEPROOF_SCOUT_LIST_DIR = "/path/to/forgeproof/scout"
 
 # `forgeproof learn` (design §4.5, build step 6b-1). NO defaults; unset, learn fails naming the key.
 # The Brain's data folder (its paths.DATA). learn appends ONLY to scout's own files there,
 # scout_registry{,_r,_rust,_sysadmin}.jsonl, which must already exist (the switch-on creates
 # them empty); it only reads the real ladders. It must hold logic_registry.jsonl.
 # NEVER point a test or a rehearsal at the live folder.
-# FORGE_GATE_BRAIN_DATA = "/path/to/aura-brain/data"
+# FORGEPROOF_BRAIN_DATA = "/path/to/aura-brain/data"
 # Scout's runtime state folder: report cards (learn_report.json) and scout_learn.lock.
-# FORGE_GATE_SCOUT_DIR = "/path/to/scout-state"
+# FORGEPROOF_SCOUT_DIR = "/path/to/scout-state"
 # The lock file the registry build holds (`flock`) while it rewrites the registry. learn holds
 # it around its append. It must already exist. Deploy host: the hourly build's lock.
-# FORGE_GATE_REGISTRY_BUILD_LOCK = "/path/to/build.lock"
+# FORGEPROOF_REGISTRY_BUILD_LOCK = "/path/to/build.lock"
 
 # The ledgers (design §4a.5, build step 8a). NO default: unset, the ledgers are OFF and nothing is
 # recorded (scout and verify say so). Standard location: <checkout>/data/ledgers (gitignored).
 # The folder, exposure.jsonl, outcome.jsonl and ledger.lock must already exist: the switch-on
 # creates them (owner + ACL), never a writer. One shared ledger per host.
-# FORGE_GATE_LEDGER_DIR = "/path/to/forgeproof/data/ledgers"
+# FORGEPROOF_LEDGER_DIR = "/path/to/forgeproof/data/ledgers"
 # Build step 8b: the LOCAL embedder (Ollama, nomic-embed-text at the digest in deps.lock) for the
 # language-meaning and intent lenses. Loopback http only. Unset = those lenses are BLIND.
-# FORGE_GATE_EMBED_URL = "http://127.0.0.1:11434"
+# FORGEPROOF_EMBED_URL = "http://127.0.0.1:11434"
 # Its vector cache: scout runs only read it; one explicit fill command writes it (8b).
-# FORGE_GATE_EMBED_CACHE_DIR = "/path/to/forgeproof/data/embed-cache"
+# FORGEPROOF_EMBED_CACHE_DIR = "/path/to/forgeproof/data/embed-cache"

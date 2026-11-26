@@ -1,7 +1,7 @@
 """The private pinned GitHub cache and its pin check (design v1.4.5 §12.5 D7-2c; build step 7
 slice 3; DECISIONS-7-github G3).
 
-Layout under ``$FORGE_GATE_SCOUT_DIR/github-cache/``:
+Layout under ``$FORGEPROOF_SCOUT_DIR/github-cache/``:
 - ``.objects/<org>/<repo>.git``: a bare object store WE create. The fetch box hands back only
   its ``objects/`` files and ``shallow``; nothing it wrote is run or read as git config, hooks
   or refs.

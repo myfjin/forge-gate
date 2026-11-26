@@ -90,7 +90,7 @@ fi
 # THE POINT OF THE WHOLE THING. This file is a measured false-PASS today.
 echo; echo "--- GATE 2: NEGATIVE CONTROL — non-deterministic code must be CAUGHT ---"
 OUT=$(timeout 300 $PY -m forgeproof.cli verify /tmp/dl_fixtures/nd_micro.py \
-      --pattern linear_regression_gd --lenses all 2>&1 | grep -vE "RuntimeWarning|warn\(Runtime")
+      --pattern linear_regression_gd --lenses all 2>&1 | grep -vE "RuntimeWarning|warn\(Runtime|^forgeproof: .*(old name|both set)")
 echo "$OUT" | head -4
 if echo "$OUT" | grep -qiE "determinism .*(FAIL|objected)" || \
    { echo "$OUT" | head -1 | grep -q "^FAIL" && echo "$OUT" | grep -qi "determinism"; }; then

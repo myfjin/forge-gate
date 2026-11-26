@@ -252,7 +252,7 @@ def test_a_library_not_at_the_pinned_bytes_is_blind_and_leaves_no_scratch(env, m
     monkeypatch.setitem(chaos._BY_SHA, SHA, PROBE)
     monkeypatch.setenv(config.LIBRARY_KEY, str(lib))
     scratch = tmp_path / "scratch"
-    monkeypatch.setenv("FORGE_GATE_SCRATCH", str(scratch))
+    monkeypatch.setenv("FORGEPROOF_SCRATCH", str(scratch))
     ran = []
     monkeypatch.setattr(chaos, "run_child", lambda *a, **k: ran.append(a))
     res = learn.run(env.member(0), "4Q")

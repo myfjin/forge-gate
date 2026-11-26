@@ -13,10 +13,10 @@ from forgeproof import config
 
 REPO = Path(__file__).resolve().parents[1]
 CLASSES = {"dependency", "host-binary", "runtime-root"}
-# Keys config.py resolves outside the project. In-project keys (FORGE_GATE_HOME,
-# FORGE_GATE_SCRATCH under home, FORGE_GATE_CONFIG) are classed by construction.
-OUTSIDE_KEYS = {"FORGE_GATE_LIBRARY_DIR", "FORGE_GATE_CORPUS_EXPORT_DIR", "FORGE_GATE_PYTHON", "FORGE_GATE_NODE",
-                "FORGE_GATE_BUN", "FORGE_GATE_QJS", "FORGE_GATE_EMBED_URL"}
+# Keys config.py resolves outside the project. In-project keys (FORGEPROOF_HOME,
+# FORGEPROOF_SCRATCH under home, FORGEPROOF_CONFIG) are classed by construction.
+OUTSIDE_KEYS = {"FORGEPROOF_LIBRARY_DIR", "FORGEPROOF_CORPUS_EXPORT_DIR", "FORGEPROOF_PYTHON", "FORGEPROOF_NODE",
+                "FORGEPROOF_BUN", "FORGEPROOF_QJS", "FORGEPROOF_EMBED_URL"}
 
 
 def _rows():
@@ -35,12 +35,12 @@ def test_every_outside_key_has_a_classed_row_and_no_row_is_stale():
     rows = _rows()
     keys = {r["key"] for r in rows}
     src = (REPO / "src" / "forgeproof" / "config.py").read_text(encoding="utf-8")
-    in_loader = set(re.findall(r'"(FORGE_GATE_[A-Z_]+)"', src)) | {
-        "FORGE_GATE_" + n.upper() for n in ("node", "bun", "qjs")}
+    in_loader = set(re.findall(r'"(FORGEPROOF_[A-Z_]+)"', src)) | {
+        "FORGEPROOF_" + n.upper() for n in ("node", "bun", "qjs")}
     assert OUTSIDE_KEYS <= in_loader, OUTSIDE_KEYS - in_loader
     missing = OUTSIDE_KEYS - keys
     assert not missing, f"outside keys with no deps.lock row: {sorted(missing)}"
-    stale = {k for k in keys if k.startswith("FORGE_GATE_")} - in_loader
+    stale = {k for k in keys if k.startswith(("FORGEPROOF_", "FORGE_GATE_"))} - in_loader
     assert not stale, f"deps.lock rows for keys config.py does not have: {sorted(stale)}"
     for r in rows:
         assert r.get("class") in CLASSES, r
@@ -48,7 +48,7 @@ def test_every_outside_key_has_a_classed_row_and_no_row_is_stale():
 
 
 def test_library_pin_matches_the_reference_origin():
-    pin = next(r["pin"] for r in _rows() if r["key"] == "FORGE_GATE_LIBRARY_DIR")
+    pin = next(r["pin"] for r in _rows() if r["key"] == "FORGEPROOF_LIBRARY_DIR")
     origin = (REPO / "src" / "forgeproof" / "reference" / "ORIGIN.md").read_text(encoding="utf-8")
     commit = pin.split()[-1]
     assert re.fullmatch(r"[0-9a-f]{40}", commit), pin
@@ -57,5 +57,5 @@ def test_library_pin_matches_the_reference_origin():
 
 def test_embedder_pin_matches_the_code():
     from forgeproof.scout import embed
-    pin = next(r["pin"] for r in _rows() if r["key"] == "FORGE_GATE_EMBED_URL")
+    pin = next(r["pin"] for r in _rows() if r["key"] == "FORGEPROOF_EMBED_URL")
     assert embed.DIGEST in pin and embed.MODEL in pin, (pin, embed.MODEL, embed.DIGEST)

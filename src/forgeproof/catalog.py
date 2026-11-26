@@ -5,7 +5,7 @@ Maps a pattern name to its reference implementation and the matching gate fixtur
 reference implementations ship too, in `forgeproof/reference/` (byte copies of library
 patterns; see `reference/ORIGIN.md`), so `forgeproof verify` reads no other project.
 The live library is read only when a caller passes `library_root` or uses
-`load_aura_catalog`, and then through `config.library_dir()` (FORGE_GATE_LIBRARY_DIR).
+`load_aura_catalog`, and then through `config.library_dir()` (FORGEPROOF_LIBRARY_DIR).
 """
 from __future__ import annotations
 

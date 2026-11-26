@@ -1,8 +1,8 @@
 """Build step 6b-2: PARITY of scout's chaos with the validator's ``chaos_scan.py`` (decision L3).
 
 ``pytest -m live``. Needs, and fails loudly without:
-- ``FORGE_GATE_LIBRARY_DIR``: a git checkout of the pattern library that has commit 4b65044b;
-- ``FORGE_GATE_CORPUS_EXPORT_DIR``: the real crew corpus export;
+- ``FORGEPROOF_LIBRARY_DIR``: a git checkout of the pattern library that has commit 4b65044b;
+- ``FORGEPROOF_CORPUS_EXPORT_DIR``: the real crew corpus export;
 - ``rustc`` on PATH.
 
 The validator is the ORIGINAL file, taken from the library's git history (blob checked). It runs
@@ -343,7 +343,7 @@ def test_learn_on_pinned_bytes_matches_the_validator_on_this_host(validator_src,
 
 
 def test_real_corpus_no_item_is_probeable_and_the_validator_has_no_probe_for_any(validator_src):
-    intake = corpus.read_export()          # FORGE_GATE_CORPUS_EXPORT_DIR, fails loudly if unset
+    intake = corpus.read_export()          # FORGEPROOF_CORPUS_EXPORT_DIR, fails loudly if unset
     assert intake.outcome.kind == "FOUND", intake.outcome.label()
     assert len(intake.items) > 1000
     rels = {rel for rel, _sha in chaos.PINNED.values()}

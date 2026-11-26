@@ -1,7 +1,7 @@
 """Live tier: compare the shipped reference copies with the pattern library.
 
 Deselected by default (pyproject: ``-m "not live"``). Run with ``pytest -m live``.
-Needs FORGE_GATE_LIBRARY_DIR; when it is unset the test FAILS naming the key (project
+Needs FORGEPROOF_LIBRARY_DIR; when it is unset the test FAILS naming the key (project
 standard §6: a test needing live data fails loudly, it never skips quietly).
 """
 from __future__ import annotations
@@ -39,7 +39,7 @@ def test_library_checkout_is_at_the_pinned_commit():
 
     lib = config.library_dir()
     lock = (Path(__file__).resolve().parents[1] / "deps.lock").read_text(encoding="utf-8")
-    pin = re.search(r'key = "FORGE_GATE_LIBRARY_DIR".*?pin = "commit ([0-9a-f]{40})"', lock, re.S).group(1)
+    pin = re.search(r'key = "FORGEPROOF_LIBRARY_DIR".*?pin = "commit ([0-9a-f]{40})"', lock, re.S).group(1)
     # Read-only, so any user may read another user's checkout: safe.directory on this one
     # call. A checkout that still cannot be read fails as UNREADABLE, never as a pin
     # mismatch (6E review KD3-2): the two need different fixes.

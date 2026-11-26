@@ -48,6 +48,9 @@ is, where, what "fixed" will look like, and who owns it.
 pip install forgeproof-cli        # the tool: every lens, no checkout needed
 ```
 
+It needs Python 3.10 or newer. macOS's built-in `/usr/bin/python3` is 3.9, and there pip says
+"No matching distribution found for forgeproof-cli": use a newer Python (for example from Homebrew).
+
 To run the tests or work on ForgeProof, install from a checkout:
 
 ```bash
@@ -58,7 +61,7 @@ npm ci                                          # only for the JS oracle (TypeSc
 ```
 
 An install runs every lens on its own: the lens tools ship inside the package (`KNOWN-DEBT.md`,
-KD-2, fixed 2026-11-25), so no `FORGE_GATE_HOME` is needed for a verdict. The clone is needed for
+KD-2, fixed 2026-11-25), so no `FORGEPROOF_HOME` is needed for a verdict. The clone is needed for
 the tests, the shared tools in `tools/` and the JS oracle.
 
 Python 3.10 or newer. Without `npm ci` the JS oracle's type gate reports `unavailable`. The JS
@@ -70,13 +73,17 @@ ForgeProof reads no other project unless you tell it where. Each setting is an
 environment variable, or a key in `config.toml` `[paths]` (per host, not tracked; copy
 `config.example.toml`). The environment wins.
 
+Until 0.2.0 every setting was `FORGE_GATE_<NAME>`. Those old names still work (0.2.1 reads
+`FORGEPROOF_<NAME>` first, then the old name, and prints one line on stderr when the old name is
+used) and stop working in 0.3.0.
+
 | key | needed for | default |
 |---|---|---|
-| `FORGE_GATE_LIBRARY_DIR` | the twin-consensus lens, `pytest -m live`, library tools | none: unset, those fail naming the key |
-| `FORGE_GATE_HOME` | where `config.toml` is read, and `github-facts`' test runner (a checkout tool); no lens needs it | the checkout |
-| `FORGE_GATE_PYTHON` | child runs (oracles, fixtures, lenses) | the interpreter running ForgeProof |
-| `FORGE_GATE_NODE`, `_BUN`, `_QJS` | the JS oracle's three engines | `PATH` |
-| `FORGE_GATE_SCRATCH` | short-lived lens scripts | `<checkout>/tmp` |
+| `FORGEPROOF_LIBRARY_DIR` | the twin-consensus lens, `pytest -m live`, library tools | none: unset, those fail naming the key |
+| `FORGEPROOF_HOME` | where `config.toml` is read, and `github-facts`' test runner (a checkout tool); no lens needs it | the checkout |
+| `FORGEPROOF_PYTHON` | child runs (oracles, fixtures, lenses) | the interpreter running ForgeProof |
+| `FORGEPROOF_NODE`, `_BUN`, `_QJS` | the JS oracle's three engines | `PATH` |
+| `FORGEPROOF_SCRATCH` | short-lived lens scripts | `<checkout>/tmp` |
 
 `deps.lock` pins what each outside route was checked against.
 

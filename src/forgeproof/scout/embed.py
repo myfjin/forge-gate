@@ -1,7 +1,7 @@
 """The embedder behind the language-meaning and intent lenses (design §4a.3 lenses 4-5, build step 8b s1).
 
 One engine: a LOCAL Ollama serving ``nomic-embed-text`` at the pinned digest (DECISIONS-8b H1 a),
-reached at ``FORGE_GATE_EMBED_URL`` (env > config.toml, no default; unset = the lenses are BLIND).
+reached at ``FORGEPROOF_EMBED_URL`` (env > config.toml, no default; unset = the lenses are BLIND).
 Corpus bodies are private: before any text is sent, ``check()`` refuses
 
 - a URL that is not plain http on a loopback address (config.embed_url),
@@ -13,7 +13,7 @@ and every request goes through an opener with NO proxy handler, so an ``http_pro
 environment cannot route a body off the host.
 
 Vectors are cached (H4 b) in one append-only file per model digest under
-``FORGE_GATE_EMBED_CACHE_DIR``. A scout run only READS the cache; ``fill()`` (a separate, explicit
+``FORGEPROOF_EMBED_CACHE_DIR``. A scout run only READS the cache; ``fill()`` (a separate, explicit
 command) is the only writer. A row is keyed by ``sha256(digest NUL text)`` and checked when read.
 """
 from __future__ import annotations

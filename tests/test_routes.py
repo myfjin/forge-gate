@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[1]
 def no_library(monkeypatch, tmp_path):
     """Key unset in the environment, and a config.toml that does not set it."""
     monkeypatch.delenv(config.LIBRARY_KEY, raising=False)
-    monkeypatch.setenv("FORGE_GATE_CONFIG", str(tmp_path / "absent-config.toml"))
+    monkeypatch.setenv("FORGEPROOF_CONFIG", str(tmp_path / "absent-config.toml"))
 
 
 def test_library_key_unset_fails_naming_the_key(no_library):
@@ -40,7 +40,7 @@ def test_library_key_from_config_toml_is_relative_to_the_config(monkeypatch, tmp
     cfg = tmp_path / "config.toml"
     cfg.write_text(f'[paths]\n{config.LIBRARY_KEY} = "lib"\n', encoding="utf-8")
     monkeypatch.delenv(config.LIBRARY_KEY, raising=False)
-    monkeypatch.setenv("FORGE_GATE_CONFIG", str(cfg))
+    monkeypatch.setenv("FORGEPROOF_CONFIG", str(cfg))
     assert config.library_dir() == lib
 
 
@@ -49,7 +49,7 @@ def test_environment_beats_config_toml(monkeypatch, tmp_path):
     env_lib.mkdir()
     cfg = tmp_path / "config.toml"
     cfg.write_text(f'[paths]\n{config.LIBRARY_KEY} = "nowhere"\n', encoding="utf-8")
-    monkeypatch.setenv("FORGE_GATE_CONFIG", str(cfg))
+    monkeypatch.setenv("FORGEPROOF_CONFIG", str(cfg))
     monkeypatch.setenv(config.LIBRARY_KEY, str(env_lib))
     assert config.library_dir() == env_lib
 
@@ -148,7 +148,7 @@ def test_no_home_paths_outside_the_loader():
 
 
 # ── KD-2 (done 2026-11-25): the lens tools ship in the package ─────────────────────────────────
-# Exact statuses for one good file, all lenses, with no checkout, no FORGE_GATE_HOME, no library.
+# Exact statuses for one good file, all lenses, with no checkout, no FORGEPROOF_HOME, no library.
 # "Not ERROR" would not be enough: a wheel without invariant_contracts/ makes invariant UNSUPPORTED.
 KD2_PATTERN = "linear_regression_gd"
 KD2_GOOD = REPO / "examples" / "linear_regression_gd_good.py"
@@ -161,14 +161,14 @@ KD2_TOOLS = ("metamorphic/runner.py", "metamorphic/relations.py", "invariant_gat
 
 
 def test_every_lens_runs_without_a_checkout(monkeypatch, tmp_path, no_library):
-    """In-process: config finds no checkout and FORGE_GATE_HOME is unset (the conftest sets it,
+    """In-process: config finds no checkout and FORGEPROOF_HOME is unset (the conftest sets it,
     so it is removed here), cwd is elsewhere and no tools/ is on sys.path. Every lens runs, and
     each tool module loads from forgeproof/lens_tools/ of the package under test."""
     import forgeproof
     from forgeproof import lens_tools, lenses
     from forgeproof.cli import main
 
-    monkeypatch.delenv("FORGE_GATE_HOME", raising=False)
+    monkeypatch.delenv("FORGEPROOF_HOME", raising=False)
     monkeypatch.setattr(config, "CODE", tmp_path / "not-a-checkout")
     assert config.home() is None
     monkeypatch.chdir(tmp_path)
@@ -191,7 +191,7 @@ def test_every_lens_runs_without_a_checkout(monkeypatch, tmp_path, no_library):
     assert (rc, d["status"]) == (0, "PASS"), (rc, d["status"], d.get("reason"))
     twin = next(l for l in d["lenses"] if l["lens"] == "twin-consensus")
     assert config.LIBRARY_KEY in json.dumps(twin)          # blind for the library, not for tools
-    assert "FORGE_GATE_HOME" not in buf.getvalue()
+    assert "FORGEPROOF_HOME" not in buf.getvalue()
     from forgeproof.lens_tools import invariant_gate, twin_consensus
     from forgeproof.lens_tools.metamorphic import runner
     for m in (invariant_gate, twin_consensus, runner):
@@ -201,7 +201,7 @@ def test_every_lens_runs_without_a_checkout(monkeypatch, tmp_path, no_library):
 def test_a_built_wheel_runs_every_lens_with_no_checkout(tmp_path):
     """The install route itself: build the wheel from a copy of this tree with the declared
     backend (no network, no pip), unpack it as a site-packages, and run `forgeproof verify` from
-    it in a child with -I, an empty HOME, cwd outside, and no FORGE_GATE_* variable."""
+    it in a child with -I, an empty HOME, cwd outside, and no FORGEPROOF_* or FORGE_GATE_* variable."""
     import json, os, shutil, subprocess, zipfile
 
     src = tmp_path / "src-copy"
@@ -213,7 +213,7 @@ def test_a_built_wheel_runs_every_lens_with_no_checkout(tmp_path):
                     ignore=shutil.ignore_patterns("__pycache__", "*.egg-info", "*.pyc"))
     wheels = tmp_path / "dist"
     wheels.mkdir()
-    env = {k: v for k, v in os.environ.items() if not k.startswith("FORGE_GATE_") and k != "PYTHONPATH"}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("FORGEPROOF_", "FORGE_GATE_")) and k != "PYTHONPATH"}
     # The BUILD sees the interpreter's normal site (pip would bring its own setuptools; this test
     # has no network). It must be one that reads [project]: setuptools 59 (Ubuntu 22.04's, seen on
     # the deploy host under -I, 2026-11-25) builds a wheel with no packages at all and exits 0.
@@ -225,7 +225,7 @@ def test_a_built_wheel_runs_every_lens_with_no_checkout(tmp_path):
          "print(b.build_wheel(sys.argv[1]))", str(wheels)],
         cwd=str(src), env=dict(env, PYTHONDONTWRITEBYTECODE="1"), capture_output=True, text=True, timeout=300)
     assert build.returncode == 0, build.stderr[-2000:]
-    # the RUN is isolated: -I, an empty HOME, cwd outside, no FORGE_GATE_*
+    # the RUN is isolated: -I, an empty HOME, cwd outside, no FORGEPROOF_* / FORGE_GATE_*
     env.update(HOME=str(tmp_path / "home"), PYTHONDONTWRITEBYTECODE="1")
     (tmp_path / "home").mkdir()
     whl = wheels / build.stdout.strip().splitlines()[-1]
@@ -250,4 +250,4 @@ def test_a_built_wheel_runs_every_lens_with_no_checkout(tmp_path):
     got = {l["lens"]: l["status"] for l in d["lenses"]}
     assert got == KD2_WANT, (got, run.stderr[-1000:])
     assert (run.returncode, d["status"]) == (0, "PASS"), (run.returncode, d["status"], d.get("reason"))
-    assert "FORGE_GATE_HOME" not in run.stdout + run.stderr
+    assert "FORGEPROOF_HOME" not in run.stdout + run.stderr

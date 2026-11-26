@@ -689,7 +689,7 @@ def _box_env(tmp_path, monkeypatch):
 
 @pytest.mark.box
 @pytest.mark.timeout(900)
-@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGE_GATE_BOX_USER/ROOT (run with -m box)")
+@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGEPROOF_BOX_USER/ROOT (run with -m box)")
 def test_box_well_tested_is_all_caught_and_untested_all_survived(tmp_path, monkeypatch):
     scout = _box_env(tmp_path, monkeypatch)
     res = _boxed(tmp_path, ["clamp", "untested_sum"])
@@ -705,7 +705,7 @@ def test_box_well_tested_is_all_caught_and_untested_all_survived(tmp_path, monke
 
 @pytest.mark.box
 @pytest.mark.timeout(900)
-@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGE_GATE_BOX_USER/ROOT (run with -m box)")
+@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGEPROOF_BOX_USER/ROOT (run with -m box)")
 def test_box_a_flaky_control_is_blind_and_a_flaky_mutant_failure_is_unclear(tmp_path, monkeypatch):
     _box_env(tmp_path, monkeypatch)
     real = uf._default_run_box
@@ -720,7 +720,7 @@ def test_box_a_flaky_control_is_blind_and_a_flaky_mutant_failure_is_unclear(tmp_
 
 @pytest.mark.box
 @pytest.mark.timeout(900)
-@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGE_GATE_BOX_USER/ROOT (run with -m box)")
+@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGEPROOF_BOX_USER/ROOT (run with -m box)")
 def test_box_a_test_that_loads_a_copy_outside_work_is_blind_wrong_module(tmp_path, monkeypatch):
     _box_env(tmp_path, monkeypatch)
     res = _boxed(tmp_path, ["elsewhere", "clamp"])
@@ -732,7 +732,7 @@ def test_box_a_test_that_loads_a_copy_outside_work_is_blind_wrong_module(tmp_pat
 
 @pytest.mark.box
 @pytest.mark.timeout(900)
-@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGE_GATE_BOX_USER/ROOT (run with -m box)")
+@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGEPROOF_BOX_USER/ROOT (run with -m box)")
 def test_box_a_memory_error_is_unclear_and_version_gated_code_is_not_planted(tmp_path, monkeypatch):
     _box_env(tmp_path, monkeypatch)
     res = _boxed(tmp_path, ["guarded", "gated", "label"])
@@ -746,7 +746,7 @@ def test_box_a_memory_error_is_unclear_and_version_gated_code_is_not_planted(tmp
 
 @pytest.mark.box
 @pytest.mark.timeout(900)
-@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGE_GATE_BOX_USER/ROOT (run with -m box)")
+@pytest.mark.skipif(not LINUX_BOX, reason="needs Linux + bwrap + FORGEPROOF_BOX_USER/ROOT (run with -m box)")
 def test_box_user_unset_runs_nothing_in_the_box(tmp_path, monkeypatch):
     _box_env(tmp_path, monkeypatch)
     gh = _box_gh(tmp_path)

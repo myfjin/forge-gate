@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "forgeproof-cli"
-version = "0.2.0"
+version = "0.2.1"
 description = "Deterministic regression gate for code-generating agents, with reference implementations from the AURA pattern library."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -35,7 +35,7 @@ dependencies = [
 
 [project.scripts]
 forgeproof = "forgeproof.cli:main"
-forge-gate = "forge_gate._deprecated_cli:main"  # renamed 2026-11-25; removed in a later release
+forge-gate = "forge_gate._deprecated_cli:main"  # renamed 2026-11-25; removed in 0.3.0
 
 [project.optional-dependencies]
 dev = [
@@ -55,7 +55,7 @@ testpaths = ["tests"]
 timeout = 60
 addopts = "-m 'not live and not gates and not js and not brain and not network'"
 markers = [
-    "live: needs FORGE_GATE_LIBRARY_DIR (the pattern library); deselected by default, run with -m live",
+    "live: needs FORGEPROOF_LIBRARY_DIR (the pattern library); deselected by default, run with -m live",
     "gates: slow shell gates (1-15 min each); run with -m gates",
     "js: JS oracle gates; need `npm ci` and node, bun, qjs; run with -m js",
     "network: contacts a real named host (the fetch mode's reach check); run with -m network",

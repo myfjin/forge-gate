@@ -275,12 +275,12 @@ def test_every_present_licence_file_must_be_the_signed_blob(env, tmp_path):
 
 def test_the_trust_pin_must_be_set_and_name_the_principals_key(env, tmp_path):
     """Review open question: the required signer's key id is pinned outside the repo."""
-    assert "FORGE_GATE_RATIFY_PIN must be set" in _blind(env, tmp_path, opts=lambda gh: {"trust_pin_value": ""})
+    assert "FORGEPROOF_RATIFY_PIN must be set" in _blind(env, tmp_path, opts=lambda gh: {"trust_pin_value": ""})
     (tmp_path / "gh").rename(tmp_path / "gh-1")
     assert "the host pins 0000000000000000" in _blind(
         env, tmp_path, opts=lambda gh: {"trust_pin_value": P + "=" + "0" * 16})
     (tmp_path / "gh").rename(tmp_path / "gh-2")
-    assert "FORGE_GATE_RATIFY_PIN must be set" in _blind(
+    assert "FORGEPROOF_RATIFY_PIN must be set" in _blind(
         env, tmp_path, opts=lambda gh: {"trust_pin_value": f"fives={gh.fives_id}"})
 
 

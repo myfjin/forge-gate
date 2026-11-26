@@ -112,13 +112,13 @@ def test_selftest_fails_when_the_unboxed_control_misses_our_listener(monkeypatch
 
 def test_box_user_without_box_root_is_unavailable(monkeypatch):
     """The box user cannot reach our scratch folder: refuse rather than fail mysteriously."""
-    monkeypatch.setenv("FORGE_GATE_BOX_USER", "fgbox")
-    monkeypatch.delenv("FORGE_GATE_BOX_ROOT", raising=False)
-    with pytest.raises(RuntimeError, match="FORGE_GATE_BOX_ROOT"):
+    monkeypatch.setenv("FORGEPROOF_BOX_USER", "fgbox")
+    monkeypatch.delenv("FORGEPROOF_BOX_ROOT", raising=False)
+    with pytest.raises(RuntimeError, match="FORGEPROOF_BOX_ROOT"):
         box.box_root()
     if sys.platform == "linux":
         why = box.available()
-        assert why is not None and "FORGE_GATE_BOX_ROOT" in why and why.startswith("box-unavailable"), why
+        assert why is not None and "FORGEPROOF_BOX_ROOT" in why and why.startswith("box-unavailable"), why
 
 
 def test_copies_skip_symlinks_and_carry_data_only(tmp_path):
@@ -149,8 +149,8 @@ def test_plain_copy_refuses_a_missing_source(tmp_path):
 
 @pytest.mark.skipif(sys.platform != "linux", reason="Linux path")
 def test_a_box_user_we_cannot_become_is_unavailable(monkeypatch, tmp_path):
-    monkeypatch.setenv("FORGE_GATE_BOX_USER", "no-such-user-fg")
-    monkeypatch.setenv("FORGE_GATE_BOX_ROOT", str(tmp_path))
+    monkeypatch.setenv("FORGEPROOF_BOX_USER", "no-such-user-fg")
+    monkeypatch.setenv("FORGEPROOF_BOX_ROOT", str(tmp_path))
     why = box.available()
     assert why and why.startswith("box-unavailable: cannot run as box user no-such-user-fg"), why
 
@@ -158,8 +158,8 @@ def test_a_box_user_we_cannot_become_is_unavailable(monkeypatch, tmp_path):
 def test_an_unwritable_box_root_is_unavailable(monkeypatch, tmp_path):
     import os, stat
     root = tmp_path / "root"; root.mkdir(); os.chmod(root, stat.S_IRUSR | stat.S_IXUSR)
-    monkeypatch.setenv("FORGE_GATE_BOX_ROOT", str(root))
-    monkeypatch.delenv("FORGE_GATE_BOX_USER", raising=False)
+    monkeypatch.setenv("FORGEPROOF_BOX_ROOT", str(root))
+    monkeypatch.delenv("FORGEPROOF_BOX_USER", raising=False)
     try:
         if sys.platform == "linux" and os.geteuid() != 0:
             why = box.available()

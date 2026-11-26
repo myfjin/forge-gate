@@ -2,7 +2,7 @@
 
 ForgeProof's GitHub pool admits files only from repos that are ratified: a signed line in
 `scout/trusted_repos.jsonl`, checked against `scout/allowed_signers` and the trust pin in the
-host's config (`FORGE_GATE_RATIFY_PIN`), at a pinned commit, under a licence on a closed list.
+host's config (`FORGEPROOF_RATIFY_PIN`), at a pinned commit, under a licence on a closed list.
 From GitHub we take **facts, not expression**: scout may show an admitted function as related to
 an agent's code, and the fact tool measures whether the project's own tests would notice a bug in
 that function. Nothing from GitHub ever produces a PASS. Known limits: `KNOWN-DEBT.md`, KD-13 (the
@@ -37,10 +37,10 @@ host, unless a line says otherwise. Each is traced to a row of that loop's ledge
    pool must find itself, else the pool is `BLIND(control)`; a pin failure makes it
    `BLIND(pin-mismatch)`.
 8. **Facts, outside learn:** `forgeproof github-facts ORG/REPO@SHA [--functions NAME ...]`, with
-   `FORGE_GATE_BOX_USER`, `FORGE_GATE_BOX_ROOT` and `FORGE_GATE_SCOUT_DIR` set in that command's own
+   `FORGEPROOF_BOX_USER`, `FORGEPROOF_BOX_ROOT` and `FORGEPROOF_SCOUT_DIR` set in that command's own
    environment (no config edit). Without a box user it refuses and runs nothing
    (`BLIND(box-user-unset)`). It appends one row per function to
-   `$FORGE_GATE_SCOUT_DIR/github_facts.jsonl`; its staging copy under the box root is removed
+   `$FORGEPROOF_SCOUT_DIR/github_facts.jsonl`; its staging copy under the box root is removed
    after each module (a failed removal is not reported: KD-17 n). Learn does not
    read that file (KD-17 a).
 
@@ -96,7 +96,7 @@ budget; functions past it are `BLIND(budget-cut)`.
 
 | key | default | unset |
 |---|---|---|
-| `FORGE_GATE_SCOUT_LIST_DIR` | `scout/` of the source checkout ForgeProof runs from | outside a checkout: `learn --github` fails `BLIND(unsigned: no signed list: FORGE_GATE_SCOUT_LIST_DIR is not set ...)`, nothing is read |
+| `FORGEPROOF_SCOUT_LIST_DIR` | `scout/` of the source checkout ForgeProof runs from | outside a checkout: `learn --github` fails `BLIND(unsigned: no signed list: FORGEPROOF_SCOUT_LIST_DIR is not set ...)`, nothing is read |
 
 The folder must hold `trusted_repos.jsonl` and `allowed_signers`. A value that is not an existing
 folder fails naming the key: a typo must not read as "no repo is ratified". Set it in the

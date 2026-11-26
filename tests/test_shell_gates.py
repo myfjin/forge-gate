@@ -1,7 +1,7 @@
 """The shell gates in tests/verify_*.sh, run by the test runner (standard v0.3 §6:
 every self-test is in the runner or in KNOWN-DEBT.md).
 
-Each gate runs with PYTHONPATH and FORGE_GATE_HOME set to THIS checkout, so it measures
+Each gate runs with PYTHONPATH and FORGEPROOF_HOME set to THIS checkout, so it measures
 this checkout's code even when another forgeproof is installed (on the deploy host au's
 user site had an editable install of the live repo; a branch's gate run measured master
 through it, 2026-11-11).
@@ -32,7 +32,7 @@ JS = ["verify_js_oracle", "verify_js_families"]
 
 
 def _run(name: str, timeout: int) -> None:
-    env = dict(os.environ, PYTHONPATH=str(REPO / "src"), FORGE_GATE_HOME=str(REPO))
+    env = dict(os.environ, PYTHONPATH=str(REPO / "src"), FORGEPROOF_HOME=str(REPO))
     p = subprocess.run(["bash", str(REPO / "tests" / f"{name}.sh")], cwd=REPO, env=env,
                        capture_output=True, text=True, timeout=timeout)
     tail = "\n".join((p.stdout + p.stderr).splitlines()[-25:])

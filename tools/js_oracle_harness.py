@@ -54,14 +54,14 @@ MAX_OUTPUT_LINES = 10_000
 def _resolve_engine(name: str) -> str:
     """Locate a JS engine portably.
 
-    Order: FORGE_GATE_<NAME> (environment, or config.toml [paths]) -> PATH -> bare name.
+    Order: FORGEPROOF_<NAME> (environment, or config.toml [paths]) -> PATH -> bare name.
 
     The three engines must be three DIFFERENT implementations (V8 / JavaScriptCore /
     QuickJS), never the same one twice, so an engine that is not found is never
     replaced by another: the bare name makes the call fail loudly ("engine not
     found") instead of pretending. Per-host install sites (e.g. a user's ~/.bun)
     belong in that host's config.toml, not in this file (project standard §1;
-    build step 1, 2026-11-11). Keys: FORGE_GATE_NODE, FORGE_GATE_BUN, FORGE_GATE_QJS.
+    build step 1, 2026-11-11). Keys: FORGEPROOF_NODE, FORGEPROOF_BUN, FORGEPROOF_QJS.
     """
     return _configured_engine(name) or name
 
