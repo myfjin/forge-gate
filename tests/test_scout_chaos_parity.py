@@ -1,11 +1,14 @@
 """Build step 6b-2: PARITY of scout's chaos with the validator's ``chaos_scan.py`` (decision L3).
 
 ``pytest -m live``. Needs, and fails loudly without:
-- ``FORGEPROOF_LIBRARY_DIR``: a git checkout of the pattern library that has commit 4b65044b;
+- ``FORGEPROOF_LIBRARY_DIR``: a checkout of the pattern library holding the 19 pinned files
+  (public commit d6e88cee or any commit where their bytes are unchanged);
+- ``FG_TEST_VALIDATOR_REPO``: a git repo holding the validator's chaos_scan.py blob
+  (``chaos.SOURCE_BLOB``), e.g. a checkout of aura-pattern-scoring;
 - ``FORGEPROOF_CORPUS_EXPORT_DIR``: the real crew corpus export;
 - ``rustc`` on PATH.
 
-The validator is the ORIGINAL file, taken from the library's git history (blob checked). It runs
+The validator is the ORIGINAL file, read from that repo's git objects by its blob id. It runs
 unmodified, as its own script, in a temp dir, with HOME pointed at a temp library. Scout runs its
 child runner on the same library bytes. Layers:
 
@@ -64,11 +67,15 @@ def library() -> Path:
 
 @pytest.fixture(scope="module")
 def validator_src(library) -> bytes:
-    src = subprocess.run(["git", "-C", str(library), "show", f"{chaos.LIBRARY_COMMIT}:{chaos.SOURCE}"],
-                         capture_output=True, check=True).stdout
-    blob = subprocess.run(["git", "hash-object", "--stdin"], input=src, capture_output=True,
-                          check=True).stdout.decode().strip()
-    assert blob == chaos.SOURCE_BLOB, "the library's chaos_scan.py is not the source of record"
+    repo = os.environ.get("FG_TEST_VALIDATOR_REPO")
+    if not repo:
+        pytest.fail("FG_TEST_VALIDATOR_REPO is not set: a git repo holding the validator's chaos_scan.py "
+                    f"(blob {chaos.SOURCE_BLOB})")
+    got = subprocess.run(["git", "-C", repo, "cat-file", "blob", chaos.SOURCE_BLOB], capture_output=True)
+    if got.returncode != 0:
+        pytest.fail(f"FG_TEST_VALIDATOR_REPO={repo} has no blob {chaos.SOURCE_BLOB}: "
+                    f"{got.stderr.decode().strip()}")
+    src = got.stdout   # git stores blobs by content hash: these are exactly the source-of-record bytes
     assert shutil.which("rustc"), "rustc is not on PATH: the Rust NCs and probes cannot run"
     return src
 

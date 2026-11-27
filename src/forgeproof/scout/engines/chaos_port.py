@@ -1,6 +1,7 @@
-# Ported from the pattern library's validator, `tools/pattern-scoring/validator/chaos_scan.py` at library
-# commit 4b65044b (git blob fab0bdd27d7f56a5db534f6bca59b20b46933683, md5 23f0676a038ea5c8d4ffc9b2c414c86c;
-# the deploy host's validator-COPY-from-dot5/chaos_scan.py is the same blob). Byte for byte below the
+# Ported from the validator's `validator/chaos_scan.py` (git blob fab0bdd27d7f56a5db534f6bca59b20b46933683,
+# md5 23f0676a038ea5c8d4ffc9b2c414c86c), in the validator's own repo, aura-pattern-scoring, which is not
+# public. When this was ported (2026-11-13) the same blob sat in the pattern library at
+# tools/pattern-scoring/validator/chaos_scan.py, on a line that is not in the public history. Byte for byte below the
 # marker, with ONE edit after the port (standard §7b: personal names stay in the private repo): the
 # docstring's "law (<name>'s / AWS game-day)" now says "law (the project's / AWS game-day)". The
 # private-only test tests/test_port_provenance.py reverses it and checks the source md5.

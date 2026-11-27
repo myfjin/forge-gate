@@ -9,7 +9,7 @@ must never be easier to get. The semantics, read and measured, are in
   library file and paired with a negative control (NC), an unsafe twin that must die to the same
   fault. A file the list does not name gets no chaos card at all.
 - DOMAIN. Scout probes a corpus item only when its bytes are IDENTICAL to one of those 19
-  library files as pinned below (library 4b65044b). The validator would give exactly those bytes
+  library files as pinned below (library d6e88cee). The validator would give exactly those bytes
   the same probe. Any other file gets ``BLIND(no validator chaos probe for these bytes)``.
   - Probing crew code by API shape would be more complete, but it skips the human choice of
     "this file faces this probe" that the validator's PASS rests on. It is not built
@@ -57,8 +57,14 @@ from ... import config
 from .chaos_runner import GATE_ONLY, GATE_RUNS   # GATE_ONLY: calibration mode, the gate without a probe
 
 KIND = "chaos"
-LIBRARY_COMMIT = "4b65044b"
-SOURCE = "tools/pattern-scoring/validator/chaos_scan.py"
+# The public library commit at which the 19 files in PINNED have the bytes pinned there. The pins
+# were first taken at 4b65044b (2026-11-13), a commit that is not in the public history; all 19
+# files are byte-identical at public d6e88cee (checked 2026-11-27), which is the commit named here.
+LIBRARY_COMMIT = "d6e88cee"
+# The validator's chaos_scan.py (validator/chaos_scan.py in the validator's own repo,
+# aura-pattern-scoring, which is not public), the source of record for the port, named by its git
+# blob. When it was ported the same blob sat in the library at
+# tools/pattern-scoring/validator/chaos_scan.py, on a line that is not in the public history.
 SOURCE_BLOB = "fab0bdd27d7f56a5db534f6bca59b20b46933683"
 RUNNER = Path(__file__).with_name("chaos_runner.py")
 PORT = Path(__file__).with_name("chaos_port.py")
@@ -73,8 +79,8 @@ CALIBRATION_N = 1200
 HISTORY_VERSION = 2
 TIMEOUT_S = 900   # the whole child (19 NCs + 1 probe); measured ~4-10 s per run on both hosts
 
-# probe name -> (library path, sha256 of that file at library commit 4b65044b). The 19 entries of
-# the validator's PROBES list, in its order. Unchanged at library HEAD on both hosts (2026-11-13).
+# probe name -> (library path, sha256 of that file at library commit d6e88cee). The 19 entries of
+# the validator's PROBES list, in its order. Unchanged at library d6e88cee on both hosts (2026-11-27).
 PINNED = {
     "atomic_write_temp_rename": ("python/system-administration/filesystem-integrity/atomic_write_temp_rename.py",
         "800f18ecd2174c74175fcb501c8b3ab8e013541ac91c171a978527fa51c8f3a8"),
@@ -123,7 +129,7 @@ assert RACE <= set(PINNED) and len(PINNED) == 19
 _BY_SHA = {sha: name for name, (_rel, sha) in PINNED.items()}
 
 # probe -> the top-level functions whose survival its predicate measures (read from each probe's
-# body in chaos_scan.py at 4b65044b, 2026-11-13, review F1). Classes (WAL, ReplicatedStore) and the
+# body in chaos_scan.py, blob fab0bdd2, 2026-11-13, review F1). Classes (WAL, ReplicatedStore) and the
 # Rust probes have none: scout's rows are top-level functions only, so those back no row.
 SUBJECT = {
     "atomic_write_temp_rename": frozenset({"atomic_write"}),          # m.atomic_write under the crash
