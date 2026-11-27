@@ -232,8 +232,8 @@ is reviewed by a seat that did not build it.
 ## KD-12 · chaos (step 6b-2) is wired, but only for the validator's own probe set
 
 - **What:** scout's chaos engine (`scout/engines/chaos.py`, port `chaos_port.py`, child
-  `chaos_runner.py`) gives a verdict only where the validator's `chaos_scan.py` (library 4b65044b,
-  blob fab0bdd2) would give one on the same bytes. Parity is tested in
+  `chaos_runner.py`) gives a verdict only where the validator's `chaos_scan.py` (blob fab0bdd2; its
+  19 library files pinned at public library d6e88cee) would give one on the same bytes. Parity is tested in
   `tests/test_scout_chaos_parity.py` (`-m live`). Limits, all deliberate:
   - (a) **Domain = byte-identical.** Only a corpus item whose bytes equal one of the 19 probed
     library files (sha256 pinned) is probed. The validator's chaos is a closed list of hand-written

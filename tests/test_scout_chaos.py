@@ -258,7 +258,7 @@ def test_a_library_not_at_the_pinned_bytes_is_blind_and_leaves_no_scratch(env, m
     res = learn.run(env.member(0), "4Q")
     first = chaos.PINNED[next(iter(chaos.PINNED))][0]
     assert all(f["engines"]["chaos"] == f"BLIND(library file {first} is not at the pinned bytes "
-                                        "(library 4b65044b))" for f in res.report["functions"])
+                                        "(library d6e88cee))" for f in res.report["functions"])
     assert ran == [] and list(scratch.iterdir()) == []
 
 
